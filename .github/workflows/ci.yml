@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: triagem_teste
+          POSTGRES_USER: triagem
+          POSTGRES_PASSWORD: triagem
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U triagem -d triagem_teste"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Instalar
+        run: pip install -e ".[dev]"
+      - name: Conferir estilo (ruff)
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Testes com SQLite
+        run: pytest
+      - name: Testes com PostgreSQL
+        run: pytest
+        env:
+          DATABASE_URL_TESTE: postgresql+psycopg://triagem:triagem@localhost:5432/triagem_teste
+      - name: Avaliação do plano B com o gabarito
+        run: python -m avaliacao.avaliar --modo regras
+
+  imagem-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Montar a imagem
+        run: docker build -t triagem-chamados-ia .

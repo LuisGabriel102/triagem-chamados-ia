@@ -1,0 +1,30 @@
+services:
+  banco:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: triagem
+      POSTGRES_USER: triagem
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-triagem_local}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U triagem -d triagem"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - dados_banco:/var/lib/postgresql/data
+
+  api:
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql+psycopg://triagem:${POSTGRES_PASSWORD:-triagem_local}@banco:5432/triagem
+    ports:
+      - "8000:8000"
+    depends_on:
+      banco:
+        condition: service_healthy
+
+volumes:
+  dados_banco:
