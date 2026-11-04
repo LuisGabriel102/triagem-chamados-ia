@@ -16,8 +16,8 @@ def test_saude_fica_aberta_mesmo_com_chave(abrir_api):
     assert resposta.json() == {"status": "ok", "ia_configurada": True, "modelo": "claude-haiku-5-5"}
 
 
-def test_raiz_leva_para_a_documentacao(abrir_api):
-    resposta = abrir_api().get("/", follow_redirects=False)
+def test_raiz_leva_para_a_documentacao_com_a_demonstracao_desligada(abrir_api):
+    resposta = abrir_api(demo_ativa=False).get("/", follow_redirects=False)
     assert resposta.status_code == 307
     assert resposta.headers["location"] == "/docs"
 

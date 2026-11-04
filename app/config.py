@@ -19,3 +19,10 @@ class Configuracao(BaseSettings):
     preco_entrada_usd_mtok: float = Field(default=0.10, ge=0)
     preco_saida_usd_mtok: float = Field(default=0.50, ge=0)
     timeout_llm_s: float = Field(default=20.0, gt=0)
+    # Página de demonstração aberta ao público: não grava nada e tem limite de uso.
+    demo_ativa: bool = True
+    demo_limite_por_hora: int = Field(default=10, ge=1)  # por pessoa (endereço IP)
+    demo_limite_por_dia: int = Field(default=200, ge=1)  # somando todo mundo
+    # Endereço público da página (ex.: https://triagem.up.railway.app). Serve para a
+    # prévia do link no LinkedIn. Vazio = sem prévia.
+    url_publica: str = ""

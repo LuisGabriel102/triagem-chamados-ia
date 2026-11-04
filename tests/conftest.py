@@ -35,12 +35,17 @@ def abrir_api(motor: Engine) -> Iterator[Callable[..., TestClient]]:
     abertos: list[TestClient] = []
 
     def _abrir(
-        cliente_ia: ClienteFalso | None = None, chave_api: str | None = None, sem_ia: bool = False
+        cliente_ia: ClienteFalso | None = None,
+        chave_api: str | None = None,
+        sem_ia: bool = False,
+        **ajustes: object,
     ) -> TestClient:
         classificador = None
         if not sem_ia:
             classificador = ClassificadorClaude(cliente_ia or ClienteFalso(), "claude-haiku-5-5")
-        config = Configuracao(_env_file=None, anthropic_api_key=None, chave_api_app=chave_api)
+        config = Configuracao(
+            _env_file=None, anthropic_api_key=None, chave_api_app=chave_api, **ajustes
+        )
         app = criar_app(config=config, servico=ServicoTriagem(classificador), motor=motor)
         cliente = TestClient(app)
         cliente.__enter__()

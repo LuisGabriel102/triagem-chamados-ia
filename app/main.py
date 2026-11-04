@@ -1,24 +1,46 @@
 """API de triagem de chamados (FastAPI)."""
 
+import html
 import logging
+import mimetypes
 import secrets
 from collections.abc import AsyncIterator, Iterator
 from contextlib import asynccontextmanager
+from functools import lru_cache
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, Query, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app import banco
 from app.config import Configuracao
-from app.esquemas import ChamadoEntrada, ChamadoSaida, Metricas
+from app.esquemas import ChamadoDemo, ChamadoEntrada, ChamadoSaida, Metricas, TriagemDemo
+from app.limite import LimiteDeUso
 from app.servico import ServicoTriagem, criar_servico
 
 log = logging.getLogger(__name__)
+
+PASTA_PAGINAS = Path(__file__).parent / "paginas"
+PASTA_ESTATICA = Path(__file__).parent / "estatico"
+# Algumas imagens Linux enxutas não conhecem o tipo da fonte .woff2.
+mimetypes.add_type("font/woff2", ".woff2")
+
+# A página só carrega arquivos do próprio servidor: nada de terceiros, nem fonte.
+CABECALHOS_DA_PAGINA = {
+    "Content-Security-Policy": (
+        "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; "
+        "font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; "
+        "frame-ancestors 'none'"
+    ),
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+}
 
 DESCRICAO = """
 Recebe o texto de um chamado de atendimento, esconde os dados pessoais (LGPD),
@@ -70,9 +92,66 @@ rotas_abertas = APIRouter()
 rotas_protegidas = APIRouter(dependencies=[Depends(verificar_chave)])
 
 
+@lru_cache(maxsize=1)
+def _modelo_da_pagina() -> str:
+    return (PASTA_PAGINAS / "demo.html").read_text(encoding="utf-8")
+
+
+def montar_pagina(url_publica: str) -> str:
+    """Página de demonstração. Com o endereço público, inclui a prévia para redes sociais."""
+    meta = ""
+    url = html.escape(url_publica.strip().rstrip("/"), quote=True)
+    if url.startswith("https://") or url.startswith("http://"):
+        meta = f'<meta property="og:url" content="{url}/">'
+        if (PASTA_ESTATICA / "previa.png").exists():
+            meta += (
+                f'\n<meta property="og:image" content="{url}/estatico/previa.png">'
+                '\n<meta name="twitter:card" content="summary_large_image">'
+            )
+    return _modelo_da_pagina().replace("<!--META_PUBLICA-->", meta)
+
+
 @rotas_abertas.get("/", include_in_schema=False)
-def inicio() -> RedirectResponse:
-    return RedirectResponse(url="/docs")
+def inicio(request: Request) -> Response:
+    config = request.app.state.config
+    if not config.demo_ativa:
+        return RedirectResponse(url="/docs")
+    return HTMLResponse(montar_pagina(config.url_publica), headers=CABECALHOS_DA_PAGINA)
+
+
+@rotas_abertas.post(
+    "/demo/triagem",
+    response_model=TriagemDemo,
+    summary="Triagem de demonstração: aberta, não grava nada e tem limite de uso",
+)
+def triagem_demo(entrada: ChamadoDemo, request: Request, servico: Servico) -> TriagemDemo:
+    if not request.app.state.config.demo_ativa:
+        raise HTTPException(status_code=404, detail="A demonstração está desligada.")
+    pessoa = request.client.host if request.client else "desconhecido"
+    bloqueio = request.app.state.limite_demo.verificar(pessoa)
+    if bloqueio:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=bloqueio)
+    resultado = servico.triar(entrada.texto, entrada.canal)
+    triagem = resultado.triagem
+    return TriagemDemo(
+        texto_mascarado=resultado.texto_mascarado,
+        dados_pessoais_encontrados=resultado.dados_pessoais_encontrados,
+        categoria=triagem.categoria,
+        prioridade=triagem.prioridade,
+        sentimento=triagem.sentimento,
+        resumo=triagem.resumo,
+        numero_pedido=triagem.numero_pedido,
+        resposta_sugerida=triagem.resposta_sugerida,
+        confianca=triagem.confianca,
+        justificativa=triagem.justificativa,
+        fila=resultado.fila,
+        origem=resultado.origem,
+        revisao_humana=resultado.revisao_humana,
+        motivos_revisao=resultado.motivos_revisao,
+        modelo=resultado.modelo,
+        custo_usd=resultado.custo_usd,
+        tempo_ms=resultado.tempo_ms,
+    )
 
 
 @rotas_abertas.get("/saude", summary="Diz se a API está no ar e se a IA está configurada")
@@ -139,6 +218,7 @@ def criar_app(
         app.state.config = cfg
         app.state.servico = servico or criar_servico(cfg)
         app.state.fabrica_sessao = sessionmaker(mot, expire_on_commit=False)
+        app.state.limite_demo = LimiteDeUso(cfg.demo_limite_por_hora, cfg.demo_limite_por_dia)
         if not app.state.servico.ia_configurada:
             log.warning("ANTHROPIC_API_KEY vazia: os chamados serão classificados só por regras.")
         if not (cfg.chave_api_app and cfg.chave_api_app.get_secret_value()):
@@ -154,6 +234,7 @@ def criar_app(
         lifespan=ciclo_de_vida,
     )
     app.add_exception_handler(RequestValidationError, erro_de_validacao)
+    app.mount("/estatico", StaticFiles(directory=PASTA_ESTATICA), name="estatico")
     app.include_router(rotas_abertas)
     app.include_router(rotas_protegidas)
     return app

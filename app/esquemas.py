@@ -158,6 +158,43 @@ class ChamadoSaida(BaseModel):
         return valor.astimezone(UTC)
 
 
+TAMANHO_MAXIMO_DEMO = 1000
+
+TextoDemo = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=TAMANHO_MAXIMO_DEMO),
+]
+
+
+class ChamadoDemo(BaseModel):
+    """Chamado enviado pela página de demonstração (texto mais curto)."""
+
+    texto: TextoDemo
+    canal: Canal = Canal.OUTRO
+
+
+class TriagemDemo(BaseModel):
+    """Resultado mostrado na página de demonstração. Nada disso é gravado."""
+
+    texto_mascarado: str
+    dados_pessoais_encontrados: dict[str, int]
+    categoria: Categoria
+    prioridade: Prioridade
+    sentimento: Sentimento
+    resumo: str
+    numero_pedido: str | None
+    resposta_sugerida: str
+    confianca: float | None
+    justificativa: str
+    fila: str
+    origem: Origem
+    revisao_humana: bool
+    motivos_revisao: list[str]
+    modelo: str | None
+    custo_usd: float
+    tempo_ms: int
+
+
 class Metricas(BaseModel):
     total_chamados: int
     por_categoria: dict[str, int]

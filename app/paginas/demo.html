@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triagem de chamados com IA</title>
+<meta name="description" content="Cole a mensagem de um cliente. A API esconde os dados pessoais, classifica com IA e diz para qual fila o chamado vai.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Triagem de chamados com IA">
+<meta property="og:description" content="Cole a mensagem de um cliente e veja a IA esconder os dados pessoais, classificar e escolher a fila.">
+<!--META_PUBLICA-->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231D2B36'/%3E%3Crect x='6' y='7' width='20' height='6' rx='1' fill='%23C62839'/%3E%3Crect x='6' y='17' width='14' height='3' rx='1' fill='%23F3F6F8'/%3E%3Crect x='6' y='23' width='9' height='3' rx='1' fill='%23F3F6F8'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/estatico/demo.css">
+<script src="/estatico/demo.js" defer></script>
+</head>
+<body>
+<header class="topo">
+  <h1>Triagem de chamados com IA</h1>
+  <p class="lead">Cole a mensagem de um cliente. A API esconde os dados pessoais, classifica com IA e diz para qual fila o chamado vai.</p>
+  <p class="links">
+    <a href="https://github.com/LuisGabriel102/triagem-chamados-ia">Ver o código no GitHub</a>
+    <a href="/docs">Documentação da API</a>
+  </p>
+</header>
+
+<main class="grade">
+  <section class="entrada" aria-labelledby="titulo-chamado">
+    <h2 id="titulo-chamado">Chamado</h2>
+    <fieldset class="exemplos">
+      <legend>Experimente um exemplo</legend>
+      <div class="lista-exemplos" id="exemplos"></div>
+    </fieldset>
+    <form id="formulario" novalidate>
+      <label for="canal">Canal</label>
+      <select id="canal" name="canal">
+        <option value="email">E-mail</option>
+        <option value="chat">Chat</option>
+        <option value="whatsapp">WhatsApp</option>
+        <option value="formulario">Formulário</option>
+      </select>
+      <label for="texto">Mensagem do cliente</label>
+      <textarea id="texto" name="texto" rows="7" maxlength="1000" placeholder="Ex.: Fui cobrado duas vezes no cartão e quero o estorno."></textarea>
+      <div class="acoes">
+        <span id="contador" class="contador">0 de 1.000 caracteres</span>
+        <button type="submit" id="botao">Fazer triagem</button>
+      </div>
+      <p id="erro" class="erro" role="alert" hidden></p>
+    </form>
+  </section>
+
+  <section class="saida" aria-labelledby="titulo-triagem">
+    <h2 id="titulo-triagem">Triagem</h2>
+    <div id="resultado" data-estado="vazio" aria-live="polite">
+      <p class="vazio">O resultado aparece aqui. Escreva uma mensagem ou escolha um exemplo.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="pe">
+  <p>Demonstração com limite de uso. Use só dados fictícios: nada do que você digita é gravado.</p>
+  <p>Feito por <a href="https://www.linkedin.com/in/luis-gabriel-albrecht">Luis Gabriel Albrecht</a>.</p>
+</footer>
+
+<template id="modelo-ficha">
+  <article class="ficha">
+    <div class="faixa">
+      <p class="faixa-prioridade"></p>
+      <p class="faixa-fila"><span class="faixa-rotulo">Vai para</span> <strong class="fila"></strong></p>
+    </div>
+    <div class="ficha-corpo">
+      <p class="revisao"></p>
+      <ul class="motivos"></ul>
+      <dl class="dados">
+        <div><dt>Categoria</dt><dd class="categoria"></dd></div>
+        <div><dt>Sentimento</dt><dd class="sentimento"></dd></div>
+        <div><dt>Confiança</dt><dd class="confianca"></dd></div>
+        <div><dt>Pedido</dt><dd class="pedido"></dd></div>
+      </dl>
+    </div>
+    <div class="picote" aria-hidden="true"></div>
+    <div class="ficha-corpo">
+      <h3>O que a IA leu</h3>
+      <p class="texto-lido"></p>
+      <p class="escondidos"></p>
+      <h3>Resumo</h3>
+      <p class="resumo"></p>
+      <h3>Resposta sugerida ao atendente</h3>
+      <blockquote class="resposta"></blockquote>
+      <h3>Por que essa classificação</h3>
+      <p class="justificativa"></p>
+    </div>
+    <dl class="ficha-base">
+      <div><dt>Quem classificou</dt><dd class="origem"></dd></div>
+      <div><dt>Custo</dt><dd class="custo"></dd></div>
+      <div><dt>Tempo</dt><dd class="tempo"></dd></div>
+    </dl>
+  </article>
+</template>
+</body>
+</html>

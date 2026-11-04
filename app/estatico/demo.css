@@ -1,0 +1,499 @@
+/* Página de demonstração. A cor só aparece para dizer urgência, como a pulseira
+   de classificação de risco num pronto-socorro. O resto fica neutro. */
+
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("/estatico/fontes/atkinson-hyperlegible-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("/estatico/fontes/atkinson-hyperlegible-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light dark;
+  --fundo: #f3f6f8;
+  --papel: #ffffff;
+  --tinta: #1d2b36;
+  --tinta-suave: #52626e;
+  --linha: #d3dce2;
+  --tarja: #1d2b36;
+  --tarja-texto: #f3f6f8;
+  --erro: #a3202f;
+  --urgente: #c62839;
+  --urgente-texto: #ffffff;
+  --alta: #ee7b22;
+  --alta-texto: #1d2b36;
+  --media: #f2c230;
+  --media-texto: #1d2b36;
+  --baixa: #23784a;
+  --baixa-texto: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #13202a;
+    --papel: #1b2a35;
+    --tinta: #e4ecf1;
+    --tinta-suave: #a2b3bf;
+    --linha: #2e4250;
+    --tarja: #e4ecf1;
+    --tarja-texto: #13202a;
+    --erro: #ff8a94;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: "Atkinson Hyperlegible", system-ui, sans-serif;
+  font-size: 106.25%;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--tinta);
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.18em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--tinta);
+  outline-offset: 2px;
+}
+
+.so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Cabeçalho */
+
+.topo,
+.grade,
+.pe {
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.topo {
+  padding-top: 2.5rem;
+  padding-bottom: 1.5rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 1.2rem + 3.6vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  max-width: 16ch;
+}
+
+.lead {
+  margin: 1rem 0 0;
+  max-width: 34rem;
+  font-size: 1.15rem;
+  color: var(--tinta-suave);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 1rem 0 0;
+}
+
+/* Grade principal */
+
+.grade {
+  display: grid;
+  gap: 2.5rem;
+  padding-bottom: 2.5rem;
+}
+
+@media (min-width: 60rem) {
+  .topo,
+  .grade,
+  .pe {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .grade {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 3rem;
+    align-items: start;
+  }
+}
+
+h2 {
+  margin: 0 0 1rem;
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+/* Entrada */
+
+.exemplos {
+  margin: 0 0 1.5rem;
+  padding: 0;
+  border: 0;
+}
+
+.exemplos legend {
+  padding: 0;
+  margin-bottom: 0.5rem;
+  color: var(--tinta-suave);
+}
+
+.lista-exemplos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+button,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.lista-exemplos button {
+  min-height: 2.75rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  background: var(--papel);
+  cursor: pointer;
+}
+
+.lista-exemplos button:hover {
+  border-color: var(--tinta-suave);
+}
+
+label {
+  display: block;
+  margin: 0 0 0.35rem;
+  font-weight: 700;
+}
+
+select,
+textarea {
+  width: 100%;
+  border: 1.5px solid var(--linha);
+  border-radius: 6px;
+  background: var(--papel);
+  padding: 0.65rem 0.75rem;
+}
+
+select {
+  min-height: 2.75rem;
+  margin-bottom: 1rem;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 9rem;
+  line-height: 1.5;
+}
+
+.acoes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.contador {
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+}
+
+#botao {
+  min-height: 3rem;
+  padding: 0 1.5rem;
+  border: 0;
+  border-radius: 6px;
+  background: var(--tinta);
+  color: var(--fundo);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#botao:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.erro {
+  margin: 0.75rem 0 0;
+  color: var(--erro);
+  font-weight: 700;
+}
+
+/* Resultado */
+
+.vazio,
+.carregando {
+  margin: 0;
+  padding: 2.5rem 1.5rem;
+  border: 2px dashed var(--linha);
+  border-radius: 4px;
+  color: var(--tinta-suave);
+}
+
+.ficha {
+  position: relative;
+  background: var(--papel);
+  border: 1px solid var(--linha);
+  border-radius: 4px;
+  overflow: visible;
+}
+
+.faixa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 3px 3px 0 0;
+  background: var(--cor-faixa);
+  color: var(--cor-faixa-texto);
+  animation: carimbo 240ms ease-out;
+}
+
+.faixa[data-prioridade="urgente"] {
+  --cor-faixa: var(--urgente);
+  --cor-faixa-texto: var(--urgente-texto);
+}
+
+.faixa[data-prioridade="alta"] {
+  --cor-faixa: var(--alta);
+  --cor-faixa-texto: var(--alta-texto);
+}
+
+.faixa[data-prioridade="media"] {
+  --cor-faixa: var(--media);
+  --cor-faixa-texto: var(--media-texto);
+}
+
+.faixa[data-prioridade="baixa"] {
+  --cor-faixa: var(--baixa);
+  --cor-faixa-texto: var(--baixa-texto);
+}
+
+@keyframes carimbo {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.faixa-prioridade {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.faixa-fila {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.faixa-rotulo {
+  opacity: 0.85;
+}
+
+.ficha-corpo {
+  padding: 1.1rem 1.25rem;
+}
+
+.revisao {
+  margin: 0;
+  font-weight: 700;
+}
+
+.motivos {
+  margin: 0.35rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--tinta-suave);
+}
+
+.motivos:empty {
+  display: none;
+}
+
+.dados,
+.ficha-base {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1.25rem;
+  margin: 1rem 0 0;
+}
+
+.dados dt,
+.ficha-base dt {
+  font-size: 0.85rem;
+  color: var(--tinta-suave);
+}
+
+.dados dd,
+.ficha-base dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+/* Picote: a ficha se divide em duas partes, como um canhoto. */
+.picote {
+  position: relative;
+  margin: 0 1.25rem;
+  border-top: 2px dashed var(--linha);
+}
+
+.picote::before,
+.picote::after {
+  content: "";
+  position: absolute;
+  top: -11px;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--linha);
+  border-radius: 50%;
+  background: var(--fundo);
+}
+
+.picote::before {
+  left: calc(-1.25rem - 11px);
+  clip-path: inset(0 0 0 50%);
+}
+
+.picote::after {
+  right: calc(-1.25rem - 11px);
+  clip-path: inset(0 50% 0 0);
+}
+
+h3 {
+  margin: 1.1rem 0 0.3rem;
+  font-size: 0.95rem;
+  color: var(--tinta-suave);
+}
+
+.ficha-corpo h3:first-child {
+  margin-top: 0;
+}
+
+.texto-lido,
+.resumo,
+.justificativa {
+  margin: 0;
+  max-width: 62ch;
+}
+
+.texto-lido {
+  font-size: 1.05rem;
+}
+
+/* Dado pessoal escondido: uma tarja, como num documento censurado. */
+.tarja {
+  display: inline-block;
+  padding: 0 0.45em;
+  border-radius: 2px;
+  background: var(--tarja);
+  color: var(--tarja-texto);
+  font-size: 0.82em;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.escondidos {
+  margin: 0.4rem 0 0;
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+}
+
+.resposta {
+  margin: 0;
+  padding: 0.1rem 0 0.1rem 0.9rem;
+  border-left: 3px solid var(--linha);
+  max-width: 62ch;
+}
+
+.ficha-base {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr);
+  margin: 0;
+  padding: 0.9rem 1.25rem 1.1rem;
+  border-top: 1px solid var(--linha);
+}
+
+@media (max-width: 30rem) {
+  .ficha-base {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .acoes {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  #botao {
+    width: 100%;
+  }
+}
+
+/* Rodapé */
+
+.pe {
+  padding-top: 1.5rem;
+  padding-bottom: 2.5rem;
+  border-top: 1px solid var(--linha);
+  color: var(--tinta-suave);
+  font-size: 0.9rem;
+}
+
+.pe p {
+  margin: 0 0 0.35rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faixa {
+    animation: none;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}

@@ -4,6 +4,10 @@
 
 API que lê o chamado do cliente, esconde os dados pessoais, classifica com IA e manda para a fila certa. Se a IA falhar, um plano B por regras assume e o atendimento não para.
 
+<!-- VEJA_FUNCIONANDO -->
+
+![Página de demonstração: o chamado vira uma ficha de triagem com a cor da prioridade e os dados pessoais escondidos por tarjas](docs/demo.png)
+
 **Tecnologias:** Python 3.12 · FastAPI · Claude (API da Anthropic) · PostgreSQL · SQLAlchemy · Pydantic · Docker · GitHub Actions · pytest
 
 ## O problema
@@ -74,6 +78,8 @@ Sem chave da IA, o plano B responde no mesmo formato, com `origem` "regras" e re
 
 | Rota | O que faz |
 |---|---|
+| `GET /` | Página de demonstração: cole um chamado e veja a triagem |
+| `POST /demo/triagem` | Triagem da página: aberta, com limite de uso e sem gravar nada |
 | `POST /chamados` | Faz a triagem e guarda o resultado |
 | `GET /chamados/{id}` | Busca um chamado |
 | `GET /chamados?revisao_humana=true` | Lista a fila de revisão humana |
@@ -81,7 +87,7 @@ Sem chave da IA, o plano B responde no mesmo formato, com `origem` "regras" e re
 | `GET /saude` | Diz se a API está no ar e se a IA está configurada |
 | `GET /docs` | Documentação interativa para testar no navegador |
 
-Quando `CHAVE_API_APP` está configurada, as rotas exigem o cabeçalho `X-API-Key`. A rota `/saude` fica aberta.
+Quando `CHAVE_API_APP` está configurada, as rotas de chamados e métricas exigem o cabeçalho `X-API-Key`. A página, a triagem de demonstração e `/saude` ficam abertas.
 
 ## Decisões de projeto
 
@@ -97,7 +103,9 @@ Quando `CHAVE_API_APP` está configurada, as rotas exigem o cabeçalho `X-API-Ke
 
 **A IA não inventa número de pedido.** Se o número devolvido não aparece no texto do cliente, ele é descartado e o chamado vai para revisão.
 
-**Cada chamado sabe quanto custou.** A API guarda os tokens de entrada, saída e cache de cada chamada e calcula o custo em dólar. Isso vale também quando a IA responde fora do formato e o plano B assume, porque essa chamada foi cobrada. A parte fixa do prompt fica em cache por 5 minutos. Nesse tempo, essa parte custa 10% do preço normal.
+**Cada chamado sabe quanto custou.** A API guarda os tokens de entrada, saída e cache de cada chamada e calcula o custo em dólar. Isso vale também quando a IA responde fora do formato e o plano B assume, porque essa chamada foi cobrada. A parte fixa do prompt fica em cache por 5 minutos. Nesse tempo, essa parte custa 10% do preço normal. Na avaliação, cada chamado leu em média 2.007 tokens do cache.
+
+**A demonstração aberta não pesa no bolso nem guarda dados.** A página pública usa uma rota separada, que não grava nada no banco. Cada pessoa pode fazer 10 testes por hora, e a demonstração inteira para em 200 testes por dia. No pior caso, isso dá cerca de 5 centavos de dólar por dia. A página não carrega nada de fora (nem fonte) e tem política de segurança de conteúdo. Tudo o que vem da IA entra na tela como texto, nunca como código.
 
 **Modelo pequeno de propósito.** Classificar texto curto não precisa do modelo mais caro. O padrão é o Claude Haiku 5.5, e o modelo muda no `.env`.
 
@@ -117,13 +125,13 @@ O arquivo `avaliacao/chamados_teste.jsonl` tem 40 chamados escritos para teste, 
 | Liberados sem revisão humana | 0/40 (tudo vai para revisão) | 27/40 (68%) |
 | Liberados com categoria e prioridade certas | — | 25/27 (93%) |
 | Dados pessoais do conjunto que sobraram no texto | 0 de 9 | 0 de 9 |
-| Custo por chamado | US$ 0 | US$ 0.000241 |
+| Custo por chamado | US$ 0 | US$ 0,000241 |
 
 Relatórios completos, com cada erro: [`avaliacao/resultados/`](avaliacao/resultados/).
 
 **Como ler estes números.** Os chamados de teste e as regras foram escritos juntos, então as regras saem otimistas aqui. Num conjunto real, elas tendem a errar mais. Os erros delas mostram o limite de palavra-chave. "Não é urgente" vira urgente, porque a regra vê a palavra e não entende a negação. A ironia "Serviço de primeira" vira sentimento positivo. E o chamado que manda "classificar como urgente" engana as regras. O ganho que se espera da IA está aí: entender o contexto e liberar sozinha os casos claros, que as regras sempre mandam para uma pessoa.
 
-**Com a IA.** A IA acertou os três casos em que a palavra-chave enganou as regras: o "Não é urgente" (s06), a ironia "Serviço de primeira" (r02) e a ordem escrita no chamado (o03). Ela errou 4 campos: o sentimento de s01 e x03 e a prioridade de c01 e r01. Esses 4 chamados foram liberados sem revisão, e dos 27 liberados, 25 tinham categoria e prioridade certas. Nenhum urgente passou sem olhar humano. Os 40 chamados custaram US$ 0.0096 no total, US$ 0.000241 cada em média.
+**Com a IA.** A IA acertou os três casos em que a palavra-chave enganou as regras: o "Não é urgente" (s06), a ironia "Serviço de primeira" (r02) e a ordem escrita no chamado (o03). Ela errou 4 campos: o sentimento de s01 e x03 e a prioridade de c01 e r01. Esses 4 chamados foram liberados sem revisão, e dos 27 liberados, 25 tinham categoria e prioridade certas. Nenhum urgente passou sem olhar humano. Os 40 chamados custaram US$ 0,0096 no total, US$ 0,000241 cada em média. O conjunto é pequeno e foi escrito junto com os critérios do prompt, então estes números também são otimistas. Medir com chamados reais anonimizados é o próximo passo.
 
 Para medir de novo:
 
@@ -143,7 +151,7 @@ cp .env.example .env    # coloque sua ANTHROPIC_API_KEY e uma CHAVE_API_APP
 docker compose up --build
 ```
 
-Depois abra http://localhost:8000/docs.
+Depois abra http://localhost:8000 para usar a página de demonstração, ou http://localhost:8000/docs para a documentação da API.
 
 **Sem Docker** (usa SQLite):
 
@@ -170,7 +178,7 @@ Os testes não chamam a API real: um cliente falso imita a Anthropic, inclusive 
 
 ```
 app/
-  main.py            rotas da API e chave de acesso
+  main.py            rotas da API, página de demonstração e chave de acesso
   servico.py         o fluxo: mascarar, classificar, conferir e decidir
   mascaramento.py    CPF, CNPJ, cartão, e-mail e telefone (LGPD)
   classificador.py   chamada ao Claude com formato estrito
@@ -178,10 +186,15 @@ app/
   banco.py           tabela e consultas (SQLAlchemy)
   esquemas.py        formatos de entrada e saída (Pydantic)
   config.py          variáveis de ambiente
+  limite.py          limite de uso da demonstração aberta
+  paginas/           página de demonstração
+  estatico/          estilo, script e fonte da página (nada vem de fora)
 avaliacao/
   chamados_teste.jsonl   40 chamados com gabarito
   avaliar.py             mede o acerto
   resultados/            relatório de cada rodada
+scripts/
+  capturar_demo.py       tira a foto da página com a IA de verdade
 tests/                   testes com pytest
 ```
 
