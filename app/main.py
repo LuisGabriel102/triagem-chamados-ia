@@ -22,7 +22,7 @@ from app import banco
 from app.config import Configuracao
 from app.esquemas import ChamadoDemo, ChamadoEntrada, ChamadoSaida, Metricas, TriagemDemo
 from app.limite import LimiteDeUso
-from app.servico import ServicoTriagem, criar_servico
+from app.servico import ServicoTriagem, criar_servico, para_demo
 
 log = logging.getLogger(__name__)
 
@@ -131,27 +131,7 @@ def triagem_demo(entrada: ChamadoDemo, request: Request, servico: Servico) -> Tr
     bloqueio = request.app.state.limite_demo.verificar(pessoa)
     if bloqueio:
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=bloqueio)
-    resultado = servico.triar(entrada.texto, entrada.canal)
-    triagem = resultado.triagem
-    return TriagemDemo(
-        texto_mascarado=resultado.texto_mascarado,
-        dados_pessoais_encontrados=resultado.dados_pessoais_encontrados,
-        categoria=triagem.categoria,
-        prioridade=triagem.prioridade,
-        sentimento=triagem.sentimento,
-        resumo=triagem.resumo,
-        numero_pedido=triagem.numero_pedido,
-        resposta_sugerida=triagem.resposta_sugerida,
-        confianca=triagem.confianca,
-        justificativa=triagem.justificativa,
-        fila=resultado.fila,
-        origem=resultado.origem,
-        revisao_humana=resultado.revisao_humana,
-        motivos_revisao=resultado.motivos_revisao,
-        modelo=resultado.modelo,
-        custo_usd=resultado.custo_usd,
-        tempo_ms=resultado.tempo_ms,
-    )
+    return para_demo(servico.triar(entrada.texto, entrada.canal))
 
 
 @rotas_abertas.get("/saude", summary="Diz se a API está no ar e se a IA está configurada")

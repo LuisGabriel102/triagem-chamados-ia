@@ -1,6 +1,6 @@
-"""Tira a foto da página de demonstração com a IA de verdade.
+"""Tira a foto da página de demonstração, a partir das respostas reais gravadas.
 
-Precisa da ANTHROPIC_API_KEY no .env. Faz 1 chamada à IA (menos de 1 centavo).
+Não chama a IA: usa docs/exemplos_gravados.json (rode antes scripts/gravar_exemplos.py).
 
     pip install -e ".[captura]"
     python -m playwright install chromium
@@ -11,71 +11,62 @@ Gera:
     app/estatico/previa.png   imagem que aparece quando o link é colado no LinkedIn
 """
 
+import functools
 import json
-import socket
-import subprocess
 import sys
-import time
-import urllib.request
+import tempfile
+import threading
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
-
 RAIZ = Path(__file__).resolve().parent.parent
-EXEMPLO = "Cobrança em dobro"
+sys.path.insert(0, str(RAIZ))
+
+from playwright.sync_api import sync_playwright  # noqa: E402
+
+from app.site_estatico import montar_site  # noqa: E402
+
+GRAVACAO = RAIZ / "docs" / "exemplos_gravados.json"
 
 
-def porta_livre() -> int:
-    with socket.socket() as conexao:
-        conexao.bind(("127.0.0.1", 0))
-        return conexao.getsockname()[1]
-
-
-def esperar_api(url: str, segundos: float = 30) -> dict:
-    fim = time.monotonic() + segundos
-    while True:
-        try:
-            with urllib.request.urlopen(f"{url}/saude", timeout=2) as resposta:
-                return json.load(resposta)
-        except OSError:
-            if time.monotonic() > fim:
-                raise
-            time.sleep(0.3)
+class SemRegistro(SimpleHTTPRequestHandler):
+    def log_message(self, *args: object) -> None:  # silencia o log de cada arquivo
+        pass
 
 
 def main() -> int:
-    porta = porta_livre()
-    url = f"http://127.0.0.1:{porta}"
-    servidor = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "app.main:app", "--port", str(porta)], cwd=RAIZ
-    )
-    try:
-        if not esperar_api(url).get("ia_configurada"):
-            print("A IA não está configurada. Coloque a ANTHROPIC_API_KEY no .env e rode de novo.")
-            return 1
-        with sync_playwright() as playwright:
-            navegador = playwright.chromium.launch()
-            pagina = navegador.new_page(
-                viewport={"width": 1280, "height": 900}, device_scale_factor=2, color_scheme="light"
-            )
-            pagina.goto(url)
-            pagina.get_by_role("button", name=EXEMPLO).click()
-            pagina.wait_for_selector("#resultado[data-estado='pronto']", timeout=60_000)
-            if pagina.locator(".ficha[data-origem='ia']").count() == 0:
-                print("A IA não respondeu e o plano B assumiu. Essa foto não serve. Rode de novo.")
-                return 1
-            (RAIZ / "docs").mkdir(exist_ok=True)
-            pagina.screenshot(path=str(RAIZ / "docs" / "demo.png"), full_page=True)
-            # Prévia de link: formato 1,91 por 1, o que o LinkedIn usa.
-            pagina.set_viewport_size({"width": 1200, "height": 627})
-            pagina.evaluate("window.scrollTo(0, 0)")
-            pagina.screenshot(path=str(RAIZ / "app" / "estatico" / "previa.png"))
-            navegador.close()
-        print("Pronto: docs/demo.png e app/estatico/previa.png")
-        return 0
-    finally:
-        servidor.terminate()
-        servidor.wait(timeout=10)
+    if not GRAVACAO.exists():
+        print("Falta docs/exemplos_gravados.json. Rode antes: python scripts/gravar_exemplos.py")
+        return 1
+    with tempfile.TemporaryDirectory() as pasta:
+        montar_site(Path(pasta), json.loads(GRAVACAO.read_text("utf-8")))
+        manipulador = functools.partial(SemRegistro, directory=pasta)
+        servidor = ThreadingHTTPServer(("127.0.0.1", 0), manipulador)
+        threading.Thread(target=servidor.serve_forever, daemon=True).start()
+        url = f"http://127.0.0.1:{servidor.server_address[1]}/"
+        try:
+            with sync_playwright() as playwright:
+                navegador = playwright.chromium.launch()
+                pagina = navegador.new_page(
+                    viewport={"width": 1280, "height": 900},
+                    device_scale_factor=2,
+                    color_scheme="light",
+                )
+                pagina.goto(url)
+                # A página abre já mostrando o primeiro exemplo gravado.
+                pagina.wait_for_selector("#resultado[data-estado='pronto']")
+                pagina.wait_for_timeout(500)
+                (RAIZ / "docs").mkdir(exist_ok=True)
+                pagina.screenshot(path=str(RAIZ / "docs" / "demo.png"), full_page=True)
+                # Prévia de link: formato 1,91 por 1, o que o LinkedIn usa.
+                pagina.set_viewport_size({"width": 1200, "height": 627})
+                pagina.evaluate("window.scrollTo(0, 0)")
+                pagina.screenshot(path=str(RAIZ / "app" / "estatico" / "previa.png"))
+                navegador.close()
+        finally:
+            servidor.shutdown()
+    print("Pronto: docs/demo.png e app/estatico/previa.png")
+    return 0
 
 
 if __name__ == "__main__":

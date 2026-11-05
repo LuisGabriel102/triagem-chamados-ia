@@ -7,7 +7,15 @@ from dataclasses import dataclass
 
 from app.classificador import ClassificadorClaude, ErroClassificador, Uso, criar_classificador
 from app.config import Configuracao
-from app.esquemas import FILA_POR_CATEGORIA, Canal, Categoria, Origem, Prioridade, Triagem
+from app.esquemas import (
+    FILA_POR_CATEGORIA,
+    Canal,
+    Categoria,
+    Origem,
+    Prioridade,
+    Triagem,
+    TriagemDemo,
+)
 from app.mascaramento import mascarar
 from app.regras import classificar_por_regras
 
@@ -33,6 +41,30 @@ class ResultadoTriagem:
     uso: Uso
     custo_usd: float
     tempo_ms: int
+
+
+def para_demo(resultado: ResultadoTriagem) -> TriagemDemo:
+    """O que a página de demonstração mostra. Mesmo formato na API e no site gravado."""
+    triagem = resultado.triagem
+    return TriagemDemo(
+        texto_mascarado=resultado.texto_mascarado,
+        dados_pessoais_encontrados=resultado.dados_pessoais_encontrados,
+        categoria=triagem.categoria,
+        prioridade=triagem.prioridade,
+        sentimento=triagem.sentimento,
+        resumo=triagem.resumo,
+        numero_pedido=triagem.numero_pedido,
+        resposta_sugerida=triagem.resposta_sugerida,
+        confianca=triagem.confianca,
+        justificativa=triagem.justificativa,
+        fila=resultado.fila,
+        origem=resultado.origem,
+        revisao_humana=resultado.revisao_humana,
+        motivos_revisao=resultado.motivos_revisao,
+        modelo=resultado.modelo,
+        custo_usd=resultado.custo_usd,
+        tempo_ms=resultado.tempo_ms,
+    )
 
 
 def calcular_custo(uso: Uso, preco_entrada: float, preco_saida: float) -> float:

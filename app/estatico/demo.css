@@ -1,9 +1,10 @@
 /* Página de demonstração. A cor só aparece para dizer urgência, como a pulseira
    de classificação de risco num pronto-socorro. O resto fica neutro. */
 
+/* Caminhos relativos a este arquivo: funcionam na API e no site estático. */
 @font-face {
   font-family: "Atkinson Hyperlegible";
-  src: url("/estatico/fontes/atkinson-hyperlegible-latin-400-normal.woff2") format("woff2");
+  src: url("fontes/atkinson-hyperlegible-latin-400-normal.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -11,7 +12,7 @@
 
 @font-face {
   font-family: "Atkinson Hyperlegible";
-  src: url("/estatico/fontes/atkinson-hyperlegible-latin-700-normal.woff2") format("woff2");
+  src: url("fontes/atkinson-hyperlegible-latin-700-normal.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -77,6 +78,15 @@ a {
 :focus-visible {
   outline: 3px solid var(--tinta);
   outline-offset: 2px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+textarea[readonly] {
+  background: var(--fundo);
+  cursor: default;
 }
 
 .so-leitor {

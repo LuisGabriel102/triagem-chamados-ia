@@ -4,7 +4,7 @@
 
 API que lê o chamado do cliente, esconde os dados pessoais, classifica com IA e manda para a fila certa. Se a IA falhar, um plano B por regras assume e o atendimento não para.
 
-<!-- VEJA_FUNCIONANDO -->
+**Veja funcionando:** [luisgabriel102.github.io/triagem-chamados-ia](https://luisgabriel102.github.io/triagem-chamados-ia/), com respostas reais da IA gravadas.
 
 ![Página de demonstração: o chamado vira uma ficha de triagem com a cor da prioridade e os dados pessoais escondidos por tarjas](docs/demo.png)
 
@@ -105,7 +105,7 @@ Quando `CHAVE_API_APP` está configurada, as rotas de chamados e métricas exige
 
 **Cada chamado sabe quanto custou.** A API guarda os tokens de entrada, saída e cache de cada chamada e calcula o custo em dólar. Isso vale também quando a IA responde fora do formato e o plano B assume, porque essa chamada foi cobrada. A parte fixa do prompt fica em cache por 5 minutos. Nesse tempo, essa parte custa 10% do preço normal. Na avaliação, cada chamado leu em média 2.007 tokens do cache.
 
-**A demonstração aberta não pesa no bolso nem guarda dados.** A página pública usa uma rota separada, que não grava nada no banco. Cada pessoa pode fazer 10 testes por hora, e a demonstração inteira para em 200 testes por dia. No pior caso, isso dá cerca de 5 centavos de dólar por dia. A página não carrega nada de fora (nem fonte) e tem política de segurança de conteúdo. Tudo o que vem da IA entra na tela como texto, nunca como código.
+**A demonstração custa zero.** No GitHub Pages, a página mostra respostas reais da IA, gravadas uma vez para 6 exemplos, por menos de 1 centavo de dólar. Cada visita custa zero, porque nenhuma chamada à IA acontece e nada é gravado. Quem roda a API num servidor tem a mesma página ao vivo, numa rota aberta que não grava nada, com limite de 10 testes por pessoa por hora e 200 por dia. A página não carrega nada de fora (nem fonte) e tem política de segurança de conteúdo. Tudo o que vem da IA entra na tela como texto, nunca como código.
 
 **Modelo pequeno de propósito.** Classificar texto curto não precisa do modelo mais caro. O padrão é o Claude Haiku 5.5, e o modelo muda no `.env`.
 
@@ -151,7 +151,9 @@ cp .env.example .env    # coloque sua ANTHROPIC_API_KEY e uma CHAVE_API_APP
 docker compose up --build
 ```
 
-Depois abra http://localhost:8000 para usar a página de demonstração, ou http://localhost:8000/docs para a documentação da API.
+Depois abra http://localhost:8000 para usar a página de demonstração ao vivo, ou http://localhost:8000/docs para a documentação da API.
+
+**Atualizar a página do GitHub Pages:** rode `python scripts/gravar_exemplos.py` (com a chave da Anthropic no `.env`) e envie o `docs/exemplos_gravados.json`. O GitHub Actions monta e publica o site sozinho.
 
 **Sem Docker** (usa SQLite):
 
@@ -172,7 +174,7 @@ pytest
 ruff check .
 ```
 
-Os testes não chamam a API real: um cliente falso imita a Anthropic, inclusive quedas e respostas fora do formato. No GitHub Actions, os testes rodam no SQLite e no PostgreSQL 17, e a imagem Docker é montada a cada envio.
+Os testes não chamam a API real: um cliente falso imita a Anthropic, inclusive quedas e respostas fora do formato. No GitHub Actions, os testes rodam no SQLite e no PostgreSQL 17, e a imagem Docker é montada a cada envio. Outro fluxo publica a página no GitHub Pages.
 
 ## Estrutura
 
@@ -187,6 +189,7 @@ app/
   esquemas.py        formatos de entrada e saída (Pydantic)
   config.py          variáveis de ambiente
   limite.py          limite de uso da demonstração aberta
+  site_estatico.py   site do GitHub Pages com as respostas gravadas
   paginas/           página de demonstração
   estatico/          estilo, script e fonte da página (nada vem de fora)
 avaliacao/
@@ -194,7 +197,10 @@ avaliacao/
   avaliar.py             mede o acerto
   resultados/            relatório de cada rodada
 scripts/
-  capturar_demo.py       tira a foto da página com a IA de verdade
+  gravar_exemplos.py     passa os exemplos pela IA uma vez e grava as respostas
+  montar_site.py         monta o site estático a partir da gravação
+  capturar_demo.py       tira a foto da página, sem chamar a IA
+docs/                    gravação dos exemplos e foto da página
 tests/                   testes com pytest
 ```
 

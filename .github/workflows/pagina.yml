@@ -1,0 +1,58 @@
+name: Página no GitHub Pages
+
+# Publica a demonstração com as respostas reais gravadas. Custo zero: nenhuma
+# chamada à IA aqui, só arquivos estáticos.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    outputs:
+      tem_gravacao: ${{ steps.gravacao.outputs.tem }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: gravacao
+        name: Conferir se há respostas gravadas
+        run: |
+          if [ -f docs/exemplos_gravados.json ]; then
+            echo "tem=sim" >> "$GITHUB_OUTPUT"
+          else
+            echo "tem=nao" >> "$GITHUB_OUTPUT"
+            echo "Sem docs/exemplos_gravados.json. Rode scripts/gravar_exemplos.py e envie o arquivo."
+          fi
+
+  publicar:
+    needs: verificar
+    if: needs.verificar.outputs.tem_gravacao == 'sim'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publicacao.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - id: pages
+        uses: actions/configure-pages@v6
+      - name: Montar o site
+        run: |
+          pip install -e .
+          python scripts/montar_site.py _site --url "${{ steps.pages.outputs.base_url }}"
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - id: publicacao
+        uses: actions/deploy-pages@v5
