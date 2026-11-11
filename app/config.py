@@ -1,5 +1,7 @@
 """Configuração lida das variáveis de ambiente ou do arquivo .env."""
 
+from typing import Literal
+
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -7,17 +9,30 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Configuracao(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    # Sem chave da Anthropic, o serviço funciona só com o plano B por regras.
+    # Qual IA classifica: o Claude, da Anthropic (padrão), ou o Gemini, do Google, no Vertex AI.
+    provedor_ia: Literal["anthropic", "gemini"] = "anthropic"
+
+    # Claude. Sem a chave, o serviço funciona só com o plano B por regras.
     anthropic_api_key: SecretStr | None = None
     modelo_llm: str = "claude-haiku-5-5"
+    # Preço do Claude em dólar por milhão de tokens. Confira na página de preços da Anthropic.
+    preco_entrada_usd_mtok: float = Field(default=0.10, ge=0)
+    preco_saida_usd_mtok: float = Field(default=0.50, ge=0)
+
+    # Gemini no Vertex AI. Não usa chave: vale o login do Google Cloud no computador
+    # (gcloud auth application-default login). O preço vem da tabela em app/precos.py.
+    google_cloud_project: str = ""
+    google_cloud_location: str = "global"
+    modelo_gemini: str = "gemini-3.5-flash-lite"
+    # Quanto o Gemini pensa antes de responder. Classificar texto curto pede pouco.
+    # "padrao" deixa o modelo decidir (use se algum modelo recusar o nível).
+    raciocinio_gemini: Literal["padrao", "low", "medium", "high"] = "low"
+
     database_url: str = "sqlite:///./triagem.db"
     # Chave que quem chama a API envia no cabeçalho X-API-Key. Vazia = API aberta (só local).
     chave_api_app: SecretStr | None = None
     # Abaixo deste valor de confiança, o chamado vai para revisão humana.
     limite_confianca: float = Field(default=0.75, ge=0, le=1)
-    # Preço do modelo em dólar por milhão de tokens. Confira na página de preços da Anthropic.
-    preco_entrada_usd_mtok: float = Field(default=0.10, ge=0)
-    preco_saida_usd_mtok: float = Field(default=0.50, ge=0)
     timeout_llm_s: float = Field(default=20.0, gt=0)
     # Página de demonstração aberta ao público: não grava nada e tem limite de uso.
     demo_ativa: bool = True

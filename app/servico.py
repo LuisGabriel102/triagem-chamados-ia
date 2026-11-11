@@ -5,7 +5,7 @@ import re
 import time
 from dataclasses import dataclass
 
-from app.classificador import ClassificadorClaude, ErroClassificador, Uso, criar_classificador
+from app.classificador import Classificador, ErroClassificador, Uso, criar_classificador
 from app.config import Configuracao
 from app.esquemas import (
     FILA_POR_CATEGORIA,
@@ -17,14 +17,14 @@ from app.esquemas import (
     TriagemDemo,
 )
 from app.mascaramento import mascarar
+from app.precos import CACHE_ESCRITA_CLAUDE, CACHE_LEITURA_CLAUDE, precos_do_provedor
 from app.regras import classificar_por_regras
 
 log = logging.getLogger(__name__)
 
-# Escrever no cache (validade de 5 minutos) custa 25% a mais que a entrada normal.
-MULTIPLICADOR_CACHE_ESCRITA = 1.25
-# Ler do cache custa 10% do preço da entrada normal.
-MULTIPLICADOR_CACHE_LEITURA = 0.10
+# Padrão do Claude. O Gemini usa outros valores (app/precos.py).
+MULTIPLICADOR_CACHE_ESCRITA = CACHE_ESCRITA_CLAUDE
+MULTIPLICADOR_CACHE_LEITURA = CACHE_LEITURA_CLAUDE
 
 
 @dataclass(frozen=True)
@@ -67,12 +67,21 @@ def para_demo(resultado: ResultadoTriagem) -> TriagemDemo:
     )
 
 
-def calcular_custo(uso: Uso, preco_entrada: float, preco_saida: float) -> float:
-    """Custo em dólar. Os preços são em dólar por milhão de tokens."""
+def calcular_custo(
+    uso: Uso,
+    preco_entrada: float,
+    preco_saida: float,
+    cache_leitura: float = MULTIPLICADOR_CACHE_LEITURA,
+    cache_escrita: float = MULTIPLICADOR_CACHE_ESCRITA,
+) -> float:
+    """Custo em dólar. Os preços são em dólar por milhão de tokens.
+
+    `cache_leitura` e `cache_escrita` são frações do preço de entrada.
+    """
     total = (
         uso.tokens_entrada * preco_entrada
-        + uso.tokens_cache_escrita * preco_entrada * MULTIPLICADOR_CACHE_ESCRITA
-        + uso.tokens_cache_leitura * preco_entrada * MULTIPLICADOR_CACHE_LEITURA
+        + uso.tokens_cache_escrita * preco_entrada * cache_escrita
+        + uso.tokens_cache_leitura * preco_entrada * cache_leitura
         + uso.tokens_saida * preco_saida
     )
     return round(total / 1_000_000, 8)
@@ -90,15 +99,19 @@ def _pedido_aparece_no_texto(numero: str, texto: str) -> bool:
 class ServicoTriagem:
     def __init__(
         self,
-        classificador: ClassificadorClaude | None = None,
+        classificador: Classificador | None = None,
         limite_confianca: float = 0.75,
         preco_entrada: float = 0.10,
         preco_saida: float = 0.50,
+        cache_leitura: float = MULTIPLICADOR_CACHE_LEITURA,
+        cache_escrita: float = MULTIPLICADOR_CACHE_ESCRITA,
     ) -> None:
         self._classificador = classificador
         self._limite_confianca = limite_confianca
         self._preco_entrada = preco_entrada
         self._preco_saida = preco_saida
+        self._cache_leitura = cache_leitura
+        self._cache_escrita = cache_escrita
 
     @property
     def ia_configurada(self) -> bool:
@@ -137,7 +150,9 @@ class ServicoTriagem:
         motivos += self._motivos_de_revisao(triagem, origem)
 
         tempo_ms = int((time.perf_counter() - inicio) * 1000)
-        custo = calcular_custo(uso, self._preco_entrada, self._preco_saida)
+        custo = calcular_custo(
+            uso, self._preco_entrada, self._preco_saida, self._cache_leitura, self._cache_escrita
+        )
         log.info(
             "chamado triado: categoria=%s prioridade=%s origem=%s revisao=%s tempo_ms=%d "
             "custo_usd=%.6f",
@@ -204,9 +219,18 @@ class ServicoTriagem:
 
 
 def criar_servico(config: Configuracao) -> ServicoTriagem:
+    """Monta o serviço com a IA e o preço do provedor escolhido na configuração."""
+    precos = precos_do_provedor(config)
+    if config.provedor_ia == "gemini" and not precos.conhecido:
+        log.warning(
+            "O modelo %s não está na tabela de preços (app/precos.py): o custo vai sair zero.",
+            config.modelo_gemini,
+        )
     return ServicoTriagem(
         classificador=criar_classificador(config),
         limite_confianca=config.limite_confianca,
-        preco_entrada=config.preco_entrada_usd_mtok,
-        preco_saida=config.preco_saida_usd_mtok,
+        preco_entrada=precos.entrada,
+        preco_saida=precos.saida,
+        cache_leitura=precos.cache_leitura,
+        cache_escrita=precos.cache_escrita,
     )

@@ -8,7 +8,7 @@ API que lê o chamado do cliente, esconde os dados pessoais, classifica com IA e
 
 ![Página de demonstração: o chamado vira uma ficha de triagem com a cor da prioridade e os dados pessoais escondidos por tarjas](docs/demo.png)
 
-**Tecnologias:** Python 3.12 · FastAPI · Claude (API da Anthropic) · PostgreSQL · SQLAlchemy · Pydantic · Docker · GitHub Actions · pytest
+**Tecnologias:** Python 3.12 · FastAPI · Claude (API da Anthropic) · Gemini (Vertex AI, Google Cloud) · PostgreSQL · SQLAlchemy · Pydantic · Docker · GitHub Actions · pytest
 
 ## O problema
 
@@ -27,7 +27,7 @@ Para cada chamado, a API:
 ```mermaid
 flowchart LR
     A["Chamado do cliente"] --> B["Mascaramento LGPD"]
-    B --> C["Claude classifica<br/>em formato estrito"]
+    B --> C["Claude ou Gemini<br/>classifica em formato fixo"]
     C --> D{"A IA<br/>respondeu?"}
     D -- sim --> E["Conferência da resposta"]
     D -- não --> F["Plano B por regras"]
@@ -93,7 +93,9 @@ Quando `CHAVE_API_APP` está configurada, as rotas de chamados e métricas exige
 
 **A IA não recebe CPF, CNPJ, cartão, e-mail nem telefone.** O texto passa pelo mascaramento antes de sair do servidor. Os formatos comuns são sempre escondidos, inclusive o CNPJ com letras, o celular com o 9 separado e o cartão com a validade logo depois. Número sem pontuação passa por uma conferência antes: dígito verificador para CPF e CNPJ, algoritmo de Luhn para cartão e DDD para telefone. Assim um número de protocolo não é apagado por engano. Perto das palavras "CPF", "cartão" ou "telefone", o número é escondido mesmo com dígito errado, porque cliente digita errado. O banco guarda só a versão mascarada, os logs não guardam o texto e o erro 422 não devolve o que foi enviado. Os formatos cobertos estão em `tests/test_mascaramento.py`. **Limite conhecido:** nome, endereço e RG ainda passam. Detectar isso pede outra técnica e está nos próximos passos.
 
-**A IA responde sempre no mesmo formato.** A chamada usa *tool use* em modo estrito, com a ferramenta obrigatória. A resposta vem com os mesmos 8 campos e valores da lista. O Pydantic confere de novo antes de usar.
+**A IA responde sempre no mesmo formato.** No Claude, a chamada usa *tool use* em modo estrito, com a ferramenta obrigatória. No Gemini, a resposta vem em JSON preso a um esquema (saída estruturada), que sai da mesma definição. Nos dois, a resposta tem os mesmos 8 campos e valores da lista, e o Pydantic confere de novo antes de usar.
+
+**Dois provedores, as mesmas regras.** O Claude, da Anthropic (padrão), e o Gemini, no Vertex AI do Google Cloud, recebem o mesmo prompt, palavra por palavra, menos a frase que diz como responder. A resposta dos dois passa pelas mesmas conferências e pelo mesmo plano B. Trocar de provedor é uma linha no `.env`, e a avaliação mede os dois no mesmo gabarito. O Gemini não usa chave de API: vale o login do Google Cloud.
 
 **Se a IA falhar, o atendimento não para.** Queda de rede, limite de uso ou resposta fora do formato acionam o plano B por palavras-chave. O chamado é classificado do mesmo jeito e vai para revisão humana.
 
@@ -107,7 +109,7 @@ Quando `CHAVE_API_APP` está configurada, as rotas de chamados e métricas exige
 
 **A demonstração custa zero.** No GitHub Pages, a página mostra respostas reais da IA, gravadas uma vez para 6 exemplos, por menos de 1 centavo de dólar. Cada visita custa zero, porque nenhuma chamada à IA acontece e nada é gravado. Quem roda a API num servidor tem a mesma página ao vivo, numa rota aberta que não grava nada, com limite de 10 testes por pessoa por hora e 200 por dia. A página não carrega nada de fora (nem fonte) e tem política de segurança de conteúdo. Tudo o que vem da IA entra na tela como texto, nunca como código.
 
-**Modelo pequeno de propósito.** Classificar texto curto não precisa do modelo mais caro. O padrão é o Claude Haiku 5.5, e o modelo muda no `.env`.
+**Modelo pequeno de propósito.** Classificar texto curto não precisa do modelo mais caro. O padrão é o Claude Haiku 5.5; no Gemini, o 3.5 Flash-Lite, com pouco raciocínio. O modelo muda no `.env`. O preço de cada modelo do Gemini fica numa tabela no código (`app/precos.py`), com a fonte e a data, então o custo de cada chamado sai certo sem configurar nada.
 
 ## Avaliação
 
@@ -137,8 +139,16 @@ Para medir de novo:
 
 ```bash
 python -m avaliacao.avaliar --modo regras   # sem IA, roda em qualquer lugar
-python -m avaliacao.avaliar --modo ia       # precisa de ANTHROPIC_API_KEY no .env
+python -m avaliacao.avaliar --modo ia       # Claude: precisa de ANTHROPIC_API_KEY no .env
+
+# Gemini: precisa de GOOGLE_CLOUD_PROJECT no .env e do login do Google Cloud
+python -m avaliacao.avaliar --modo ia --provedor gemini
+python -m avaliacao.avaliar --modo ia --provedor gemini --modelo gemini-3.8-flash
+
+python -m avaliacao.comparar                # junta tudo em resultados/comparacao.md
 ```
+
+Com IA, o primeiro chamado vai sozinho. Se ele falhar (login, projeto, modelo), a avaliação para ali, antes de gastar com os outros 39.
 
 ## Como rodar
 
@@ -165,7 +175,17 @@ cp .env.example .env
 uvicorn app.main:app --reload
 ```
 
-Sem `ANTHROPIC_API_KEY`, a API funciona só com o plano B.
+Sem a credencial da IA escolhida, a API funciona só com o plano B.
+
+**Com o Gemini no Vertex AI.** O projeto do Google Cloud precisa do faturamento ativo. O login fica no seu computador, sem chave em arquivo:
+
+```bash
+gcloud services enable aiplatform.googleapis.com --project SEU_PROJETO
+gcloud auth application-default login
+gcloud auth application-default set-quota-project SEU_PROJETO
+```
+
+No `.env`: `PROVEDOR_IA=gemini` e `GOOGLE_CLOUD_PROJECT=SEU_PROJETO`. Para só avaliar, basta o `GOOGLE_CLOUD_PROJECT` e o `--provedor gemini`.
 
 **Testes:**
 
@@ -174,7 +194,7 @@ pytest
 ruff check .
 ```
 
-Os testes não chamam a API real: um cliente falso imita a Anthropic, inclusive quedas e respostas fora do formato. No GitHub Actions, os testes rodam no SQLite e no PostgreSQL 17, e a imagem Docker é montada a cada envio. Outro fluxo publica a página no GitHub Pages.
+Os testes não chamam a API real: clientes falsos imitam a Anthropic e o Google, inclusive quedas, falta de login e respostas fora do formato. No GitHub Actions, os testes rodam no SQLite e no PostgreSQL 17, e a imagem Docker é montada a cada envio. Outro fluxo publica a página no GitHub Pages.
 
 ## Estrutura
 
@@ -183,7 +203,9 @@ app/
   main.py            rotas da API, página de demonstração e chave de acesso
   servico.py         o fluxo: mascarar, classificar, conferir e decidir
   mascaramento.py    CPF, CNPJ, cartão, e-mail e telefone (LGPD)
-  classificador.py   chamada ao Claude com formato estrito
+  classificador.py   chamada ao Claude com formato estrito, e o prompt dos dois
+  classificador_gemini.py  chamada ao Gemini no Vertex AI com saída estruturada
+  precos.py          preço de cada modelo, para o custo de cada chamado
   regras.py          plano B por palavras-chave
   banco.py           tabela e consultas (SQLAlchemy)
   esquemas.py        formatos de entrada e saída (Pydantic)
@@ -195,6 +217,7 @@ app/
 avaliacao/
   chamados_teste.jsonl   40 chamados com gabarito
   avaliar.py             mede o acerto
+  comparar.py            junta as rodadas com IA numa tabela
   resultados/            relatório de cada rodada
 scripts/
   gravar_exemplos.py     passa os exemplos pela IA uma vez e grava as respostas

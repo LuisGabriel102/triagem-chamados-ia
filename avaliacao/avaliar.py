@@ -2,9 +2,11 @@
 
 Uso:
     python -m avaliacao.avaliar --modo regras   # plano B, sem IA, roda em qualquer lugar
-    python -m avaliacao.avaliar --modo ia       # precisa de ANTHROPIC_API_KEY no .env
+    python -m avaliacao.avaliar --modo ia       # a IA do .env (PROVEDOR_IA)
+    python -m avaliacao.avaliar --modo ia --provedor gemini --modelo gemini-3.8-flash
 
-O relatório aparece na tela e fica salvo em avaliacao/resultados/.
+O relatório aparece na tela e fica salvo em avaliacao/resultados/: `ia.md` para o Claude
+e `ia_<modelo>.md` para o Gemini. Para juntar tudo numa tabela: python -m avaliacao.comparar
 """
 
 import argparse
@@ -16,10 +18,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from app.classificador import criar_classificador
 from app.config import Configuracao
 from app.esquemas import Canal
-from app.servico import ServicoTriagem
+from app.precos import PRECOS_GEMINI, Precos, precos_do_provedor
+from app.servico import ServicoTriagem, criar_servico
 
 PASTA = Path(__file__).parent
 ARQUIVO_CHAMADOS = PASTA / "chamados_teste.jsonl"
@@ -30,6 +32,12 @@ NOMES = {
     "prioridade": "prioridade",
     "sentimento": "sentimento",
     "numero_pedido": "número do pedido",
+}
+NOME_DO_PROVEDOR = {"anthropic": "Claude, da Anthropic", "gemini": "Gemini, no Vertex AI"}
+SEM_IA = {
+    "anthropic": "Defina ANTHROPIC_API_KEY no arquivo .env para avaliar a IA.",
+    "gemini": "Defina GOOGLE_CLOUD_PROJECT no arquivo .env para avaliar o Gemini "
+    "(e faça o login: gcloud auth application-default login).",
 }
 
 
@@ -133,19 +141,39 @@ def resumir(linhas: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def relatorio(modo: str, modelo: str | None, quando: str, resumo: dict, linhas: list) -> str:
+def relatorio(
+    modo: str,
+    modelo: str | None,
+    quando: str,
+    resumo: dict,
+    linhas: list,
+    provedor: str | None = None,
+    precos: Precos | None = None,
+) -> str:
     total = resumo["total_chamados"]
 
     def fracao(parte: int, todo: int) -> str:
         return f"{parte}/{todo} ({parte / todo:.0%})" if todo else "—"
 
-    origem = f"com o modelo `{modelo}`" if modelo else "sem IA, só com o plano B por regras"
+    if modelo:
+        origem = f"com o modelo `{modelo}`"
+        if provedor in NOME_DO_PROVEDOR:
+            origem += f" ({NOME_DO_PROVEDOR[provedor]})"
+    else:
+        origem = "sem IA, só com o plano B por regras"
     partes = [
         f"# Avaliação: modo `{modo}`",
         "",
         f"Rodada em {quando}, {origem}.",
         f"Conjunto: {total} chamados escritos para teste, com gabarito "
         "(`avaliacao/chamados_teste.jsonl`).",
+    ]
+    if modelo and precos:
+        partes.append(
+            f"Preço usado no custo: US$ {precos.entrada:g} por milhão de tokens de entrada "
+            f"e US$ {precos.saida:g} por milhão de saída."
+        )
+    partes += [
         "",
         "| Medida | Resultado |",
         "|---|---|",
@@ -182,42 +210,77 @@ def relatorio(modo: str, modelo: str | None, quando: str, resumo: dict, linhas: 
     return "\n".join(partes) + "\n"
 
 
+def nome_do_arquivo(modo: str, config: Configuracao | None) -> str:
+    """`regras` e `ia` (Claude) como sempre; o Gemini ganha um arquivo por modelo."""
+    if modo == "ia" and config is not None and config.provedor_ia == "gemini":
+        return f"ia_{config.modelo_gemini}"
+    return modo
+
+
 def main(argumentos: list[str] | None = None) -> int:
     leitor = argparse.ArgumentParser(description="Mede o acerto da triagem com o gabarito.")
     leitor.add_argument("--modo", choices=("regras", "ia"), default="regras")
+    leitor.add_argument(
+        "--provedor", choices=("anthropic", "gemini"), help="padrão: PROVEDOR_IA do .env"
+    )
+    leitor.add_argument("--modelo", help="troca o modelo do provedor (ex.: gemini-3.8-flash)")
     leitor.add_argument("--saida", type=Path, default=PASTA_RESULTADOS)
     args = leitor.parse_args(argumentos)
 
+    config: Configuracao | None = None
+    precos: Precos | None = None
     if args.modo == "ia":
         config = Configuracao()
-        classificador = criar_classificador(config)
-        if classificador is None:
-            print("Defina ANTHROPIC_API_KEY no arquivo .env para avaliar a IA.", file=sys.stderr)
+        provedor = args.provedor or config.provedor_ia
+        ajustes: dict[str, str] = {"provedor_ia": provedor}
+        if args.modelo:
+            ajustes["modelo_gemini" if provedor == "gemini" else "modelo_llm"] = args.modelo
+        config = config.model_copy(update=ajustes)
+        precos = precos_do_provedor(config)
+        if not precos.conhecido:
+            print(
+                f"O modelo {config.modelo_gemini} não está na tabela de preços (app/precos.py). "
+                f"Modelos com preço: {', '.join(PRECOS_GEMINI)}.",
+                file=sys.stderr,
+            )
             return 1
-        servico = ServicoTriagem(
-            classificador,
-            limite_confianca=config.limite_confianca,
-            preco_entrada=config.preco_entrada_usd_mtok,
-            preco_saida=config.preco_saida_usd_mtok,
-        )
+        servico = criar_servico(config)
+        if not servico.ia_configurada:
+            print(SEM_IA[provedor], file=sys.stderr)
+            return 1
     else:
         servico = ServicoTriagem()
 
-    linhas = avaliar(servico, carregar_chamados())
+    chamados = carregar_chamados()
+    if args.modo == "ia":
+        # O primeiro chamado vai sozinho: se a IA falhar logo de cara (login, projeto,
+        # modelo), a avaliação para aqui, antes de gastar com os outros.
+        linhas = avaliar(servico, chamados[:1])
+        if linhas[0]["origem"] != "ia":
+            motivo = "; ".join(linhas[0]["motivos_revisao"])
+            print(f"A primeira chamada à IA falhou: {motivo}. Nada foi gravado.", file=sys.stderr)
+            return 1
+        linhas += avaliar(servico, chamados[1:])
+    else:
+        linhas = avaliar(servico, chamados)
     resumo = resumir(linhas)
     quando = datetime.now(UTC).strftime("%d/%m/%Y %H:%M UTC")
-    texto = relatorio(args.modo, servico.modelo, quando, resumo, linhas)
+    provedor_usado = config.provedor_ia if config else None
+    texto = relatorio(args.modo, servico.modelo, quando, resumo, linhas, provedor_usado, precos)
 
+    nome = nome_do_arquivo(args.modo, config)
     args.saida.mkdir(parents=True, exist_ok=True)
-    (args.saida / f"{args.modo}.md").write_text(texto, "utf-8")
+    (args.saida / f"{nome}.md").write_text(texto, "utf-8")
     detalhes = {
         "modo": args.modo,
+        "provedor": provedor_usado,
         "modelo": servico.modelo,
+        "precos_usd_mtok": {"entrada": precos.entrada, "saida": precos.saida} if precos else None,
         "quando": quando,
         "resumo": resumo,
         "chamados": linhas,
     }
-    (args.saida / f"{args.modo}.json").write_text(
+    (args.saida / f"{nome}.json").write_text(
         json.dumps(detalhes, ensure_ascii=False, indent=2) + "\n", "utf-8"
     )
     print(texto)

@@ -200,7 +200,8 @@ def criar_app(
         app.state.fabrica_sessao = sessionmaker(mot, expire_on_commit=False)
         app.state.limite_demo = LimiteDeUso(cfg.demo_limite_por_hora, cfg.demo_limite_por_dia)
         if not app.state.servico.ia_configurada:
-            log.warning("ANTHROPIC_API_KEY vazia: os chamados serão classificados só por regras.")
+            falta = "GOOGLE_CLOUD_PROJECT" if cfg.provedor_ia == "gemini" else "ANTHROPIC_API_KEY"
+            log.warning("%s vazia: os chamados serão classificados só por regras.", falta)
         if not (cfg.chave_api_app and cfg.chave_api_app.get_secret_value()):
             log.warning("CHAVE_API_APP vazia: a API está aberta. Use assim só no seu computador.")
         yield
