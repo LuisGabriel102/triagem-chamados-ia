@@ -54,6 +54,15 @@ class ErroSentido(Exception):
     """A busca por sentido não pôde rodar: falha do Google, índice ausente ou velho."""
 
 
+class Vetor(list[float]):
+    """Um vetor que também diz quantos tokens o Google cobrou para gerá-lo (0 se não disse).
+
+    É uma lista comum: quem não liga para os tokens nem percebe a diferença.
+    """
+
+    tokens: int = 0
+
+
 class GeradorVetores(Protocol):
     """Quem transforma texto em vetor. Nos testes, um gerador falso faz esse papel."""
 
@@ -167,7 +176,10 @@ class GeradorGemini:
         if len(valores) != self.dimensoes:
             raise ErroSentido(f"o Google devolveu {len(valores)} dimensões, e não {self.dimensoes}")
         # O gemini-embedding-001 com menos de 3072 dimensões vem sem normalizar.
-        return normalizar_vetor(valores)
+        vetor = Vetor(normalizar_vetor(valores))
+        uso = getattr(resposta, "usage_metadata", None)
+        vetor.tokens = int(getattr(uso, "prompt_token_count", 0) or 0)
+        return vetor
 
 
 def _chave_gemini(config: Configuracao) -> str:

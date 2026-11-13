@@ -306,3 +306,18 @@ def test_erro_inesperado_do_sdk_tambem_cai_para_a_busca_por_palavras():
     assert resultado.modo == "palavras"
     assert "erro inesperado na chamada ao Google (ValueError)" in resultado.avisos[0]
     assert "opção recusada" not in resultado.avisos[0]
+
+
+def test_busca_conta_os_tokens_que_o_google_cobrou():
+    from types import SimpleNamespace
+
+    class ClienteComUso(ClienteEmbeddingFalso):
+        def embed_content(self, **kwargs):
+            resposta = super().embed_content(**kwargs)
+            resposta.usage_metadata = SimpleNamespace(prompt_token_count=15)
+            return resposta
+
+    indice = IndiceMemoria({artigo.id: [1.0] + [0.0] * 767 for artigo in ARTIGOS})
+    busca = Busca(ARTIGOS, GeradorGemini(ClienteComUso()), indice, limiar_similaridade=0.5)
+    assert busca.buscar("a bobina acabou").tokens_embedding == 15
+    assert Busca(ARTIGOS).buscar("a bobina acabou").tokens_embedding == 0

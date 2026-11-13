@@ -135,6 +135,8 @@ class ResultadoBusca:
     melhor_nota: float  # a nota comparada com o limiar
     limiar: float
     avisos: list[str] = field(default_factory=list)
+    # Tokens que o Google cobrou para transformar a pergunta em vetor (0 sem a busca por sentido).
+    tokens_embedding: int = 0
 
     @property
     def achados(self) -> list[Achado]:
@@ -209,6 +211,7 @@ class Busca:
         avisos: list[str] = []
 
         similaridades: list[tuple[str, float]] | None = None
+        tokens_embedding = 0
         if modo != "palavras":
             if self._gerador is None or self._indice is None:
                 avisos.append(self._motivo_sem_sentido)
@@ -216,6 +219,7 @@ class Busca:
                 try:
                     # Só o texto mascarado vai para o Google.
                     vetor = self._gerador.vetor_pergunta(mascarada)
+                    tokens_embedding = int(getattr(vetor, "tokens", 0) or 0)
                     similaridades = self._indice.buscar(vetor)
                 except ErroSentido as erro:
                     avisos.append(f"A busca por sentido falhou: {erro}. {SO_PALAVRAS}")
@@ -256,6 +260,7 @@ class Busca:
             melhor_nota=melhor,
             limiar=limiar,
             avisos=avisos,
+            tokens_embedding=tokens_embedding,
         )
 
 
