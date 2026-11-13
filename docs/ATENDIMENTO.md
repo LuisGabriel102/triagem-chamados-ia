@@ -12,6 +12,7 @@ com maquininha de cartão, numa empresa **inventada**: a Tapiri Pagamentos
 | 1. Base de conhecimento e busca | 30 artigos, busca por palavras (BM25), busca por sentido (embeddings do Gemini), fusão, limiar de "nada encontrado", avaliação da busca | **Pronta e medida** com o Google de verdade. |
 | 2. O agente | Responde com a fonte, consulta dados inventados e chama uma pessoa; rota `POST /atendimento` | **Pronta.** |
 | 3. A avaliação completa | 4 consertos da fumaça; 60 perguntas novas e independentes; a escolha da busca; o agente inteiro com um juiz | **Pronta.** Duas rodadas (a 2ª depois de consertar um defeito achado na 1ª). |
+| 3B. Resolvido sem pessoa, com segurança | A triagem só para a fila e a urgência; conferência frase a frase; mensagem fixa de urgência; o número "resolvido sem uma pessoa E certo"; um conjunto de prova novo | **Código pronto e testado.** As rodadas com IA de verdade (a prova 3 vezes e as 60 uma vez): não rodaram. |
 | 4. A página e a publicação | Conversa no celular e no computador; pgvector no banco | Não começou. Lembrete: o Dockerfile de hoje copia só `app/`; `base/` e `dados/` vão precisar entrar na imagem. Até lá, a API sobe sem o atendimento e a rota responde 503. |
 | 5. Opcional | O Gemini no Vertex AI comparado com o Claude | Não começou |
 
@@ -97,9 +98,10 @@ das perguntas de avaliação.
 7. **O plano B:** se a IA falhar, a resposta é o trecho do artigo achado, com "Uma pessoa da
    nossa equipe vai confirmar". O atendimento nunca para.
 
-Vai para uma pessoa quando a triagem marca revisão humana (urgente, confiança baixa, "outros"),
-a busca dá "nada encontrado", é reclamação (fila da Ouvidoria), alguém tenta enganar a IA, ou a
-IA pede uma pessoa, falha, cita artigo de fora, não cita artigo ou tem confiança baixa.
+Na etapa 2, ia para uma pessoa quando a triagem marcava revisão humana (urgente, confiança
+baixa, "outros"), a busca dava "nada encontrado", era reclamação (fila da Ouvidoria), alguém
+tentava enganar a IA, ou a IA pedia uma pessoa, falhava, citava artigo de fora, não citava artigo
+ou tinha confiança baixa. **A etapa 3B mudou essa regra** (veja abaixo).
 
 ### As ferramentas e a rota
 
@@ -205,16 +207,81 @@ com o juiz em 9; no outro (a21), ele foi mais rígido que eu.
 "não sei" (a09, a11, a28, a47, a56); a IA às vezes deixa de fora o passo principal (a03, a08) ou
 afirma algo que não está no artigo (a06, a24, a50).
 
-### Propostas (não aplicadas)
+### Propostas da etapa 3
 
-1. **A triagem e o "chamar uma pessoa".** Ou recalibrar a confiança da triagem para o lojista,
-   ou deixar a decisão de chamar uma pessoa com o agente e usar a triagem só para a fila e a
-   urgência. É o que mais pesa no número principal.
-2. **Conferir frase por frase** (por exemplo, um segundo modelo que marca afirmação sem fonte),
-   para pegar casos como a a59.
-3. **Uma resposta fixa melhor para urgência sem artigo** (a28 recebeu só "não sei"): avisar do
-   atendimento 24 horas.
-4. Pôr `python -m avaliacao.avaliar_busca` no CI.
+As três primeiras viraram a etapa 3B. A quarta continua aberta.
+
+1. A triagem e o "chamar uma pessoa" (feito na 3B).
+2. Conferir frase por frase (feito na 3B).
+3. Uma resposta fixa melhor para urgência sem artigo (feito na 3B).
+4. Pôr `python -m avaliacao.avaliar_busca` no CI (aberta).
+
+## Etapa 3B: subir o "resolvido sem pessoa" sem perder a segurança
+
+### O método
+
+1. As 60 perguntas da etapa 3 viraram o conjunto de **desenvolvimento**. Antes de qualquer
+   conserto, os erros do juiz nas duas rodadas foram classificados por tipo
+   (`avaliacao/resultados/erros_do_juiz_etapa3.md`). Rodada 2: incompleta 6, errada 3, inventou
+   5, artigo errado 0, não respondeu 6. O conserto foi só o que é geral (prompt, regra).
+2. Um conjunto de **prova** novo (`avaliacao/perguntas_prova.jsonl`): 40 perguntas escritas por
+   outro agente, que só recebeu o texto do `base/EMPRESA.md`. São 25 que a base responde, 7 que
+   não responde, 4 tentativas e 4 urgentes, e 6 trazem dado pessoal de teste. As perguntas só
+   foram abertas depois de o código estar congelado (commit `b829bc1`). O gabarito veio depois,
+   sem mudar as perguntas: 24 devem sair sem uma pessoa. Alguns assuntos se repetem entre os
+   dois conjuntos (empréstimo, maquininha roubada, senha esquecida), porque os dois agentes
+   partiram do mesmo `EMPRESA.md`; as perguntas são outras.
+3. A prova não decide nada. Ela roda só no fim, 3 vezes, com a mediana, o menor e o maior. As 60
+   de desenvolvimento rodam uma vez no fim, para comparar com a etapa 3.
+
+### O que mudou
+
+1. **A triagem decide só a fila e a urgência.** A confiança dela e o "outros" não chamam mais
+   uma pessoa no atendimento. A rota `POST /chamados` e a demonstração continuam iguais (um teste
+   confere).
+2. **Quando chama uma pessoa agora:** a triagem marcou urgente (pela IA ou pelas palavras-chave);
+   é reclamação para a Ouvidoria; é tema de segurança (roubo, golpe, link falso, alguém pedindo
+   senha ou código) ou tentativa de enganar; a busca deu "nada encontrado"; não há fonte; a IA
+   pede uma pessoa (inclusive com confiança abaixo de 0,75) ou falha; ou a conferência frase a
+   frase reprova.
+3. **A conferência frase a frase** (`app/conferencia.py`), só nas respostas que sairiam sem uma
+   pessoa. A resposta é cortada em frases em Python, e uma chamada curta ao Claude Haiku 5.5
+   (ferramenta estrita, sem temperature, raciocínio desligado) marca cada frase como apoiada ou
+   não pelos artigos citados, pelos dados das consultas e pela data e pelos prazos já calculados.
+   Frase sem apoio sai. Se sobrar menos da metade das palavras, chama uma pessoa. Se a conferência
+   falhar, também chama uma pessoa. O custo e o tempo a mais aparecem no resultado, no banco e na
+   rota.
+4. **A mensagem fixa de urgência**, escrita uma vez: diz que o caso é urgente, que uma pessoa já
+   foi chamada, a fila e os horários do artigo `horarios-e-canais` (que entra como fonte). Vale
+   para a urgência e para o tema de segurança; nos temas de segurança, o primeiro passo do artigo
+   vem antes. Numa urgência, nunca só "não sei".
+5. **Os gatilhos de segurança ficaram mais estreitos.** Com o tema de segurança chamando uma
+   pessoa, "senha", "código" e "sms" sozinhos transformariam "esqueci a senha" em urgência. Agora
+   o artigo de senha dispara com "ligou", "pediram", "pedindo", "golpe" e parecidos.
+6. **O prompt do agente**, com regras gerais tiradas dos tipos de erro: começar pelo passo
+   principal e pelo fato pedido (o limite foi de umas 80 para umas 120 palavras); não escolher a
+   venda mais parecida quando a do lojista não está nos dados; seguir os dados quando a mensagem
+   os contradiz; não prometer ação da equipe; marcar `precisa_pessoa` só quando o caso já bate com
+   o bloco "Quando chamar uma pessoa".
+7. **O número principal mudou de nome:** "resolvido sem uma pessoa E certo" (pelo juiz), entre as
+   que deviam sair sem pessoa. Ao lado, sempre, "resolvido sem uma pessoa e errado", entre todas:
+   saiu sem pessoa e o juiz reprovou, ou o gabarito mandava chamar uma pessoa.
+
+O que não foi consertado: o limiar da busca (a09, a11, a47, a56 ficam abaixo dele; mudá-lo
+olhando as 60 seria ajustar ao conjunto) e a queda da API da Anthropic (a39 a a43 na rodada 2).
+
+### Os números
+
+Não rodou. Os comandos estão em "Como rodar".
+
+### Em aberto
+
+- **O raciocínio do Claude Haiku 5.5.** A referência atual da API diz que o Haiku 5.5 liga o
+  raciocínio adaptativo quando o pedido não diz nada sobre `thinking` (ele aceita
+  `{"type": "disabled"}` com esforço `high` ou menor). A conferência nova desliga o raciocínio de
+  forma explícita. O agente e a triagem (desde a etapa 2) não mandam esse campo, e o juiz (Claude
+  Sonnet 5.5, etapa 3) usa esforço `medium`, que raciocina. Não foi medido se o agente e a
+  triagem raciocinaram nas rodadas da etapa 3.
 
 ## Como rodar
 
@@ -227,6 +294,11 @@ python -m avaliacao.avaliar_busca --perguntas avaliacao/perguntas_agente.jsonl \
     --nome busca_agente --modos sentido hibrida # a busca nas 60 perguntas novas
 python -m avaliacao.avaliar_agente              # o agente inteiro, com o juiz (custa ~US$ 0,30)
 python scripts/fumaca_atendimento.py            # a fumaça de 10 perguntas
+# Etapa 3B: a prova 3 vezes (mediana, menor e maior) e as 60 de desenvolvimento uma vez
+python -m avaliacao.avaliar_agente --perguntas avaliacao/perguntas_prova.jsonl \
+    --nome prova --titulo "Conjunto de prova (etapa 3B)" --repeticoes 3
+python -m avaliacao.avaliar_agente --nome desenvolvimento_3b \
+    --titulo "As 60 de desenvolvimento (etapa 3B)"
 ```
 
 ## As chaves
