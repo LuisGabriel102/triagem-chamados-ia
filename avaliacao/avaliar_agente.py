@@ -131,18 +131,34 @@ ESQUEMA_JUIZ: dict[str, Any] = {
 }
 
 
-class ClienteAnthropicGravador:
-    """Fica entre o código e o cliente da Anthropic e guarda tudo o que foi enviado à IA."""
+def contar_raciocinio(resposta: Any) -> int:
+    """Quantos blocos de raciocínio a resposta da IA trouxe (o texto deles não importa)."""
+    blocos = getattr(resposta, "content", None) or []
+    return sum(getattr(b, "type", None) in ("thinking", "redacted_thinking") for b in blocos)
 
-    def __init__(self, cliente: Any) -> None:
+
+class ClienteAnthropicGravador:
+    """Fica entre o código e o cliente da Anthropic e guarda tudo o que foi enviado à IA.
+
+    Também conta as respostas, os blocos de raciocínio e os tokens de saída de cada parte.
+    """
+
+    def __init__(self, cliente: Any, papel: str = "") -> None:
         self._cliente = cliente
+        self.papel = papel
         self.messages = self
         self.enviados: list[str] = []
+        self.blocos_de_raciocinio = 0
+        self.tokens_saida = 0
 
     def create(self, **kwargs: Any) -> Any:
         enviado = {"system": kwargs.get("system"), "messages": kwargs.get("messages")}
         self.enviados.append(json.dumps(enviado, ensure_ascii=False, default=str))
-        return self._cliente.messages.create(**kwargs)
+        resposta = self._cliente.messages.create(**kwargs)
+        self.blocos_de_raciocinio += contar_raciocinio(resposta)
+        uso = getattr(resposta, "usage", None)
+        self.tokens_saida += int(getattr(uso, "output_tokens", 0) or 0)
+        return resposta
 
 
 def criar_cliente_anthropic(config: Configuracao, papel: str) -> Any:
@@ -164,9 +180,11 @@ def montar_atendimento(
     Os gravadores da IA são três: a triagem, o agente e a conferência frase a frase.
     """
     dados = DadosLojistas(agora=lambda: AGORA)
-    triagem_ia = ClienteAnthropicGravador(criar_cliente_anthropic(config, "triagem"))
-    agente_ia = ClienteAnthropicGravador(criar_cliente_anthropic(config, "agente"))
-    conferencia_ia = ClienteAnthropicGravador(criar_cliente_anthropic(config, "conferencia"))
+    triagem_ia = ClienteAnthropicGravador(criar_cliente_anthropic(config, "triagem"), "triagem")
+    agente_ia = ClienteAnthropicGravador(criar_cliente_anthropic(config, "agente"), "agente")
+    conferencia_ia = ClienteAnthropicGravador(
+        criar_cliente_anthropic(config, "conferencia"), "conferencia"
+    )
     precos = precos_do_provedor(config)
     triagem = ServicoTriagem(
         ClassificadorClaude(
@@ -223,6 +241,8 @@ def rodar_pergunta(
 ) -> dict[str, Any]:
     gabarito = pergunta["gabarito"]
     antes_ia = [len(g.enviados) for g in gravadores_ia]
+    antes_raciocinio = {g.papel: g.blocos_de_raciocinio for g in gravadores_ia}
+    antes_tokens = {g.papel: g.tokens_saida for g in gravadores_ia}
     antes_google = len(gravador_google.enviados) if gravador_google else 0
     resultado = atendimento.atender(pergunta["pergunta"], Canal.CHAT, gabarito["lojista"])
     enviado_ia = [t for g, n in zip(gravadores_ia, antes_ia, strict=True) for t in g.enviados[n:]]
@@ -256,6 +276,18 @@ def rodar_pergunta(
         "frases_removidas": resultado.frases_removidas,
         "custo_conferencia_usd": resultado.custo_conferencia_usd,
         "tempo_conferencia_ms": resultado.tempo_conferencia_ms,
+        # O tempo e o custo de cada parte (a triagem e a busca rodam ao mesmo tempo).
+        "custo_triagem_usd": resultado.custo_triagem_usd,
+        "custo_busca_usd": resultado.custo_busca_usd,
+        "custo_resposta_usd": resultado.custo_resposta_usd,
+        "tempo_triagem_ms": resultado.tempo_triagem_ms,
+        "tempo_busca_ms": resultado.tempo_busca_ms,
+        "tempo_resposta_ms": resultado.tempo_resposta_ms,
+        # Quantos blocos de raciocínio e quantos tokens de saída voltaram em cada parte.
+        "blocos_de_raciocinio": {
+            g.papel: g.blocos_de_raciocinio - antes_raciocinio[g.papel] for g in gravadores_ia
+        },
+        "tokens_saida": {g.papel: g.tokens_saida - antes_tokens[g.papel] for g in gravadores_ia},
     }
 
 
@@ -336,7 +368,14 @@ def julgar(cliente: Any, pedido: str) -> dict[str, Any]:
     julgamento["certa"] = all(
         julgamento[c] for c in ("correta", "completa", "fiel_a_fonte", "sem_inventar")
     )
-    julgamento.update({"julgou": True, "custo_usd": custo})
+    julgamento.update(
+        {
+            "julgou": True,
+            "custo_usd": custo,
+            "blocos_de_raciocinio": contar_raciocinio(resposta),
+            "tokens_saida": tokens("output_tokens"),
+        }
+    )
     return julgamento
 
 
@@ -379,6 +418,104 @@ def saiu_errada_sem_pessoa(x: dict[str, Any]) -> bool:
     if x["gabarito"]["chamar_pessoa"]:
         return True
     return bool(x["juiz"]["julgou"]) and not _certa(x)
+
+
+# Os motivos de chamar uma pessoa, em grupos. A confiança baixa do agente fica separada de
+# "a IA pediu uma pessoa".
+CATEGORIAS_DE_MOTIVO = [
+    ("urgente", "Urgente (triagem ou palavras-chave)"),
+    ("seguranca", "Tema de segurança"),
+    ("tentativa", "Tentativa de enganar"),
+    ("reclamacao", "Reclamação (Ouvidoria)"),
+    ("nada_encontrado", "Nada encontrado na busca"),
+    ("sem_fonte", "Sem fonte (não citou artigo, ou citou artigo de fora)"),
+    ("conferencia", "A conferência frase a frase reprovou ou falhou"),
+    ("ia_pediu", "A IA pediu uma pessoa"),
+    ("confianca_baixa", "Confiança baixa do agente (abaixo de 0,75)"),
+    ("ia_falhou", "A IA falhou (plano B)"),
+    ("dado_pessoal", "Dado pessoal na resposta da IA"),
+    ("outro", "Outro"),
+]
+
+
+def categoria_do_motivo(motivo: str) -> str:
+    if motivo.startswith("triagem:"):
+        return "urgente"
+    if motivo.startswith("tema de segurança"):
+        return "seguranca"
+    if motivo in ("tentativa de mandar na IA", "pedido de dado de outra loja"):
+        return "tentativa"
+    if motivo.startswith("reclamação"):
+        return "reclamacao"
+    if motivo.startswith("a busca não achou"):
+        return "nada_encontrado"
+    if "sem fonte" in motivo or "não veio da busca" in motivo:
+        return "sem_fonte"
+    if "conferência" in motivo:
+        return "conferencia"
+    if motivo.startswith("a IA pediu uma pessoa"):
+        return "ia_pediu"
+    if motivo.startswith("confiança baixa na resposta"):
+        return "confianca_baixa"
+    if motivo.startswith(("a IA falhou", "erro inesperado na IA", "IA não configurada")):
+        return "ia_falhou"
+    if "dado pessoal" in motivo:
+        return "dado_pessoal"
+    return "outro"
+
+
+def contar_motivos(linhas: list[dict[str, Any]]) -> dict[str, int]:
+    """Em quantas mensagens cada motivo aparece, em quantas é o único, e em quantas aparece
+    quando a pessoa foi chamada sem precisar (o gabarito dizia que saía sem pessoa)."""
+    chamaram = [x for x in linhas if x["precisa_pessoa"]]
+    saida: dict[str, int] = {}
+    for chave, _ in CATEGORIAS_DE_MOTIVO:
+        aparece = [
+            x
+            for x in chamaram
+            if chave in {categoria_do_motivo(m) for m in x.get("motivos_pessoa", [])}
+        ]
+        saida[f"motivo_{chave}"] = len(aparece)
+        saida[f"motivo_unico_{chave}"] = sum(
+            {categoria_do_motivo(m) for m in x.get("motivos_pessoa", [])} == {chave}
+            for x in aparece
+        )
+        saida[f"motivo_sem_precisar_{chave}"] = sum(
+            not x["gabarito"]["chamar_pessoa"] for x in aparece
+        )
+    saida["chamou_pessoa"] = len(chamaram)
+    saida["chamou_sem_precisar"] = sum(not x["gabarito"]["chamar_pessoa"] for x in chamaram)
+    return saida
+
+
+PARTES = ["triagem", "busca", "resposta", "conferencia"]
+PAPEIS_DA_IA = ["triagem", "agente", "conferencia"]
+
+
+def medir_partes(linhas: list[dict[str, Any]]) -> dict[str, Any]:
+    """O custo e o tempo médios de cada parte, por mensagem, e o raciocínio de cada uma."""
+    saida: dict[str, Any] = {}
+    total = len(linhas) or 1
+    for parte in PARTES:
+        saida[f"custo_{parte}_por_mensagem_usd"] = round(
+            sum(x.get(f"custo_{parte}_usd", 0.0) for x in linhas) / total, 8
+        )
+        saida[f"tempo_{parte}_por_mensagem_ms"] = round(
+            sum(x.get(f"tempo_{parte}_ms", 0) for x in linhas) / total
+        )
+    for papel in PAPEIS_DA_IA:
+        saida[f"raciocinio_{papel}"] = sum(
+            (x.get("blocos_de_raciocinio") or {}).get(papel, 0) for x in linhas
+        )
+        saida[f"tokens_saida_{papel}_medio"] = round(
+            sum((x.get("tokens_saida") or {}).get(papel, 0) for x in linhas) / total
+        )
+    julgadas = [x["juiz"] for x in linhas if x["juiz"].get("pelo_juiz") and x["juiz"]["julgou"]]
+    saida["raciocinio_juiz"] = sum(j.get("blocos_de_raciocinio", 0) for j in julgadas)
+    saida["tokens_saida_juiz_medio"] = (
+        round(sum(j.get("tokens_saida", 0) for j in julgadas) / len(julgadas)) if julgadas else 0
+    )
+    return saida
 
 
 def resumir(linhas: list[dict[str, Any]]) -> dict[str, Any]:
@@ -458,6 +595,8 @@ def resumir(linhas: list[dict[str, Any]]) -> dict[str, Any]:
         "julgadas_pelo_juiz": sum(x["juiz"].get("pelo_juiz", False) for x in linhas),
         "juiz_nao_julgou": sum(not x["juiz"]["julgou"] for x in linhas),
         "custo_do_juiz_usd": round(sum(x["juiz"].get("custo_usd", 0.0) for x in linhas), 6),
+        **medir_partes(linhas),
+        **contar_motivos(linhas),
     }
 
 
@@ -483,6 +622,32 @@ MEDIDAS_DAS_REPETICOES = [
     ("tempo_conferencia_medio_ms", "Tempo médio da conferência, nas conferidas (ms)"),
     ("juiz_nao_julgou", "O juiz não julgou"),
     ("custo_do_juiz_usd", "Custo do juiz por rodada (US$)"),
+]
+
+
+NOMES_DAS_PARTES = {
+    "triagem": "a triagem",
+    "busca": "a busca",
+    "resposta": "a resposta",
+    "conferencia": "a conferência",
+}
+MEDIDAS_DAS_REPETICOES += [
+    *[
+        (f"custo_{p}_por_mensagem_usd", f"Custo por mensagem: {NOMES_DAS_PARTES[p]} (US$)")
+        for p in PARTES
+    ],
+    *[
+        (f"tempo_{p}_por_mensagem_ms", f"Tempo por mensagem: {NOMES_DAS_PARTES[p]} (ms)")
+        for p in PARTES
+    ],
+    *[(f"raciocinio_{p}", f"Blocos de raciocínio: {p}") for p in [*PAPEIS_DA_IA, "juiz"]],
+    ("chamou_pessoa", "Chamou uma pessoa (todas)"),
+    ("chamou_sem_precisar", "Chamou uma pessoa sem precisar"),
+    *[(f"motivo_{c}", f"Motivo: {n}") for c, n in CATEGORIAS_DE_MOTIVO],
+    *[
+        (f"motivo_sem_precisar_{c}", f"Motivo, nas que chamaram sem precisar: {n}")
+        for c, n in CATEGORIAS_DE_MOTIVO
+    ],
 ]
 
 
@@ -581,6 +746,50 @@ def relatorio(
         "espera e segurança) não passam por ele. Não julgou: "
         f"{r['juiz_nao_julgou']}. Custo do juiz: US$ {r['custo_do_juiz_usd']:.4f} (fora do custo "
         "por mensagem).",
+        "",
+        "## O tempo e o custo de cada parte",
+        "",
+        "Média por mensagem, em todas as perguntas (a parte que não rodou conta como zero). A "
+        "triagem e a busca rodam ao mesmo tempo: o tempo total não é a soma.",
+        "",
+        "| Parte | Custo médio | Tempo médio |",
+        "|---|---|---|",
+        *[
+            f"| {NOMES_DAS_PARTES[p].capitalize()} | US$ {r[f'custo_{p}_por_mensagem_usd']:.6f} | "
+            f"{r[f'tempo_{p}_por_mensagem_ms']} ms |"
+            for p in PARTES
+        ],
+        f"| Total | US$ {r['custo_medio_usd']:.6f} | {r['tempo_medio_ms']} ms |",
+        "",
+        "## O raciocínio",
+        "",
+        "Blocos de raciocínio que voltaram nas respostas da IA, somados na rodada, e os tokens de "
+        "saída por chamada. O agente e a triagem pedem raciocínio adaptativo com a ferramenta "
+        "forçada; a conferência pede sem raciocínio; o juiz raciocina.",
+        "",
+        "| Parte | Blocos de raciocínio | Tokens de saída (média) |",
+        "|---|---|---|",
+        f"| A triagem | {r['raciocinio_triagem']} | "
+        f"{r['tokens_saida_triagem_medio']} por mensagem |",
+        f"| O agente | {r['raciocinio_agente']} | {r['tokens_saida_agente_medio']} por mensagem |",
+        f"| A conferência | {r['raciocinio_conferencia']} | "
+        f"{r['tokens_saida_conferencia_medio']} por mensagem |",
+        f"| O juiz | {r['raciocinio_juiz']} | {r['tokens_saida_juiz_medio']} por julgamento |",
+        "",
+        "## Por que chamou uma pessoa",
+        "",
+        f"Chamou uma pessoa em {r['chamou_pessoa']} de {r['perguntas']} mensagens; "
+        f"{r['chamou_sem_precisar']} sem precisar (o gabarito dizia que saía sem pessoa). Uma "
+        "mensagem pode ter mais de um motivo.",
+        "",
+        "| Motivo | Aparece | É o único motivo | Nas que chamaram sem precisar |",
+        "|---|---|---|---|",
+        *[
+            f"| {nome} | {r[f'motivo_{c}']} | {r[f'motivo_unico_{c}']} | "
+            f"{r[f'motivo_sem_precisar_{c}']} |"
+            for c, nome in CATEGORIAS_DE_MOTIVO
+            if r[f"motivo_{c}"]
+        ],
         "",
         "## Tabela curta para o README",
         "",

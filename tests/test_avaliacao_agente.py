@@ -236,3 +236,118 @@ def test_relatorio_poe_os_dois_numeros_no_topo(monkeypatch, tmp_path):
     assert "Resolvido sem uma pessoa E certo" in tabela[2]
     assert "Resolvido sem uma pessoa e errado" in tabela[3]
     assert "A conferência frase a frase" in texto
+
+
+# --- Medidas pedidas depois do congelamento: motivos, partes e raciocínio ---
+
+MOTIVOS_DO_ATENDIMENTO = {
+    "triagem: urgente": "urgente",
+    "triagem: as palavras-chave indicam urgência": "urgente",
+    "tema de segurança: Maquininha perdida ou roubada": "seguranca",
+    "tentativa de mandar na IA": "tentativa",
+    "pedido de dado de outra loja": "tentativa",
+    "reclamação: vai para a Ouvidoria": "reclamacao",
+    "a busca não achou nada parecido na base: o agente não sabe": "nada_encontrado",
+    "a IA não citou artigo da busca: sem fonte, sem conselho": "sem_fonte",
+    "a IA citou artigo que não veio da busca (ouvidoria)": "sem_fonte",
+    "conferência frase a frase: 3 de 4 frases sem apoio, sobrou pouco": "conferencia",
+    "a conferência frase a frase falhou (falha na API)": "conferencia",
+    "erro inesperado na conferência frase a frase": "conferencia",
+    "a IA pediu uma pessoa: a tampa quebrou": "ia_pediu",
+    "confiança baixa na resposta (0.60)": "confianca_baixa",
+    "a IA falhou (falha na API da Anthropic (InternalServerError)): resposta pelo plano B": (
+        "ia_falhou"
+    ),
+    "erro inesperado na IA: resposta pelo plano B": "ia_falhou",
+    "IA não configurada: resposta pelo plano B": "ia_falhou",
+    "a resposta da IA tinha dado pessoal e foi mascarada": "dado_pessoal",
+}
+
+
+def test_cada_motivo_do_atendimento_cai_no_grupo_certo():
+    for motivo, grupo in MOTIVOS_DO_ATENDIMENTO.items():
+        assert modulo.categoria_do_motivo(motivo) == grupo, motivo
+
+
+def test_conta_os_motivos_com_a_confianca_baixa_separada():
+    linhas = [
+        _linha(id="a", precisa_pessoa=True, motivos_pessoa=["confiança baixa na resposta (0.60)"]),
+        _linha(
+            id="b",
+            precisa_pessoa=True,
+            motivos_pessoa=["a IA pediu uma pessoa: x", "confiança baixa na resposta (0.50)"],
+        ),
+        _linha(
+            id="c",
+            grupo="urgente",
+            gabarito={"artigos": [], "chamar_pessoa": True, "fila": "Suporte"},
+            precisa_pessoa=True,
+            motivos_pessoa=["triagem: urgente"],
+        ),
+        _linha(id="d", motivos_pessoa=[]),
+    ]
+    resumo = modulo.resumir(linhas)
+    assert resumo["chamou_pessoa"] == 3
+    assert resumo["chamou_sem_precisar"] == 2
+    assert resumo["motivo_confianca_baixa"] == 2
+    assert resumo["motivo_unico_confianca_baixa"] == 1
+    assert resumo["motivo_sem_precisar_confianca_baixa"] == 2
+    assert resumo["motivo_ia_pediu"] == 1
+    assert resumo["motivo_urgente"] == 1
+    assert resumo["motivo_sem_precisar_urgente"] == 0
+
+
+def test_custo_tempo_e_raciocinio_de_cada_parte():
+    linhas = [
+        _linha(
+            id="a",
+            custo_triagem_usd=0.0002,
+            custo_busca_usd=0.0,
+            custo_resposta_usd=0.0004,
+            custo_conferencia_usd=0.0002,
+            tempo_triagem_ms=2000,
+            tempo_busca_ms=400,
+            tempo_resposta_ms=3000,
+            tempo_conferencia_ms=1000,
+            blocos_de_raciocinio={"triagem": 0, "agente": 0, "conferencia": 0},
+            tokens_saida={"triagem": 370, "agente": 200, "conferencia": 60},
+            juiz={"julgou": True, "pelo_juiz": True, "certa": True, "blocos_de_raciocinio": 1},
+        ),
+        _linha(id="b", tempo_triagem_ms=1000),
+    ]
+    resumo = modulo.resumir(linhas)
+    assert resumo["custo_triagem_por_mensagem_usd"] == 0.0001
+    assert resumo["tempo_triagem_por_mensagem_ms"] == 1500
+    assert resumo["tempo_conferencia_por_mensagem_ms"] == 500
+    assert resumo["raciocinio_agente"] == 0
+    assert resumo["raciocinio_juiz"] == 1
+    assert resumo["tokens_saida_triagem_medio"] == 185
+
+
+def test_o_gravador_conta_os_blocos_de_raciocinio():
+    class ComRaciocinio:
+        def __init__(self):
+            self.messages = self
+
+        def create(self, **kwargs):
+            return SimpleNamespace(
+                content=[SimpleNamespace(type="thinking"), SimpleNamespace(type="tool_use")],
+                usage=SimpleNamespace(output_tokens=50),
+            )
+
+    gravador = modulo.ClienteAnthropicGravador(ComRaciocinio(), "agente")
+    gravador.messages.create(system=None, messages=[])
+    gravador.messages.create(system=None, messages=[])
+    assert gravador.blocos_de_raciocinio == 2
+    assert gravador.tokens_saida == 100
+
+
+def test_relatorio_mostra_as_partes_o_raciocinio_e_os_motivos(monkeypatch, tmp_path):
+    _preparar(monkeypatch)
+    assert modulo.main(["--saida", str(tmp_path), "--limite", "12"]) == 0
+    texto = (tmp_path / "agente.md").read_text("utf-8")
+    assert "## O tempo e o custo de cada parte" in texto
+    assert "## O raciocínio" in texto
+    assert "## Por que chamou uma pessoa" in texto
+    linhas = json.loads((tmp_path / "agente.json").read_text("utf-8"))["linhas"]
+    assert set(linhas[0]["blocos_de_raciocinio"]) == {"triagem", "agente", "conferencia"}
