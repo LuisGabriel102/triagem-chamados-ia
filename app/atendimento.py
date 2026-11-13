@@ -29,14 +29,14 @@ from typing import Literal
 import anthropic
 
 from app.agente import AgenteClaude, ErroAgente, ResultadoAgente
-from app.base_conhecimento import TITULO_ESCALONAMENTO, Artigo
+from app.base_conhecimento import TITULO_ESCALONAMENTO, Artigo, carregar_artigos
 from app.busca import Busca, ResultadoBusca, criar_busca
 from app.busca_palavras import normalizar
 from app.classificador import Uso
 from app.config import Configuracao
 from app.esquemas import Canal, Categoria, Prioridade
 from app.ferramentas import DadosLojistas, LojistaDesconhecido
-from app.mascaramento import mascarar
+from app.mascaramento import ResultadoMascaramento, mascarar
 from app.servico import ResultadoTriagem, ServicoTriagem, calcular_custo
 
 log = logging.getLogger(__name__)
@@ -96,6 +96,30 @@ def trecho_seguro(artigo: Artigo, limite: int = TAMANHO_DO_TRECHO) -> str:
         corte = texto.rfind(". ", 0, limite)
         texto = texto[: corte + 1] if corte > 0 else texto[:limite].rstrip() + "…"
     return texto
+
+
+_EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+# Marcas sem dígito, para o mascaramento não confundir com número.
+_MARCAS = [f"⟦CONTATO{letra}⟧" for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+
+
+def contatos_da_empresa(artigos: Sequence[Artigo]) -> frozenset[str]:
+    """Os e-mails que aparecem nos artigos: são da empresa, não do lojista."""
+    return frozenset(email.lower() for a in artigos for email in _EMAIL.findall(a.texto))
+
+
+def mascarar_resposta(texto: str, permitidos: frozenset[str]) -> ResultadoMascaramento:
+    """Mascara a resposta da IA, menos os contatos da própria empresa (como a ouvidoria)."""
+    guardados: dict[str, str] = {}
+    for marca, contato in zip(_MARCAS, sorted(permitidos), strict=False):
+        if contato in texto:
+            texto = texto.replace(contato, marca)
+            guardados[marca] = contato
+    resultado = mascarar(texto)
+    final = resultado.texto
+    for marca, contato in guardados.items():
+        final = final.replace(marca, contato)
+    return ResultadoMascaramento(texto=final, encontrados=resultado.encontrados)
 
 
 def resposta_plano_b(artigo: Artigo) -> str:
@@ -158,6 +182,7 @@ class ServicoAtendimento:
         preco_entrada: float = 0.10,
         preco_saida: float = 0.50,
         preco_embedding: float = 0.20,
+        contatos_permitidos: frozenset[str] = frozenset(),
     ) -> None:
         self._triagem = triagem
         self._busca = busca
@@ -167,6 +192,7 @@ class ServicoAtendimento:
         self._preco_entrada = preco_entrada
         self._preco_saida = preco_saida
         self._preco_embedding = preco_embedding
+        self._contatos_permitidos = contatos_permitidos
 
     @property
     def ia_configurada(self) -> bool:
@@ -208,8 +234,9 @@ class ServicoAtendimento:
         ):
             motivos.append("a IA respondeu sem citar artigo nem consultar dados")
             return resposta_plano_b(artigos[0]), [artigos[0]], "plano_b"
-        # A resposta também passa pelo mascaramento (defesa extra).
-        mascarada = mascarar(dados.resposta)
+        # A resposta também passa pelo mascaramento (defesa extra). Os contatos da própria
+        # empresa, que estão nos artigos, não são dado pessoal e ficam.
+        mascarada = mascarar_resposta(dados.resposta, self._contatos_permitidos)
         if mascarada.encontrados:
             motivos.append("a resposta da IA tinha dado pessoal e foi mascarada")
         if dados.precisa_pessoa:
@@ -339,4 +366,5 @@ def criar_atendimento(config: Configuracao, triagem: ServicoTriagem) -> ServicoA
         preco_entrada=config.preco_agente_entrada_usd_mtok,
         preco_saida=config.preco_agente_saida_usd_mtok,
         preco_embedding=config.preco_embedding_usd_mtok,
+        contatos_permitidos=contatos_da_empresa(carregar_artigos()),
     )

@@ -21,7 +21,9 @@ from app.atendimento import (
     RESPOSTA_NAO_SEI,
     RESPOSTA_SEGURANCA,
     ServicoAtendimento,
+    contatos_da_empresa,
     detectar_tentativa,
+    mascarar_resposta,
     trecho_seguro,
 )
 from app.base_conhecimento import TITULO_ESCALONAMENTO, carregar_artigos
@@ -444,3 +446,33 @@ def test_lojista_desconhecido_da_erro_antes_de_tudo():
 
 def test_artigos_da_base_existem_nos_testes():
     assert "bobina" in POR_ID
+
+
+# --- Contato da empresa não é dado pessoal (achado na fumaça: b38) ---
+
+
+def test_contatos_da_empresa_saem_dos_artigos():
+    contatos = contatos_da_empresa(ARTIGOS)
+    assert contatos == {"ajuda@tapiri.example.com", "ouvidoria@tapiri.example.com"}
+
+
+def test_resposta_mantem_o_email_da_empresa_e_mascara_o_do_lojista():
+    texto = (
+        "Escreva para ouvidoria@tapiri.example.com. Não mande o CPF 529.982.247-25 "
+        "nem o e-mail loja.bia@example.com."
+    )
+    resultado = mascarar_resposta(texto, contatos_da_empresa(ARTIGOS))
+    assert "ouvidoria@tapiri.example.com" in resultado.texto
+    assert "loja.bia@example.com" not in resultado.texto
+    assert "529.982.247-25" not in resultado.texto
+    assert resultado.encontrados == {"EMAIL": 1, "CPF": 1}
+
+
+def test_email_da_empresa_na_resposta_nao_chama_pessoa():
+    texto = "Fale com a ouvidoria em ouvidoria@tapiri.example.com, com o protocolo em mãos."
+    agente = ClienteAgenteFalso(("resposta", resposta_agente(resposta=texto)))
+    servico = montar(agente)
+    servico._contatos_permitidos = contatos_da_empresa(ARTIGOS)
+    resultado = atender(servico)
+    assert "ouvidoria@tapiri.example.com" in resultado.resposta
+    assert not any("mascarada" in motivo for motivo in resultado.motivos_pessoa)
