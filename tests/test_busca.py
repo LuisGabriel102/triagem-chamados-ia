@@ -212,7 +212,7 @@ def test_criar_busca_sem_chave_roda_so_por_palavras():
     assert not busca.sentido_disponivel
     resultado = busca.buscar("perdi a maquininha, como bloqueio?")
     assert resultado.modo == "palavras"
-    assert resultado.achados[0].artigo.id == "maquininha-perdida-ou-roubada"
+    assert resultado.candidatos[0].artigo.id == "maquininha-perdida-ou-roubada"
 
 
 def test_criar_busca_com_chave_e_sem_indice_avisa_para_indexar(monkeypatch, tmp_path):

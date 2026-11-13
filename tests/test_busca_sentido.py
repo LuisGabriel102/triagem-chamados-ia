@@ -224,3 +224,10 @@ def test_indice_da_base_inteira_com_gerador_falso(tmp_path):
     relatorio = atualizar_indice(artigos, GeradorVetoresFalso(), caminho)
     assert len(relatorio.refeitos) == 30
     assert caminho.read_bytes()[:1] == b"{"  # UTF-8 sem BOM
+
+
+def test_cache_cria_a_pasta_do_indice(tmp_path):
+    caminho = tmp_path / "pasta" / "nova" / "indice.json"
+    atualizar_indice([_artigo("prazos")], GeradorVetoresFalso(), caminho)
+    assert caminho.exists()
+    assert not caminho.with_name("indice.json.tmp").exists()

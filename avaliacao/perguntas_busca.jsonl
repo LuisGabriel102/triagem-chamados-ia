@@ -1,0 +1,48 @@
+{"id": "b01", "pergunta": "oi, vendi no debito sexta e ate agora nada, quando cai?", "gabarito": "recebimentos-e-prazos", "dados_pessoais": []}
+{"id": "b02", "pergunta": "o dinheiro da venda de ontem nao caiu na minha conta, ja passou do dia. meu cpf 529.982.247-25", "gabarito": "dinheiro-nao-caiu", "dados_pessoais": ["529.982.247-25"]}
+{"id": "b03", "pergunta": "apareceu 'em analise' numa venda minha e o dinheiro nao vem, oq significa?", "gabarito": "dinheiro-nao-caiu", "dados_pessoais": []}
+{"id": "b04", "pergunta": "quero mudar a conta q recebo, abri conta em outro banco", "gabarito": "conta-de-recebimento", "dados_pessoais": []}
+{"id": "b05", "pergunta": "como faço pra antesipar as vendas do mes", "gabarito": "antecipacao", "dados_pessoais": []}
+{"id": "b06", "pergunta": "quanto custa adiantar a grana das parcelas?", "gabarito": "antecipacao", "dados_pessoais": []}
+{"id": "b07", "pergunta": "nao entendi o desconto que veio no extrato, qual taxa voces tiraram?", "gabarito": "extrato-e-taxas", "dados_pessoais": []}
+{"id": "b08", "pergunta": "a maquina nao liga de jeito nenhum, ja deixei carregando a noite toda", "gabarito": "maquininha-nao-liga", "dados_pessoais": []}
+{"id": "b09", "pergunta": "da erro de leitura toda hora quando o cliente enfia o cartao", "gabarito": "maquininha-nao-le-cartao", "dados_pessoais": []}
+{"id": "b10", "pergunta": "a bubina acabou, onde compro mais?", "gabarito": "bobina", "dados_pessoais": []}
+{"id": "b11", "pergunta": "o comprovante ta saindo em branco", "gabarito": "bobina", "dados_pessoais": []}
+{"id": "b12", "pergunta": "maquininha fica dando sem conexao direto, aqui na loja o sinal é uma porcaria", "gabarito": "conexao", "dados_pessoais": []}
+{"id": "b13", "pergunta": "a mini nao conecta no celular pelo bluetooth", "gabarito": "conexao", "dados_pessoais": []}
+{"id": "b14", "pergunta": "roubaram minha maquininha ontem a noite, e agora?? me liga no (82) 99999-1234", "gabarito": "maquininha-perdida-ou-roubada", "dados_pessoais": ["(82) 99999-1234"]}
+{"id": "b15", "pergunta": "perdi a maquineta na feira, como bloqueia", "gabarito": "maquininha-perdida-ou-roubada", "dados_pessoais": []}
+{"id": "b16", "pergunta": "a maquininha quebrou com 4 meses de uso, tem garantia?", "gabarito": "troca-e-garantia", "dados_pessoais": []}
+{"id": "b17", "pergunta": "deixei cair e trincou a tela, voces trocam?", "gabarito": "troca-e-garantia", "dados_pessoais": []}
+{"id": "b18", "pergunta": "passei 150 reais em vez de 15, como cancelo essa venda", "gabarito": "cancelar-uma-venda", "dados_pessoais": []}
+{"id": "b19", "pergunta": "cliente pagou no cartao 4111 1111 1111 1111 e desistiu, preciso desfazer a venda", "gabarito": "cancelar-uma-venda", "dados_pessoais": ["4111 1111 1111 1111"]}
+{"id": "b20", "pergunta": "cancelei a venda faz 3 dias e a cliente disse que o dinheiro nao voltou pra ela", "gabarito": "estorno", "dados_pessoais": []}
+{"id": "b21", "pergunta": "em quanto tempo o estorno aparece na fatura do cliente", "gabarito": "estorno", "dados_pessoais": []}
+{"id": "b22", "pergunta": "recebi um aviso de contestaçao, o cliente diz q nao reconhece a compra", "gabarito": "contestacao", "dados_pessoais": []}
+{"id": "b23", "pergunta": "o que é chargeback? bloquearam um valor meu", "gabarito": "contestacao", "dados_pessoais": []}
+{"id": "b24", "pergunta": "da pra parcelar em 12x? quem paga o juros", "gabarito": "parcelado", "dados_pessoais": []}
+{"id": "b25", "pergunta": "a maquina pede senha no pagamento por aproximaçao, é normal?", "gabarito": "aproximacao", "dados_pessoais": []}
+{"id": "b26", "pergunta": "como recebe pix pela maquininha?", "gabarito": "pix-na-maquininha", "dados_pessoais": []}
+{"id": "b27", "pergunta": "cliente me mostrou o comprovante do pix mas nao apareceu nada, posso entregar?", "gabarito": "pix-na-maquininha", "dados_pessoais": []}
+{"id": "b28", "pergunta": "qual a taxa do debito e do credito? quero mudar pro plano mais barato", "gabarito": "taxas-e-mudanca-de-plano", "dados_pessoais": []}
+{"id": "b29", "pergunta": "quero pegar mais uma maquininha pro meu segundo caixa", "gabarito": "maquininha-a-mais", "dados_pessoais": []}
+{"id": "b30", "pergunta": "recebi sms dizendo q minha maquininha vai ser bloqueada e tem um link, é vcs?", "gabarito": "golpe-sms-link-falso", "dados_pessoais": []}
+{"id": "b31", "pergunta": "um cara ligou dizendo q era da tapiri e pediu o codigo que chegou no meu celular", "gabarito": "nunca-pedimos-sua-senha", "dados_pessoais": []}
+{"id": "b32", "pergunta": "esqueci a senha do app e nao chega o codigo no email loja.bia@example.com", "gabarito": "acesso-ao-app", "dados_pessoais": ["loja.bia@example.com"]}
+{"id": "b33", "pergunta": "troquei de numero, como atualizo o telefone no cadastro? o novo é (82) 99999-1234", "gabarito": "alterar-dados", "dados_pessoais": ["(82) 99999-1234"]}
+{"id": "b34", "pergunta": "quero encerrar minha conta, nao vou mais usar. cpf 111.444.777-35", "gabarito": "encerrar-a-conta", "dados_pessoais": ["111.444.777-35"]}
+{"id": "b35", "pergunta": "comprei a maquininha semana passada e me arrependi, consigo devolver?", "gabarito": "desistir-da-compra", "dados_pessoais": []}
+{"id": "b36", "pergunta": "deu venda negada saldo insuficiente, o pobrema é na minha maquina?", "gabarito": "venda-recusada", "dados_pessoais": []}
+{"id": "b37", "pergunta": "que horas o atendimento funciona no sabado?", "gabarito": "horarios-e-canais", "dados_pessoais": []}
+{"id": "b38", "pergunta": "ja reclamei 2 vezes e ninguem resolve, quero falar com a ouvidoria", "gabarito": "ouvidoria", "dados_pessoais": []}
+{"id": "b39", "pergunta": "como acompanho minha reclamação? tenho o protocolo", "gabarito": "reclamacao-e-protocolo", "dados_pessoais": []}
+{"id": "b40", "pergunta": "quero comecar a vender com voces, sou mei, o que precisa pra abrir conta?", "gabarito": "abrir-cadastro", "dados_pessoais": []}
+{"id": "b41", "pergunta": "vcs fazem emprestimo pra capital de giro? me manda proposta no joao.lima@example.com", "gabarito": null, "dados_pessoais": ["joao.lima@example.com"]}
+{"id": "b42", "pergunta": "a maquininha aceita vale refeição e vale alimentação?", "gabarito": null, "dados_pessoais": []}
+{"id": "b43", "pergunta": "tem como gerar link de pagamento pra vender online?", "gabarito": null, "dados_pessoais": []}
+{"id": "b44", "pergunta": "voces emitem nota fiscal das minhas vendas pros clientes?", "gabarito": null, "dados_pessoais": []}
+{"id": "b45", "pergunta": "vcs vendem seguro pra loja contra roubo? meu cpf 529.982.247-25", "gabarito": null, "dados_pessoais": ["529.982.247-25"]}
+{"id": "b46", "pergunta": "a maquininha funciona em outro pais? vou viajar pro exterior", "gabarito": null, "dados_pessoais": []}
+{"id": "b47", "pergunta": "consigo integrar a maquininha com o sistema de frente de caixa do computador?", "gabarito": null, "dados_pessoais": []}
+{"id": "b48", "pergunta": "qual a previsão do tempo pra amanhã em maceió?", "gabarito": null, "dados_pessoais": []}

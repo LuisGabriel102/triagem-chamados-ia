@@ -234,6 +234,7 @@ def ler_indice(caminho: Path = ARQUIVO_INDICE) -> dict[str, Any]:
 def _gravar_indice(caminho: Path, modelo: str, dimensoes: int, artigos: dict) -> None:
     dados = {"versao": VERSAO_FORMATO, "modelo": modelo, "dimensoes": dimensoes}
     dados["artigos"] = dict(sorted(artigos.items()))
+    caminho.parent.mkdir(parents=True, exist_ok=True)
     temporario = caminho.with_name(caminho.name + ".tmp")
     temporario.write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
     os.replace(temporario, caminho)

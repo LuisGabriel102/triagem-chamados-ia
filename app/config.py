@@ -37,7 +37,8 @@ class Configuracao(BaseSettings):
     # Abaixo do limiar, a busca devolve "nada encontrado" e o agente chama uma pessoa.
     # Com a busca por sentido, vale o da similaridade; sem ela, o do BM25. Os dois saem
     # das perguntas de calibração (python -m avaliacao.avaliar_busca --calibrar).
-    limiar_bm25: float = Field(default=0.0, ge=0)
+    # O do BM25 depende da base: recalibre quando os artigos mudarem.
+    limiar_bm25: float = Field(default=6.2882, ge=0)
     # Vazio até ser calibrado com a busca por sentido rodando (precisa do acesso ao Google).
     limiar_similaridade: float | None = Field(default=None, ge=-1, le=1)
 

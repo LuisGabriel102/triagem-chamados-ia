@@ -1,0 +1,939 @@
+{
+  "quando": "13/11/2026 11:19 UTC",
+  "contexto": {
+    "artigos": 30,
+    "limiar_bm25": 6.2882,
+    "origem_limiar_bm25": "LIMIAR_BM25 da configuração, calibrado em calibracao.md",
+    "sentido": "não rodou (falta a GEMINI_API_KEY ou o GOOGLE_CLOUD_PROJECT no .env)",
+    "limiar_similaridade": "não se aplica (a busca por sentido não rodou)"
+  },
+  "resultados": {
+    "palavras": {
+      "rodou": true,
+      "resumo": {
+        "perguntas": 48,
+        "com_resposta": 40,
+        "sem_resposta": 8,
+        "acerto_1": 24,
+        "acerto_3": 32,
+        "com_resposta_em_nada_encontrado": 17,
+        "sem_resposta_em_nada_encontrado": 7,
+        "dados_pessoais": 8,
+        "dados_enviados": 0,
+        "dados_no_texto_mascarado": 0,
+        "quedas_para_palavras": 0
+      },
+      "linhas": [
+        {
+          "id": "b01",
+          "gabarito": "recebimentos-e-prazos",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "recebimentos-e-prazos",
+            "estorno",
+            "ouvidoria"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 7.7734,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b02",
+          "gabarito": "dinheiro-nao-caiu",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "dinheiro-nao-caiu",
+            "conta-de-recebimento",
+            "abrir-cadastro"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 8.4595,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b03",
+          "gabarito": "dinheiro-nao-caiu",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "dinheiro-nao-caiu",
+            "recebimentos-e-prazos",
+            "estorno"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 4.6983,
+          "nada_encontrado": true,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b04",
+          "gabarito": "conta-de-recebimento",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "taxas-e-mudanca-de-plano",
+            "conta-de-recebimento",
+            "pix-na-maquininha"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 4.9662,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b05",
+          "gabarito": "antecipacao",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "antecipacao",
+            "parcelado",
+            "desistir-da-compra"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 3.9215,
+          "nada_encontrado": true,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b06",
+          "gabarito": "antecipacao",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "parcelado",
+            "antecipacao",
+            "taxas-e-mudanca-de-plano"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 8.6128,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b07",
+          "gabarito": "extrato-e-taxas",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "antecipacao",
+            "extrato-e-taxas",
+            "cancelar-uma-venda"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 4.5306,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b08",
+          "gabarito": "maquininha-nao-liga",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "aproximacao",
+            "maquininha-nao-le-cartao",
+            "maquininha-nao-liga"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 4.1456,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b09",
+          "gabarito": "maquininha-nao-le-cartao",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "maquininha-nao-le-cartao",
+            "venda-recusada",
+            "aproximacao"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 11.5607,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b10",
+          "gabarito": "bobina",
+          "modo_que_rodou": "palavras",
+          "candidatos": [],
+          "criterio": "nota_bm25",
+          "melhor_nota": 0.0,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b11",
+          "gabarito": "bobina",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "bobina",
+            "estorno",
+            "dinheiro-nao-caiu"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 9.4478,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b12",
+          "gabarito": "conexao",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "conexao",
+            "abrir-cadastro",
+            "troca-e-garantia"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 9.9679,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b13",
+          "gabarito": "conexao",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "conexao",
+            "maquininha-a-mais",
+            "troca-e-garantia"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 6.7561,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b14",
+          "gabarito": "maquininha-perdida-ou-roubada",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "maquininha-nao-liga",
+            "maquininha-a-mais",
+            "ouvidoria"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 4.8162,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b15",
+          "gabarito": "maquininha-perdida-ou-roubada",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "recebimentos-e-prazos"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 2.9776,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b16",
+          "gabarito": "troca-e-garantia",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "troca-e-garantia",
+            "desistir-da-compra",
+            "antecipacao"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 10.581,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b17",
+          "gabarito": "troca-e-garantia",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "cancelar-uma-venda",
+            "dinheiro-nao-caiu",
+            "recebimentos-e-prazos"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 1.9449,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b18",
+          "gabarito": "cancelar-uma-venda",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "extrato-e-taxas",
+            "antecipacao",
+            "parcelado"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 3.5106,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b19",
+          "gabarito": "cancelar-uma-venda",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "contestacao",
+            "extrato-e-taxas",
+            "venda-recusada"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 5.4278,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b20",
+          "gabarito": "estorno",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "desistir-da-compra",
+            "conta-de-recebimento",
+            "estorno"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 4.5167,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b21",
+          "gabarito": "estorno",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "estorno",
+            "parcelado",
+            "cancelar-uma-venda"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 11.6693,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b22",
+          "gabarito": "contestacao",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "contestacao",
+            "dinheiro-nao-caiu",
+            "estorno"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 14.1969,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b23",
+          "gabarito": "contestacao",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "contestacao",
+            "extrato-e-taxas",
+            "cancelar-uma-venda"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 4.5328,
+          "nada_encontrado": true,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b24",
+          "gabarito": "parcelado",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "parcelado",
+            "maquininha-a-mais",
+            "abrir-cadastro"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 9.245,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b25",
+          "gabarito": "aproximacao",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "aproximacao",
+            "maquininha-perdida-ou-roubada",
+            "nunca-pedimos-sua-senha"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 13.447,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b26",
+          "gabarito": "pix-na-maquininha",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "pix-na-maquininha",
+            "encerrar-a-conta",
+            "reclamacao-e-protocolo"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 5.5245,
+          "nada_encontrado": true,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b27",
+          "gabarito": "pix-na-maquininha",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "estorno",
+            "pix-na-maquininha",
+            "cancelar-uma-venda"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 9.9769,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b28",
+          "gabarito": "taxas-e-mudanca-de-plano",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "taxas-e-mudanca-de-plano",
+            "recebimentos-e-prazos",
+            "parcelado"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 12.8014,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b29",
+          "gabarito": "maquininha-a-mais",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "maquininha-nao-liga",
+            "desistir-da-compra",
+            "aproximacao"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 5.3355,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b30",
+          "gabarito": "golpe-sms-link-falso",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "golpe-sms-link-falso",
+            "nunca-pedimos-sua-senha",
+            "acesso-ao-app"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 11.9058,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b31",
+          "gabarito": "nunca-pedimos-sua-senha",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "nunca-pedimos-sua-senha",
+            "acesso-ao-app",
+            "golpe-sms-link-falso"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 16.9071,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b32",
+          "gabarito": "acesso-ao-app",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "acesso-ao-app",
+            "nunca-pedimos-sua-senha",
+            "conta-de-recebimento"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 11.5322,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b33",
+          "gabarito": "alterar-dados",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "acesso-ao-app",
+            "alterar-dados",
+            "ouvidoria"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 9.1146,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b34",
+          "gabarito": "encerrar-a-conta",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "encerrar-a-conta",
+            "abrir-cadastro",
+            "conta-de-recebimento"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 6.4749,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b35",
+          "gabarito": "desistir-da-compra",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "pix-na-maquininha",
+            "cancelar-uma-venda",
+            "maquininha-a-mais"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 4.3416,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b36",
+          "gabarito": "venda-recusada",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "venda-recusada",
+            "maquininha-perdida-ou-roubada",
+            "encerrar-a-conta"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 5.012,
+          "nada_encontrado": true,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b37",
+          "gabarito": "horarios-e-canais",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "horarios-e-canais",
+            "aproximacao",
+            "ouvidoria"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 7.1314,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b38",
+          "gabarito": "ouvidoria",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "horarios-e-canais",
+            "ouvidoria",
+            "reclamacao-e-protocolo"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 8.1624,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b39",
+          "gabarito": "reclamacao-e-protocolo",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "reclamacao-e-protocolo",
+            "ouvidoria",
+            "horarios-e-canais"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 9.8412,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b40",
+          "gabarito": "abrir-cadastro",
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "abrir-cadastro",
+            "alterar-dados",
+            "parcelado"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 10.9622,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b41",
+          "gabarito": null,
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "golpe-sms-link-falso",
+            "bobina"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 2.5586,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b42",
+          "gabarito": null,
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "acesso-ao-app",
+            "aproximacao",
+            "venda-recusada"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 3.361,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b43",
+          "gabarito": null,
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "golpe-sms-link-falso",
+            "maquininha-a-mais",
+            "parcelado"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 5.5467,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b44",
+          "gabarito": null,
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "contestacao",
+            "estorno",
+            "venda-recusada"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 7.9912,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b45",
+          "gabarito": null,
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "abrir-cadastro",
+            "nunca-pedimos-sua-senha",
+            "maquininha-perdida-ou-roubada"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 5.2097,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b46",
+          "gabarito": null,
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "aproximacao",
+            "bobina",
+            "maquininha-nao-le-cartao"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 5.0342,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b47",
+          "gabarito": null,
+          "modo_que_rodou": "palavras",
+          "candidatos": [
+            "maquininha-nao-liga",
+            "desistir-da-compra",
+            "maquininha-a-mais"
+          ],
+          "criterio": "nota_bm25",
+          "melhor_nota": 5.6065,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "b48",
+          "gabarito": null,
+          "modo_que_rodou": "palavras",
+          "candidatos": [],
+          "criterio": "nota_bm25",
+          "melhor_nota": 0.0,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        }
+      ]
+    },
+    "sentido": {
+      "rodou": false,
+      "motivo": "falta a GEMINI_API_KEY ou o GOOGLE_CLOUD_PROJECT no .env"
+    },
+    "hibrida": {
+      "rodou": false,
+      "motivo": "falta a GEMINI_API_KEY ou o GOOGLE_CLOUD_PROJECT no .env"
+    }
+  }
+}
