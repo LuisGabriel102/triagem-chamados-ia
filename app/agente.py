@@ -24,6 +24,7 @@ from pydantic import BaseModel, ValidationError, field_validator
 
 from app.base_conhecimento import Artigo
 from app.classificador import Uso, ler_uso_claude
+from app.datas import por_extenso, prazos_a_partir_de
 from app.ferramentas import (
     FERRAMENTAS_DE_DADOS,
     MAX_CHAMADAS_DE_FERRAMENTA,
@@ -65,7 +66,8 @@ não pode ajudar com isso e marque precisa_pessoa, com o motivo.
 # Como escrever
 - Português do Brasil simples, frases curtas, falando com "você". No máximo umas 80 palavras.
 - Vá direto ao que o lojista perguntou. Se for passo a passo, use uma lista numerada curta.
-- Com dado das ferramentas, diga o valor e a data no formato dia/mês.
+- Não faça conta de data nem de dia útil. Use as datas como vêm, com o dia da semana: \
+de <hoje>, de <prazos_a_partir_de_hoje> e das ferramentas.
 - Não cite o nome do artigo no texto: a fonte é mostrada à parte.
 - Sem títulos e sem negrito.
 
@@ -187,13 +189,20 @@ def _seguro(texto: str) -> str:
 
 
 def montar_contexto(mensagem: str, canal: str, artigos: Sequence[Artigo], hoje: date) -> str:
-    """A parte que muda a cada mensagem: a data, os artigos achados e a mensagem."""
+    """A parte que muda a cada mensagem: a data, os artigos achados e a mensagem.
+
+    A data de hoje e os prazos a partir dela vão aqui, já calculados e fora do texto
+    fixo que vai para o cache.
+    """
+    prazos = "\n".join(f"- {nome}: {data}" for nome, data in prazos_a_partir_de(hoje).items())
     blocos = [
         f'<artigo id="{a.id}" titulo="{_seguro(a.titulo)}">\n{_seguro(a.texto)}\n</artigo>'
         for a in artigos
     ]
     return (
-        f"<hoje>{hoje.isoformat()}</hoje>\n<canal>{canal}</canal>\n"
+        f"<hoje>{por_extenso(hoje)}</hoje>\n"
+        f"<prazos_a_partir_de_hoje>\n{prazos}\n</prazos_a_partir_de_hoje>\n"
+        f"<canal>{canal}</canal>\n"
         f"<artigos>\n{chr(10).join(blocos)}\n</artigos>\n"
         f"<mensagem>\n{_seguro(mensagem)}\n</mensagem>"
     )

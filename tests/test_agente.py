@@ -116,7 +116,7 @@ def test_pedido_a_ia_estrito_com_cache_e_sem_temperature():
     contexto = pedido["messages"][0]["content"]
     assert '<artigo id="bobina"' in contexto
     assert "<mensagem>\n" + BOBINA + "\n</mensagem>" in contexto
-    assert "<hoje>2026-11-13</hoje>" in contexto
+    assert "<hoje>sexta, 13/11/2026</hoje>" in contexto
 
 
 def test_custo_e_tempo_somam_triagem_busca_e_resposta():

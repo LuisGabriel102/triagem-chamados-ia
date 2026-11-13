@@ -16,6 +16,14 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from app.datas import (
+    data_prevista,
+    dias_uteis_entre,
+    ha_quanto_tempo,
+    momento_por_extenso,
+    por_extenso,
+)
+
 ARQUIVO_LOJISTAS = Path(__file__).resolve().parent.parent / "dados" / "lojistas.json"
 MAX_CHAMADAS_DE_FERRAMENTA = 3
 
@@ -63,21 +71,41 @@ CAMPOS_DA_VENDA = (
     "valor_liquido",
     "data_prevista",
     "situacao",
+    "quando",
     "prazo_documentos",
+    "dias_ate_o_prazo_documentos",
     "observacao",
 )
-CAMPOS_DA_MAQUININHA = ("apelido", "modelo", "situacao", "ultima_conexao", "observacao")
+CAMPOS_DA_MAQUININHA = (
+    "apelido",
+    "modelo",
+    "situacao",
+    "ultima_conexao",
+    "ultima_conexao_ha",
+    "observacao",
+)
 
 
 class LojistaDesconhecido(KeyError):
     """O lojista da sessão não está nos dados."""
 
 
-def proximo_dia_util(dia: date) -> date:
-    """Sábado e domingo passam para segunda (feriado não entra nos dados inventados)."""
-    while dia.weekday() >= 5:
-        dia += timedelta(days=1)
-    return dia
+def _quando(situacao: str, prevista: date, hoje: date) -> str:
+    """A situação da data, já calculada: a IA só repete."""
+    if situacao == "pago":
+        return f"caiu na {por_extenso(prevista)}"
+    if situacao == "retido_contestacao":
+        return "bloqueado até a decisão da contestação"
+    if situacao == "cancelada":
+        return "venda cancelada: não gera pagamento"
+    if situacao == "em_analise":
+        return f"em análise; se for liberada, cai na {por_extenso(prevista)}"
+    if prevista <= hoje:
+        return "cai hoje, até as 18h"
+    uteis = dias_uteis_entre(hoje, prevista)
+    if uteis == 1:
+        return f"cai no próximo dia útil: {por_extenso(prevista)}"
+    return f"cai na {por_extenso(prevista)}, daqui a {(prevista - hoje).days} dias"
 
 
 class DadosLojistas:
@@ -109,18 +137,21 @@ class DadosLojistas:
         vendas = []
         for bruta in lojista["vendas"]:
             venda = dict(bruta)
-            venda["data_venda"] = (hoje + timedelta(days=bruta["venda_em_dias"])).isoformat()
-            prevista = hoje + timedelta(days=bruta["previsto_em_dias"])
-            venda["data_prevista"] = proximo_dia_util(prevista).isoformat()
+            vendida = hoje + timedelta(days=bruta["venda_em_dias"])
+            prevista = data_prevista(lojista["plano"], bruta["forma"], vendida)
+            venda["data_venda"] = por_extenso(vendida)
+            venda["data_prevista"] = por_extenso(prevista)
+            venda["quando"] = _quando(bruta["situacao"], prevista, hoje)
             venda["valor_liquido"] = round(
                 bruta["valor_bruto"] * (1 - bruta["taxa_percentual"] / 100), 2
             )
             if "prazo_documentos_em_dias" in bruta:
                 prazo = hoje + timedelta(days=bruta["prazo_documentos_em_dias"])
-                venda["prazo_documentos"] = prazo.isoformat()
+                venda["prazo_documentos"] = por_extenso(prazo)
+                venda["dias_ate_o_prazo_documentos"] = bruta["prazo_documentos_em_dias"]
             vendas.append({campo: venda[campo] for campo in CAMPOS_DA_VENDA if campo in venda})
         return {
-            "hoje": hoje.isoformat(),
+            "hoje": por_extenso(hoje),
             "plano": lojista["plano"],
             "valores_em": "reais",
             "vendas": vendas,
@@ -133,11 +164,12 @@ class DadosLojistas:
         for bruta in lojista["maquininhas"]:
             maquininha = dict(bruta)
             momento = agora - timedelta(minutes=bruta["ultima_conexao_em_minutos"])
-            maquininha["ultima_conexao"] = momento.strftime("%Y-%m-%d %H:%M")
+            maquininha["ultima_conexao"] = momento_por_extenso(momento)
+            maquininha["ultima_conexao_ha"] = ha_quanto_tempo(bruta["ultima_conexao_em_minutos"])
             maquininhas.append(
                 {campo: maquininha[campo] for campo in CAMPOS_DA_MAQUININHA if campo in maquininha}
             )
-        return {"agora": agora.strftime("%Y-%m-%d %H:%M"), "maquininhas": maquininhas}
+        return {"agora": momento_por_extenso(agora), "maquininhas": maquininhas}
 
     def executar(self, nome: str, lojista_id: str) -> dict[str, Any]:
         """Roda a ferramenta pedida pela IA para o lojista da sessão."""
