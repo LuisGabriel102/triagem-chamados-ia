@@ -56,6 +56,17 @@ RESPOSTA_SEGURANCA = "Não posso ajudar com esse pedido por aqui. " + AVISO_PESS
 RESPOSTA_ESPERA = "Passei a sua mensagem para uma pessoa da nossa equipe. " + AVISO_PESSOA
 FECHO_PLANO_B = "Uma pessoa da nossa equipe vai confirmar."
 TAMANHO_DO_TRECHO = 600
+# A mensagem fixa de urgência, escrita uma vez (não é gerada pela IA). Os horários e os
+# canais saem do artigo "horarios-e-canais"; um teste confere que continuam lá.
+ARTIGO_HORARIOS = "horarios-e-canais"
+MENSAGEM_URGENCIA = (
+    "Seu caso é urgente: uma pessoa da nossa equipe já foi chamada e vai continuar o "
+    "atendimento, pela fila {fila}.\n\n"
+    "O atendimento humano no chat do app funciona de segunda a sábado, das 8h às 20h. Para "
+    "maquininha perdida ou roubada, suspeita de golpe ou acesso de outra pessoa à sua conta, "
+    "o chat do app e o telefone da central atendem 24 horas, todos os dias. O número da "
+    "central fica no app, em Ajuda > Fale com a gente."
+)
 
 OrigemResposta = Literal["ia", "plano_b", "fixa"]
 
@@ -121,6 +132,11 @@ def trecho_seguro(artigo: Artigo, limite: int = TAMANHO_DO_TRECHO) -> str:
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 # Marcas sem dígito, para o mascaramento não confundir com número.
 _MARCAS = [f"⟦CONTATO{letra}⟧" for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+
+
+def artigo_de_horarios(artigos: Sequence[Artigo]) -> Artigo | None:
+    """O artigo de horários e canais: a fonte da mensagem de urgência."""
+    return next((a for a in artigos if a.id == ARTIGO_HORARIOS), None)
 
 
 def contatos_da_empresa(artigos: Sequence[Artigo]) -> frozenset[str]:
@@ -235,8 +251,10 @@ class ServicoAtendimento:
         preco_embedding: float = 0.20,
         contatos_permitidos: frozenset[str] = frozenset(),
         modo_busca: Modo = "sentido",
+        horarios: Artigo | None = None,
     ) -> None:
         self._triagem = triagem
+        self._horarios = horarios  # a fonte da mensagem de urgência
         self._busca = busca
         self._agente = agente
         self._dados = dados
@@ -363,17 +381,28 @@ class ServicoAtendimento:
                 resposta, fontes, origem = resposta_plano_b(artigos[0]), [artigos[0]], "plano_b"
             tempo_resposta_ms = int((time.perf_counter() - comeco) * 1000)
 
-        # Temas de segurança (roubo, golpe, senha, link falso): o primeiro passo do artigo
-        # vai SEMPRE na resposta, mesmo quando chama uma pessoa ou a IA falha. Não vale
+        # Temas de segurança (roubo, golpe, senha, link falso): chamam uma pessoa, e o
+        # primeiro passo do artigo vai SEMPRE na resposta, mesmo quando a IA falha. Não vale
         # para quem tenta enganar a IA nem quando a busca não achou nada.
         seguranca = None if tentativa else artigo_de_seguranca(busca, fontes, texto)
+        if seguranca is not None:
+            motivos.append(f"tema de segurança: {seguranca.titulo}")
+
+        # Urgência (ou tema de segurança): a mensagem fixa diz que é urgente, que uma pessoa
+        # já foi chamada, a fila e os horários. Numa urgência, nunca só "não sei".
+        urgente = not tentativa and (urgencia is not None or seguranca is not None)
+        if urgente:
+            aviso = MENSAGEM_URGENCIA.format(fila=triagem.fila)
+            resposta = aviso if origem == "fixa" else f"{aviso}\n\n{resposta}"
+            if self._horarios is not None and self._horarios not in fontes:
+                fontes = [*fontes, self._horarios]
         if seguranca is not None:
             resposta = com_primeiro_passo(resposta, seguranca)
             if seguranca not in fontes:
                 fontes = [*fontes, seguranca]
 
         precisa_pessoa = bool(motivos)
-        if precisa_pessoa and origem == "ia" and AVISO_PESSOA not in resposta:
+        if precisa_pessoa and origem == "ia" and not urgente and AVISO_PESSOA not in resposta:
             resposta = f"{resposta}\n\n{AVISO_PESSOA}"
 
         custo_busca = round(busca.tokens_embedding * self._preco_embedding / 1_000_000, 8)
@@ -427,6 +456,7 @@ def criar_atendimento(config: Configuracao) -> ServicoAtendimento:
     continua com o negócio padrão.
     """
     triagem = criar_servico(config, negocio=descricao_do_negocio())
+    artigos = carregar_artigos()
     dados = DadosLojistas()
     chave = config.anthropic_api_key.get_secret_value().strip() if config.anthropic_api_key else ""
     agente = None
@@ -442,6 +472,7 @@ def criar_atendimento(config: Configuracao) -> ServicoAtendimento:
         preco_entrada=config.preco_agente_entrada_usd_mtok,
         preco_saida=config.preco_agente_saida_usd_mtok,
         preco_embedding=config.preco_embedding_usd_mtok,
-        contatos_permitidos=contatos_da_empresa(carregar_artigos()),
+        contatos_permitidos=contatos_da_empresa(artigos),
         modo_busca=config.modo_busca_agente,
+        horarios=artigo_de_horarios(artigos),
     )

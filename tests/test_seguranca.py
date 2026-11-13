@@ -11,6 +11,7 @@ import httpx
 
 from app.agente import AgenteClaude
 from app.atendimento import (
+    MENSAGEM_URGENCIA,
     RESPOSTA_ESPERA,
     RESPOSTA_SEGURANCA,
     ServicoAtendimento,
@@ -137,14 +138,28 @@ def test_primeiro_passo_nao_se_repete_quando_a_ia_ja_mandou():
     assert resultado.resposta.count(ROUBADA.primeiro_passo) == 1
 
 
-def test_primeiro_passo_vai_mesmo_na_mensagem_de_espera():
-    # A IA chamou uma pessoa sem citar artigo: vira a mensagem fixa, com o primeiro passo antes.
+def test_primeiro_passo_vai_mesmo_na_mensagem_fixa():
+    # A IA chamou uma pessoa sem citar artigo: vira a mensagem fixa de urgência (tema de
+    # segurança), com o primeiro passo antes. Nunca a mensagem de espera sozinha.
     resposta = resposta_agente(resposta="Sinto muito.", artigos_usados=[], precisa_pessoa=True)
     resultado = montar(ClienteAgenteFalso(("resposta", resposta))).atender(
         B14, Canal.CHAT, "loja-002"
     )
-    assert resultado.resposta == f"{ROUBADA.primeiro_passo}\n\n{RESPOSTA_ESPERA}"
+    aviso = MENSAGEM_URGENCIA.format(fila="Suporte")
+    assert resultado.resposta == f"{ROUBADA.primeiro_passo}\n\n{aviso}"
+    assert RESPOSTA_ESPERA not in resultado.resposta
     assert [f.id for f in resultado.fontes] == ["maquininha-perdida-ou-roubada"]
+
+
+def test_tema_de_seguranca_chama_uma_pessoa_mesmo_sem_a_ia_pedir():
+    resposta = resposta_agente(
+        resposta="Bloqueie a maquininha no app.", artigos_usados=["maquininha-perdida-ou-roubada"]
+    )
+    resultado = montar(ClienteAgenteFalso(("resposta", resposta))).atender(
+        B14, Canal.CHAT, "loja-002"
+    )
+    assert resultado.precisa_pessoa
+    assert "tema de segurança: Maquininha perdida ou roubada" in resultado.motivos_pessoa
 
 
 def test_primeiro_passo_vai_mesmo_quando_a_ia_falha():
@@ -179,6 +194,11 @@ def test_gatilhos_do_tema_de_seguranca():
     assert e_tema_do_artigo("recebi um SMS com link, é golpe?", golpe)
     senha = POR_ID["nunca-pedimos-sua-senha"]
     assert e_tema_do_artigo("um cara ligou pedindo o código", senha)
+    assert e_tema_do_artigo("me pediram a senha por mensagem", senha)
+    # Senha esquecida e código que não chega são assunto de acesso, não de golpe: com o
+    # tema de segurança chamando uma pessoa, "senha" e "código" sozinhos não bastam.
+    assert not e_tema_do_artigo("esqueci a senha e o codigo nao chega", senha)
+    assert not e_tema_do_artigo("o codigo nao chega por sms", golpe)
     for artigo in ARTIGOS:
         assert bool(artigo.primeiro_passo) == bool(artigo.gatilhos), artigo.id
 

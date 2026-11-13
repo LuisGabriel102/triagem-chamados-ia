@@ -40,6 +40,7 @@ from app.atendimento import (
     RESPOSTA_NAO_SEI,
     RESPOSTA_SEGURANCA,
     ServicoAtendimento,
+    artigo_de_horarios,
     contatos_da_empresa,
 )
 from app.base_conhecimento import Artigo, carregar_artigos, descricao_do_negocio
@@ -190,6 +191,7 @@ def montar_atendimento(
         preco_embedding=config.preco_embedding_usd_mtok,
         contatos_permitidos=contatos_da_empresa(artigos),
         modo_busca=config.modo_busca_agente,
+        horarios=artigo_de_horarios(artigos),
     )
     return atendimento, triagem_ia, agente_ia, gravador
 
