@@ -1,5 +1,6 @@
 """Dublês dos testes. Nenhum teste chama a API real da Anthropic nem a do Google."""
 
+import copy
 import hashlib
 import json
 from types import SimpleNamespace
@@ -176,3 +177,68 @@ class GeradorVetoresFalso:
         if self._erro is not None:
             raise self._erro
         return self._vetor(texto)
+
+
+def resposta_agente(**alteracoes: Any) -> dict[str, Any]:
+    """Uma resposta válida do agente, do jeito que a IA devolve por responder_lojista."""
+    dados: dict[str, Any] = {
+        "resposta": "A bobina térmica de 57 mm se compra no app, em Loja › Bobinas.",
+        "artigos_usados": ["bobina"],
+        "precisa_pessoa": False,
+        "motivo": None,
+        "confianca": 0.92,
+    }
+    dados.update(alteracoes)
+    return dados
+
+
+class ClienteAgenteFalso:
+    """Imita o cliente da Anthropic no agente. Cada chamada devolve a próxima jogada:
+    ("consulta", "consultar_recebimentos") ou ("resposta", {...}). A última se repete.
+
+    Guarda uma cópia de cada pedido, para os testes conferirem o que a IA recebeu.
+    """
+
+    def __init__(
+        self,
+        *jogadas: tuple[str, Any],
+        erro: Exception | None = None,
+        stop_reason: str = "tool_use",
+    ) -> None:
+        self.chamadas: list[dict[str, Any]] = []
+        self.messages = self
+        self._jogadas = list(jogadas) or [("resposta", resposta_agente())]
+        self._erro = erro
+        self._stop_reason = stop_reason
+
+    def create(self, **kwargs: Any) -> SimpleNamespace:
+        self.chamadas.append(copy.deepcopy(kwargs))
+        if self._erro is not None:
+            raise self._erro
+        tipo, valor = self._jogadas[min(len(self.chamadas), len(self._jogadas)) - 1]
+        if tipo == "consulta":
+            bloco = SimpleNamespace(
+                type="tool_use", id=f"toolu_{len(self.chamadas)}", name=valor, input={}
+            )
+        else:
+            bloco = SimpleNamespace(
+                type="tool_use",
+                id=f"toolu_{len(self.chamadas)}",
+                name="responder_lojista",
+                input=valor,
+            )
+        return SimpleNamespace(
+            content=[bloco],
+            usage=SimpleNamespace(
+                input_tokens=900,
+                output_tokens=120,
+                cache_creation_input_tokens=0,
+                cache_read_input_tokens=1100,
+            ),
+            model="claude-haiku-5-5",
+            stop_reason=self._stop_reason,
+        )
+
+    def todo_o_texto_enviado(self) -> str:
+        """Tudo o que a IA leu em todas as chamadas, para procurar dado que não devia estar."""
+        return json.dumps(self.chamadas, ensure_ascii=False, default=lambda o: vars(o))

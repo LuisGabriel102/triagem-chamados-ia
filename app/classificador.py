@@ -188,7 +188,7 @@ def montar_mensagem(texto: str, canal: str) -> str:
     return f"<canal>{canal}</canal>\n<chamado>\n{texto_seguro}\n</chamado>"
 
 
-def _ler_uso(usage: Any) -> Uso:
+def ler_uso_claude(usage: Any) -> Uso:
     def inteiro(nome: str) -> int:
         return int(getattr(usage, nome, 0) or 0)
 
@@ -228,7 +228,7 @@ class ClassificadorClaude:
             raise ErroClassificador(f"falha na API da Anthropic ({type(erro).__name__})") from erro
 
         # A partir daqui a chamada já foi cobrada: os tokens vão junto até no erro.
-        uso = _ler_uso(getattr(resposta, "usage", None))
+        uso = ler_uso_claude(getattr(resposta, "usage", None))
         modelo = getattr(resposta, "model", None) or self.modelo
         if resposta.stop_reason == "max_tokens":
             raise ErroClassificador("resposta da IA cortada no limite de tokens", uso, modelo)

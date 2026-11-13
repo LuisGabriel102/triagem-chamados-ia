@@ -91,6 +91,9 @@ class DadosLojistas:
         ]
         self._agora = agora
 
+    def hoje(self) -> date:
+        return self._agora().date()
+
     def existe(self, lojista_id: str) -> bool:
         return lojista_id in self._lojistas
 

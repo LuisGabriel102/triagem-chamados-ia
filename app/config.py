@@ -41,6 +41,16 @@ class Configuracao(BaseSettings):
     limiar_bm25: float | None = Field(default=None, ge=0)
     limiar_similaridade: float | None = Field(default=None, ge=-1, le=1)
 
+    # Agente do atendimento (etapa 2): responde com o Claude Haiku 5.5 pela ANTHROPIC_API_KEY.
+    modelo_agente: str = "claude-haiku-5-5"
+    # Preço do modelo do agente, em dólar por milhão de tokens (Haiku 5.5, prompt de até 100 mil
+    # tokens). Confira na página de preços da Anthropic.
+    preco_agente_entrada_usd_mtok: float = Field(default=0.10, ge=0)
+    preco_agente_saida_usd_mtok: float = Field(default=0.50, ge=0)
+    # Preço dos embeddings do Gemini (gemini-embedding-2, plano pago, conferido em 13/11/2026 em
+    # aistudio.google.com/docs/pricing). No plano gratuito, sai de graça.
+    preco_embedding_usd_mtok: float = Field(default=0.20, ge=0)
+
     database_url: str = "sqlite:///./triagem.db"
     # Chave que quem chama a API envia no cabeçalho X-API-Key. Vazia = API aberta (só local).
     chave_api_app: SecretStr | None = None
