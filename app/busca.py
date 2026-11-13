@@ -137,6 +137,8 @@ class ResultadoBusca:
     avisos: list[str] = field(default_factory=list)
     # Tokens que o Google cobrou para transformar a pergunta em vetor (0 sem a busca por sentido).
     tokens_embedding: int = 0
+    # O artigo cuja nota foi comparada com o limiar (o mais parecido pelo critério).
+    mais_parecido: str | None = None
 
     @property
     def achados(self) -> list[Achado]:
@@ -239,17 +241,28 @@ class Busca:
         if similaridades is not None and self.limiar_similaridade is not None:
             criterio, limiar = "similaridade", self.limiar_similaridade
             melhor = similaridades[0][1] if similaridades else 0.0
+            mais_parecido = similaridades[0][0] if similaridades else None
         else:
             if similaridades is not None:
                 avisos.append(SEM_LIMIAR_SIMILARIDADE)
             criterio, limiar = "nota_bm25", self.limiar_bm25
             melhor = notas_bm25[0][1] if notas_bm25 else 0.0
+            mais_parecido = notas_bm25[0][0] if notas_bm25 else None
 
         bm25 = dict(notas_bm25)
         sentido = dict(similaridades or [])
+        fusao = fundir_rankings(*rankings)
+        escolhidos = fusao[: self.quantos]
+        # O artigo que fez a busca passar do limiar sempre vai junto. Sem isso, na busca
+        # híbrida, o BM25 podia empurrar para fora justamente o artigo que a busca por
+        # sentido achou (achado na fumaça: "roubaram minha maquininha", b14).
+        ids_escolhidos = [id_artigo for id_artigo, _ in escolhidos]
+        if escolhidos and mais_parecido and mais_parecido not in ids_escolhidos:
+            nota = dict(fusao)[mais_parecido]
+            escolhidos = [*escolhidos[: self.quantos - 1], (mais_parecido, nota)]
         candidatos = [
             Achado(self._artigos[id_artigo], nota, bm25.get(id_artigo), sentido.get(id_artigo))
-            for id_artigo, nota in fundir_rankings(*rankings)[: self.quantos]
+            for id_artigo, nota in escolhidos
         ]
         return ResultadoBusca(
             pergunta_mascarada=mascarada,
@@ -261,6 +274,7 @@ class Busca:
             limiar=limiar,
             avisos=avisos,
             tokens_embedding=tokens_embedding,
+            mais_parecido=mais_parecido,
         )
 
 

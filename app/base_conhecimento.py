@@ -41,6 +41,9 @@ class Artigo:
     titulo: str
     categoria: Categoria
     texto: str  # o corpo, sem o cabeçalho
+    # Só nos temas de segurança (roubo, golpe, senha, link falso): o passo que vai
+    # sempre na resposta, mesmo quando o caso segue para uma pessoa.
+    primeiro_passo: str | None = None
 
     @property
     def quando_chamar_pessoa(self) -> str:
@@ -95,7 +98,13 @@ def ler_artigo(caminho: Path) -> Artigo:
     texto = "\n".join(linhas[fim + 1 :]).strip()
     if TITULO_ESCALONAMENTO not in texto:
         raise ErroBase(f"{caminho.name}: falta o bloco '{TITULO_ESCALONAMENTO}'")
-    return Artigo(id=caminho.stem, titulo=titulo, categoria=categoria, texto=texto)
+    return Artigo(
+        id=caminho.stem,
+        titulo=titulo,
+        categoria=categoria,
+        texto=texto,
+        primeiro_passo=cabecalho.get("primeiro_passo") or None,
+    )
 
 
 def carregar_artigos(pasta: Path = PASTA_ARTIGOS) -> list[Artigo]:

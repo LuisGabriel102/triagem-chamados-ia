@@ -1,6 +1,7 @@
 ---
 titulo: Golpe do SMS e do link falso
 categoria: outros
+primeiro_passo: Não clique no link e apague a mensagem. Se já clicou e digitou algum dado, troque a senha do app na hora.
 ---
 
 Golpistas mandam SMS e mensagens com o nome da Tapiri para roubar o acesso à sua conta. As mensagens mais comuns dizem:

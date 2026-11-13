@@ -129,6 +129,21 @@ def mascarar_resposta(texto: str, permitidos: frozenset[str]) -> ResultadoMascar
     return ResultadoMascaramento(texto=final, encontrados=resultado.encontrados)
 
 
+def artigo_de_seguranca(busca: ResultadoBusca, citados: Sequence[Artigo]) -> Artigo | None:
+    """O artigo de segurança do caso: o que a IA citou ou o mais parecido da busca."""
+    achados = {achado.artigo.id: achado.artigo for achado in busca.achados}
+    candidatos = [*citados, achados.get(busca.mais_parecido or "")]
+    return next((a for a in candidatos if a is not None and a.primeiro_passo), None)
+
+
+def com_primeiro_passo(resposta: str, artigo: Artigo) -> str:
+    """Põe o primeiro passo do artigo de segurança no começo da resposta, se faltar."""
+    passo = artigo.primeiro_passo or ""
+    if not passo or passo in resposta:
+        return resposta
+    return f"{passo}\n\n{resposta}"
+
+
 def resposta_plano_b(artigo: Artigo) -> str:
     return (
         f'Encontrei isto na nossa ajuda, em "{artigo.titulo}":\n\n'
@@ -311,6 +326,15 @@ class ServicoAtendimento:
                 motivos.append("erro inesperado na IA: resposta pelo plano B")
                 resposta, fontes, origem = resposta_plano_b(artigos[0]), [artigos[0]], "plano_b"
             tempo_resposta_ms = int((time.perf_counter() - comeco) * 1000)
+
+        # Temas de segurança (roubo, golpe, senha, link falso): o primeiro passo do artigo
+        # vai SEMPRE na resposta, mesmo quando chama uma pessoa ou a IA falha. Não vale
+        # para quem tenta enganar a IA nem quando a busca não achou nada.
+        seguranca = None if tentativa else artigo_de_seguranca(busca, fontes)
+        if seguranca is not None:
+            resposta = com_primeiro_passo(resposta, seguranca)
+            if seguranca not in fontes:
+                fontes = [*fontes, seguranca]
 
         precisa_pessoa = bool(motivos)
         if precisa_pessoa and origem == "ia" and AVISO_PESSOA not in resposta:

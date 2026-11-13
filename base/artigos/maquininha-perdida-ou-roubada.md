@@ -1,6 +1,7 @@
 ---
 titulo: Maquininha perdida ou roubada
 categoria: suporte_tecnico
+primeiro_passo: Bloqueie a maquininha agora: no app, toque em Maquininhas, escolha a que sumiu e toque em Bloquear. Sem acesso ao app, o telefone da central faz o bloqueio 24 horas.
 ---
 
 Bloqueie a maquininha na hora. Assim ninguém consegue usar a máquina para cancelar vendas ou mexer no seu dinheiro.
