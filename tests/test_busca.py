@@ -235,3 +235,13 @@ def test_criar_busca_com_chave_e_sem_indice_avisa_para_indexar(monkeypatch, tmp_
 def test_limiar_de_similaridade_vazio_no_env_quer_dizer_sem_limiar():
     config = Configuracao(_env_file=None, limiar_similaridade="")
     assert config.limiar_similaridade is None
+
+
+def test_erro_inesperado_do_sdk_tambem_cai_para_a_busca_por_palavras():
+    gerador = GeradorGemini(ClienteEmbeddingFalso(erro=ValueError("opção recusada pelo SDK")))
+    indice = IndiceMemoria({artigo.id: [1.0] + [0.0] * 767 for artigo in ARTIGOS})
+    busca = Busca(ARTIGOS, gerador, indice, limiar_bm25=1.0, limiar_similaridade=0.5)
+    resultado = busca.buscar("a bobina acabou, onde compro?")
+    assert resultado.modo == "palavras"
+    assert "erro inesperado na chamada ao Google (ValueError)" in resultado.avisos[0]
+    assert "opção recusada" not in resultado.avisos[0]

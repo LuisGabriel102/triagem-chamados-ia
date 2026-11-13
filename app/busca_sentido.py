@@ -153,6 +153,13 @@ class GeradorGemini:
             codigo = getattr(erro, "code", None)
             detalhe = f"{type(erro).__name__} {codigo}" if codigo else type(erro).__name__
             raise ErroSentido(f"falha na API do Google ({detalhe})") from erro
+        except Exception as erro:
+            # Erro que não era esperado (do SDK ou da rede). A busca não pode parar por isso:
+            # segue só por palavras, e o detalhe completo fica no log.
+            log.exception("Erro inesperado na chamada de embeddings do Google")
+            raise ErroSentido(
+                f"erro inesperado na chamada ao Google ({type(erro).__name__})"
+            ) from erro
         try:
             valores = [float(x) for x in resposta.embeddings[0].values]
         except (AttributeError, IndexError, TypeError) as erro:
