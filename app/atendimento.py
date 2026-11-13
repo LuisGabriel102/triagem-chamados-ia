@@ -37,7 +37,7 @@ from app.base_conhecimento import (
     TITULO_ESCALONAMENTO,
     Artigo,
     carregar_artigos,
-    descricao_do_negocio,
+    negocio_do_atendimento,
 )
 from app.busca import Busca, Modo, ResultadoBusca, criar_busca
 from app.busca_palavras import normalizar
@@ -634,7 +634,7 @@ def criar_atendimento(config: Configuracao) -> ServicoAtendimento:
     continua com o negócio padrão.
     """
     triagem = criar_servico(
-        config, negocio=descricao_do_negocio(), raciocinio=RACIOCINIO_ATENDIMENTO
+        config, negocio=negocio_do_atendimento(), raciocinio=RACIOCINIO_ATENDIMENTO
     )
     artigos = carregar_artigos()
     dados = DadosLojistas()

@@ -51,7 +51,7 @@ from app.atendimento import (
     artigo_de_horarios,
     contatos_da_empresa,
 )
-from app.base_conhecimento import Artigo, carregar_artigos, descricao_do_negocio
+from app.base_conhecimento import Artigo, carregar_artigos, negocio_do_atendimento
 from app.busca import Busca, escolher_limiares
 from app.busca_sentido import ARQUIVO_INDICE, carregar_indice_memoria, criar_gerador
 from app.classificador import RACIOCINIO_ATENDIMENTO, ClassificadorClaude
@@ -190,7 +190,7 @@ def montar_atendimento(
         ClassificadorClaude(
             triagem_ia,
             config.modelo_llm,
-            negocio=descricao_do_negocio(),
+            negocio=negocio_do_atendimento(),
             raciocinio=RACIOCINIO_ATENDIMENTO,
         ),
         limite_confianca=config.limite_confianca,

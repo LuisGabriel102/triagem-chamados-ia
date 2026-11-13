@@ -67,6 +67,21 @@ def descricao_do_negocio(caminho: Path = PASTA_BASE / "EMPRESA.md") -> str:
     return " ".join(texto.replace("**", "").split())
 
 
+# O que é urgente na Tapiri: a configuração da triagem do atendimento (versão 2). A triagem
+# padrão (/chamados) não recebe este texto e continua igual.
+URGENCIA_TAPIRI = (
+    "Nesta empresa, use a prioridade urgente só nestes casos, no lugar da regra geral de "
+    "urgente: o lojista não consegue vender agora; suspeita de golpe, roubo ou fraude; "
+    "dinheiro que sumiu da conta. Perguntar quando cai uma venda, quanto custa ou como fazer "
+    "algo não é urgente."
+)
+
+
+def negocio_do_atendimento() -> str:
+    """O negócio que a triagem do atendimento recebe: a Tapiri e o que é urgente nela."""
+    return f"{descricao_do_negocio()} {URGENCIA_TAPIRI}"
+
+
 def contar_palavras(texto: str) -> int:
     return len(_PALAVRA.findall(texto))
 

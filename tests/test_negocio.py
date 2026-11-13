@@ -3,7 +3,7 @@
 import hashlib
 
 from app.atendimento import criar_atendimento
-from app.base_conhecimento import descricao_do_negocio
+from app.base_conhecimento import URGENCIA_TAPIRI, descricao_do_negocio, negocio_do_atendimento
 from app.classificador import (
     NEGOCIO_PADRAO,
     PROMPT_SISTEMA,
@@ -104,3 +104,27 @@ def test_o_pedido_da_triagem_leva_o_raciocinio_so_quando_pedido():
     sem = ClienteFalso()
     ClassificadorClaude(sem, "claude-haiku-5-5").classificar("oi", "chat")
     assert "thinking" not in sem.chamadas[0] and "output_config" not in sem.chamadas[0]
+
+
+# --- Versão 2, mudança 3: o que é urgente na Tapiri ---
+
+
+def test_a_triagem_do_atendimento_sabe_o_que_e_urgente_na_tapiri():
+    config = Configuracao(_env_file=None, anthropic_api_key="chave-falsa", gemini_api_key=None)
+    prompt = criar_atendimento(config)._triagem._classificador.prompt_sistema
+    assert URGENCIA_TAPIRI in prompt
+    for trecho in (
+        "o lojista não consegue vender agora",
+        "suspeita de golpe, roubo ou fraude",
+        "dinheiro que sumiu",
+        "Perguntar quando cai uma venda",
+    ):
+        assert trecho in URGENCIA_TAPIRI
+    # O negócio do atendimento é a Tapiri mais a definição de urgente.
+    assert negocio_do_atendimento() == f"{descricao_do_negocio()} {URGENCIA_TAPIRI}"
+
+
+def test_a_triagem_padrao_nao_recebe_a_definicao_da_tapiri():
+    assert URGENCIA_TAPIRI not in PROMPT_SISTEMA
+    config = Configuracao(_env_file=None, anthropic_api_key="chave-falsa", gemini_api_key=None)
+    assert URGENCIA_TAPIRI not in criar_servico(config)._classificador.prompt_sistema
