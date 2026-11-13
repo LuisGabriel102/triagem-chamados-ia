@@ -25,8 +25,13 @@ NOME_FERRAMENTA = "registrar_triagem"
 
 _INICIO_PROMPT = (
     "Você faz a triagem dos chamados que chegam ao atendimento ao cliente de uma empresa "
-    "brasileira. A empresa vende um sistema de gestão por assinatura e também produtos com "
-    "entrega. "
+    "brasileira. "
+)
+# O negócio da empresa é um parâmetro. O padrão é o de sempre: a triagem de /chamados e a
+# avaliação dos 40 chamados usam este texto, igual ao de antes. O atendimento do lojista usa
+# o da Tapiri (base/EMPRESA.md).
+NEGOCIO_PADRAO = (
+    "A empresa vende um sistema de gestão por assinatura e também produtos com entrega."
 )
 
 _REGRAS_PROMPT = """
@@ -82,16 +87,30 @@ quando o chamado couber em duas categorias ou a prioridade for duvidosa. Use men
 
 # Muda só a frase de como responder: o Claude usa a ferramenta; o Gemini devolve JSON
 # preso a um esquema. As regras são as mesmas, palavra por palavra.
-PROMPT_SISTEMA = (
-    _INICIO_PROMPT
-    + "Leia o chamado e registre a triagem com a ferramenta registrar_triagem.\n"
-    + _REGRAS_PROMPT
-)
-PROMPT_SISTEMA_GEMINI = (
-    _INICIO_PROMPT
-    + "Leia o chamado e responda só com a triagem, no formato JSON pedido.\n"
-    + _REGRAS_PROMPT
-)
+
+
+def montar_prompt_sistema(negocio: str = NEGOCIO_PADRAO) -> str:
+    """O prompt da triagem com o Claude, para o negócio dado."""
+    return (
+        _INICIO_PROMPT
+        + negocio.strip()
+        + " Leia o chamado e registre a triagem com a ferramenta registrar_triagem.\n"
+        + _REGRAS_PROMPT
+    )
+
+
+def montar_prompt_sistema_gemini(negocio: str = NEGOCIO_PADRAO) -> str:
+    """O mesmo prompt, com a frase de como responder trocada para o Gemini."""
+    return (
+        _INICIO_PROMPT
+        + negocio.strip()
+        + " Leia o chamado e responda só com a triagem, no formato JSON pedido.\n"
+        + _REGRAS_PROMPT
+    )
+
+
+PROMPT_SISTEMA = montar_prompt_sistema()
+PROMPT_SISTEMA_GEMINI = montar_prompt_sistema_gemini()
 
 # Formato estrito: todos os campos obrigatórios e nenhum campo extra.
 # A justificativa vem primeiro para o modelo explicar antes de decidir.
@@ -201,10 +220,13 @@ def ler_uso_claude(usage: Any) -> Uso:
 
 
 class ClassificadorClaude:
-    def __init__(self, cliente: Any, modelo: str, max_tokens: int = 1024) -> None:
+    def __init__(
+        self, cliente: Any, modelo: str, max_tokens: int = 1024, negocio: str = NEGOCIO_PADRAO
+    ) -> None:
         self._cliente = cliente
         self.modelo = modelo
         self._max_tokens = max_tokens
+        self.prompt_sistema = montar_prompt_sistema(negocio)
 
     def classificar(self, texto: str, canal: str) -> ResultadoIA:
         try:
@@ -216,7 +238,7 @@ class ClassificadorClaude:
                 system=[
                     {
                         "type": "text",
-                        "text": PROMPT_SISTEMA,
+                        "text": self.prompt_sistema,
                         "cache_control": {"type": "ephemeral"},
                     }
                 ],
@@ -252,15 +274,17 @@ class ClassificadorClaude:
         return ResultadoIA(triagem=triagem, uso=uso, modelo=modelo)
 
 
-def criar_classificador(config: Configuracao) -> Classificador | None:
+def criar_classificador(
+    config: Configuracao, negocio: str = NEGOCIO_PADRAO
+) -> Classificador | None:
     """Monta o classificador do provedor escolhido. Sem credencial, devolve None."""
     if config.provedor_ia == "gemini":
         # Importado aqui para evitar ciclo: o módulo do Gemini usa as peças deste.
         from app.classificador_gemini import criar_classificador_gemini
 
-        return criar_classificador_gemini(config)
+        return criar_classificador_gemini(config, negocio)
     chave = config.anthropic_api_key.get_secret_value().strip() if config.anthropic_api_key else ""
     if not chave:
         return None
     cliente = anthropic.Anthropic(api_key=chave, timeout=config.timeout_llm_s, max_retries=2)
-    return ClassificadorClaude(cliente, modelo=config.modelo_llm)
+    return ClassificadorClaude(cliente, modelo=config.modelo_llm, negocio=negocio)

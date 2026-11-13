@@ -20,7 +20,6 @@ sys.path.insert(0, str(RAIZ))
 from app.atendimento import criar_atendimento  # noqa: E402
 from app.config import Configuracao  # noqa: E402
 from app.esquemas import Canal  # noqa: E402
-from app.servico import criar_servico  # noqa: E402
 
 ARQUIVO_PERGUNTAS = RAIZ / "avaliacao" / "perguntas_busca.jsonl"
 SAIDA = RAIZ / "avaliacao" / "resultados" / "fumaca_atendimento"
@@ -48,8 +47,7 @@ def main() -> int:
     if not (config.anthropic_api_key and config.anthropic_api_key.get_secret_value().strip()):
         print("Não rodou: falta a ANTHROPIC_API_KEY no .env.")
         return 1
-    servico = criar_servico(config)
-    atendimento = criar_atendimento(config, servico)
+    atendimento = criar_atendimento(config)
     perguntas = {
         p["id"]: p for p in map(json.loads, ARQUIVO_PERGUNTAS.read_text("utf-8").splitlines()) if p
     }
@@ -95,7 +93,8 @@ def main() -> int:
     partes = [
         "# Fumaça do atendimento (não é a avaliação da etapa 3)",
         "",
-        f"Rodada em {quando}, com IA de verdade: triagem com `{servico.modelo}`, resposta com "
+        f"Rodada em {quando}, com IA de verdade: triagem com `{atendimento.modelo_triagem}` "
+        "(com o negócio da Tapiri), resposta com "
         f"`{config.modelo_agente}`, busca com `{config.modelo_embedding}`. "
         f"{total} perguntas de `avaliacao/perguntas_busca.jsonl`, escolhidas antes de rodar.",
         "",

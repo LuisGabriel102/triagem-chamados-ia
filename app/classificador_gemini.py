@@ -22,11 +22,12 @@ from pydantic import ValidationError
 
 from app.classificador import (
     FERRAMENTA_TRIAGEM,
-    PROMPT_SISTEMA_GEMINI,
+    NEGOCIO_PADRAO,
     ErroClassificador,
     ResultadoIA,
     Uso,
     montar_mensagem,
+    montar_prompt_sistema_gemini,
 )
 from app.config import Configuracao
 from app.esquemas import Triagem
@@ -87,14 +88,19 @@ def ler_uso_gemini(uso: Any) -> Uso:
 
 class ClassificadorGemini:
     def __init__(
-        self, cliente: Any, modelo: str, raciocinio: str = "low", max_tokens: int = 4096
+        self,
+        cliente: Any,
+        modelo: str,
+        raciocinio: str = "low",
+        max_tokens: int = 4096,
+        negocio: str = NEGOCIO_PADRAO,
     ) -> None:
         self._cliente = cliente
         self.modelo = modelo
         # O limite de saída inclui o raciocínio; por isso é maior que o do Claude.
         self._max_tokens = max_tokens
         self._configuracao = types.GenerateContentConfig(
-            system_instruction=PROMPT_SISTEMA_GEMINI,
+            system_instruction=montar_prompt_sistema_gemini(negocio),
             response_mime_type="application/json",
             response_schema=ESQUEMA_GEMINI,
             max_output_tokens=max_tokens,
@@ -146,7 +152,9 @@ class ClassificadorGemini:
         return ResultadoIA(triagem=triagem, uso=uso, modelo=modelo)
 
 
-def criar_classificador_gemini(config: Configuracao) -> ClassificadorGemini | None:
+def criar_classificador_gemini(
+    config: Configuracao, negocio: str = NEGOCIO_PADRAO
+) -> ClassificadorGemini | None:
     """Monta o Gemini no Vertex AI. Sem projeto do Google Cloud, devolve None."""
     projeto = config.google_cloud_project.strip()
     if not projeto:
@@ -162,5 +170,8 @@ def criar_classificador_gemini(config: Configuracao) -> ClassificadorGemini | No
         ),
     )
     return ClassificadorGemini(
-        cliente, modelo=config.modelo_gemini, raciocinio=config.raciocinio_gemini
+        cliente,
+        modelo=config.modelo_gemini,
+        raciocinio=config.raciocinio_gemini,
+        negocio=negocio,
     )

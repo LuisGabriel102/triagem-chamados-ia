@@ -270,7 +270,7 @@ def criar_app(
             # Sem a base ou os dados (por exemplo, numa imagem antiga), a triagem segue no ar
             # e só a rota /atendimento responde 503.
             try:
-                app.state.atendimento = criar_atendimento(cfg, app.state.servico)
+                app.state.atendimento = criar_atendimento(cfg)
             except Exception:
                 log.exception("Atendimento desligado: não deu para montar a busca e o agente.")
         if not app.state.servico.ia_configurada:

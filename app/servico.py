@@ -5,7 +5,13 @@ import re
 import time
 from dataclasses import dataclass
 
-from app.classificador import Classificador, ErroClassificador, Uso, criar_classificador
+from app.classificador import (
+    NEGOCIO_PADRAO,
+    Classificador,
+    ErroClassificador,
+    Uso,
+    criar_classificador,
+)
 from app.config import Configuracao
 from app.esquemas import (
     FILA_POR_CATEGORIA,
@@ -218,7 +224,7 @@ class ServicoTriagem:
         return motivos
 
 
-def criar_servico(config: Configuracao) -> ServicoTriagem:
+def criar_servico(config: Configuracao, negocio: str = NEGOCIO_PADRAO) -> ServicoTriagem:
     """Monta o serviço com a IA e o preço do provedor escolhido na configuração."""
     precos = precos_do_provedor(config)
     if config.provedor_ia == "gemini" and not precos.conhecido:
@@ -227,7 +233,7 @@ def criar_servico(config: Configuracao) -> ServicoTriagem:
             config.modelo_gemini,
         )
     return ServicoTriagem(
-        classificador=criar_classificador(config),
+        classificador=criar_classificador(config, negocio),
         limite_confianca=config.limite_confianca,
         preco_entrada=precos.entrada,
         preco_saida=precos.saida,

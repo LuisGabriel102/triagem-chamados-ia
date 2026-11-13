@@ -48,6 +48,18 @@ class Artigo:
         return self.texto.split(TITULO_ESCALONAMENTO, 1)[1].strip()
 
 
+def descricao_do_negocio(caminho: Path = PASTA_BASE / "EMPRESA.md") -> str:
+    """O que a Tapiri vende, tirado de base/EMPRESA.md, para a triagem do atendimento.
+
+    É o parágrafo que começa com "A Tapiri vende", sem o negrito e sem a frase final que
+    lembra que os números são inventados (isso a triagem não precisa saber).
+    """
+    paragrafos = caminho.read_text("utf-8").replace("\r\n", "\n").split("\n\n")
+    texto = next(p for p in paragrafos if p.startswith("A Tapiri vende"))
+    texto = texto.split("**Todos esses números", 1)[0]
+    return " ".join(texto.replace("**", "").split())
+
+
 def contar_palavras(texto: str) -> int:
     return len(_PALAVRA.findall(texto))
 

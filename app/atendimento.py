@@ -29,7 +29,12 @@ from typing import Literal
 import anthropic
 
 from app.agente import AgenteClaude, ErroAgente, ResultadoAgente
-from app.base_conhecimento import TITULO_ESCALONAMENTO, Artigo, carregar_artigos
+from app.base_conhecimento import (
+    TITULO_ESCALONAMENTO,
+    Artigo,
+    carregar_artigos,
+    descricao_do_negocio,
+)
 from app.busca import Busca, ResultadoBusca, criar_busca
 from app.busca_palavras import normalizar
 from app.classificador import Uso
@@ -37,7 +42,7 @@ from app.config import Configuracao
 from app.esquemas import Canal, Categoria, Prioridade
 from app.ferramentas import DadosLojistas, LojistaDesconhecido
 from app.mascaramento import ResultadoMascaramento, mascarar
-from app.servico import ResultadoTriagem, ServicoTriagem, calcular_custo
+from app.servico import ResultadoTriagem, ServicoTriagem, calcular_custo, criar_servico
 
 log = logging.getLogger(__name__)
 
@@ -198,6 +203,10 @@ class ServicoAtendimento:
     def ia_configurada(self) -> bool:
         return self._agente is not None
 
+    @property
+    def modelo_triagem(self) -> str | None:
+        return self._triagem.modelo
+
     def existe_lojista(self, lojista_id: str) -> bool:
         return self._dados.existe(lojista_id)
 
@@ -349,8 +358,13 @@ class ServicoAtendimento:
         )
 
 
-def criar_atendimento(config: Configuracao, triagem: ServicoTriagem) -> ServicoAtendimento:
-    """Monta o atendimento: a busca da etapa 1, os dados dos lojistas e o Claude."""
+def criar_atendimento(config: Configuracao) -> ServicoAtendimento:
+    """Monta o atendimento: a triagem com o negócio da Tapiri, a busca, os dados e o Claude.
+
+    A triagem daqui é outra, com a descrição da Tapiri (base/EMPRESA.md). A de /chamados
+    continua com o negócio padrão.
+    """
+    triagem = criar_servico(config, negocio=descricao_do_negocio())
     dados = DadosLojistas()
     chave = config.anthropic_api_key.get_secret_value().strip() if config.anthropic_api_key else ""
     agente = None
