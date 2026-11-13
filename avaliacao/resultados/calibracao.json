@@ -1,5 +1,5 @@
 {
-  "quando": "13/11/2026 11:19 UTC",
+  "quando": "13/11/2026 11:47 UTC",
   "nota_bm25": {
     "limiar": 6.2882,
     "com_resposta": 14,
@@ -149,5 +149,153 @@
       }
     ]
   },
-  "similaridade": null
+  "similaridade": {
+    "limiar": 0.7108,
+    "com_resposta": 14,
+    "sem_resposta": 6,
+    "com_resposta_que_passam": 13,
+    "sem_resposta_barradas": 6,
+    "linhas": [
+      {
+        "id": "c01",
+        "com_resposta": true,
+        "nota": 0.7805,
+        "primeiro": "recebimentos-e-prazos",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c02",
+        "com_resposta": true,
+        "nota": 0.8322,
+        "primeiro": "dinheiro-nao-caiu",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c03",
+        "com_resposta": true,
+        "nota": 0.7814,
+        "primeiro": "conta-de-recebimento",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c04",
+        "com_resposta": true,
+        "nota": 0.783,
+        "primeiro": "bobina",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c05",
+        "com_resposta": true,
+        "nota": 0.7232,
+        "primeiro": "maquininha-nao-liga",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c06",
+        "com_resposta": true,
+        "nota": 0.8179,
+        "primeiro": "maquininha-nao-le-cartao",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c07",
+        "com_resposta": true,
+        "nota": 0.8158,
+        "primeiro": "maquininha-perdida-ou-roubada",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c08",
+        "com_resposta": true,
+        "nota": 0.7954,
+        "primeiro": "estorno",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c09",
+        "com_resposta": true,
+        "nota": 0.7132,
+        "primeiro": "parcelado",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c10",
+        "com_resposta": true,
+        "nota": 0.7752,
+        "primeiro": "pix-na-maquininha",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c11",
+        "com_resposta": true,
+        "nota": 0.7082,
+        "primeiro": "nunca-pedimos-sua-senha",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c12",
+        "com_resposta": true,
+        "nota": 0.7892,
+        "primeiro": "acesso-ao-app",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c13",
+        "com_resposta": true,
+        "nota": 0.774,
+        "primeiro": "alterar-dados",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c14",
+        "com_resposta": true,
+        "nota": 0.7314,
+        "primeiro": "horarios-e-canais",
+        "primeiro_certo": true
+      },
+      {
+        "id": "c15",
+        "com_resposta": false,
+        "nota": 0.6848,
+        "primeiro": "parcelado",
+        "primeiro_certo": false
+      },
+      {
+        "id": "c16",
+        "com_resposta": false,
+        "nota": 0.6723,
+        "primeiro": "maquininha-a-mais",
+        "primeiro_certo": false
+      },
+      {
+        "id": "c17",
+        "com_resposta": false,
+        "nota": 0.6345,
+        "primeiro": "alterar-dados",
+        "primeiro_certo": false
+      },
+      {
+        "id": "c18",
+        "com_resposta": false,
+        "nota": 0.6292,
+        "primeiro": "taxas-e-mudanca-de-plano",
+        "primeiro_certo": false
+      },
+      {
+        "id": "c19",
+        "com_resposta": false,
+        "nota": 0.5795,
+        "primeiro": "recebimentos-e-prazos",
+        "primeiro_certo": false
+      },
+      {
+        "id": "c20",
+        "com_resposta": false,
+        "nota": 0.7084,
+        "primeiro": "maquininha-a-mais",
+        "primeiro_certo": false
+      }
+    ]
+  }
 }

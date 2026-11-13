@@ -10,5 +10,14 @@
     "sem_resposta_barradas": 6,
     "sem_resposta": 6
   },
-  "similaridade": null
+  "similaridade": {
+    "modelo": "gemini-embedding-2",
+    "dimensoes": 768,
+    "limiar": 0.7108,
+    "calibrado_em": "2026-11-13",
+    "com_resposta_que_passam": 13,
+    "com_resposta": 14,
+    "sem_resposta_barradas": 6,
+    "sem_resposta": 6
+  }
 }
