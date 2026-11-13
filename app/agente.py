@@ -162,6 +162,8 @@ class ResultadoAgente:
     uso: Uso
     modelo: str
     rodadas: int
+    # O que cada consulta devolveu (do lojista da sessão): fonte para a conferência.
+    consultas: dict[str, Any] = field(default_factory=dict)
 
 
 class ErroAgente(Exception):
@@ -235,6 +237,7 @@ class AgenteClaude:
             {"role": "user", "content": montar_contexto(mensagem, canal, artigos, hoje)}
         ]
         usadas: list[str] = []
+        saidas: dict[str, Any] = {}
         for rodada in range(1, MAX_CHAMADAS_DE_FERRAMENTA + 2):
             forcar_resposta = len(usadas) >= MAX_CHAMADAS_DE_FERRAMENTA
             escolha: dict[str, Any] = (
@@ -279,7 +282,7 @@ class AgenteClaude:
                     raise ErroAgente(
                         "a IA devolveu a resposta fora do formato", conta.uso, modelo
                     ) from erro
-                return ResultadoAgente(dados, usadas, conta.uso, modelo, rodada)
+                return ResultadoAgente(dados, usadas, conta.uso, modelo, rodada, saidas)
 
             consultas = [b for b in chamadas if b.name in NOMES_DAS_FERRAMENTAS]
             if not consultas:
@@ -298,6 +301,7 @@ class AgenteClaude:
                 else:
                     usadas.append(chamada.name)
                     saida = self._dados.executar(chamada.name, lojista_id)
+                    saidas[chamada.name] = saida
                     conteudo = json.dumps(saida, ensure_ascii=False)
                     erro_da_ferramenta = False
                 resultados.append(

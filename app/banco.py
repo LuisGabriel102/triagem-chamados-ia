@@ -87,6 +87,10 @@ class AtendimentoRegistro(Base):
     tempo_triagem_ms: Mapped[int] = mapped_column(default=0)
     tempo_busca_ms: Mapped[int] = mapped_column(default=0)
     tempo_resposta_ms: Mapped[int] = mapped_column(default=0)
+    # A conferência frase a frase (etapa 3B): as frases tiradas, o custo e o tempo.
+    frases_removidas: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    custo_conferencia_usd: Mapped[float] = mapped_column(default=0.0)
+    tempo_conferencia_ms: Mapped[int] = mapped_column(default=0)
 
 
 def criar_motor(url: str) -> Engine:
@@ -208,6 +212,9 @@ def salvar_atendimento(sessao: Session, resultado: ResultadoAtendimento) -> Aten
         tempo_triagem_ms=resultado.tempo_triagem_ms,
         tempo_busca_ms=resultado.tempo_busca_ms,
         tempo_resposta_ms=resultado.tempo_resposta_ms,
+        frases_removidas=list(resultado.frases_removidas),
+        custo_conferencia_usd=resultado.custo_conferencia_usd,
+        tempo_conferencia_ms=resultado.tempo_conferencia_ms,
     )
     sessao.add(registro)
     sessao.commit()

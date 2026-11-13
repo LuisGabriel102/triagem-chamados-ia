@@ -83,9 +83,16 @@ def test_responde_com_fontes_fila_custo_e_tempo(abrir):
     assert corpo["origem_resposta"] == "ia"
     custo = corpo["custo"]
     assert custo["total_usd"] == pytest.approx(
-        custo["triagem_usd"] + custo["busca_usd"] + custo["resposta_usd"]
+        custo["triagem_usd"] + custo["busca_usd"] + custo["resposta_usd"] + custo["conferencia_usd"]
     )
-    assert set(corpo["tempo"]) == {"total_ms", "triagem_ms", "busca_ms", "resposta_ms"}
+    assert set(corpo["tempo"]) == {
+        "total_ms",
+        "triagem_ms",
+        "busca_ms",
+        "resposta_ms",
+        "conferencia_ms",
+    }
+    assert corpo["frases_removidas"] == []
     assert corpo["texto_mascarado"].startswith("Meu CPF é [CPF].")
 
 

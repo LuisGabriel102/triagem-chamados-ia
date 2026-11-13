@@ -7,7 +7,9 @@
    - a busca não achou nada parecido: o agente diz que não sabe, sem IA;
    - senão, o Claude responde pela ferramenta, com os artigos achados e as consultas.
 4. A conferência: artigo citado que não veio da busca não vale; a resposta passa de novo
-   pelo mascaramento; se a IA pede uma pessoa, vai para uma pessoa.
+   pelo mascaramento; se a IA pede uma pessoa, vai para uma pessoa. Na resposta que sairia
+   sem uma pessoa, a conferência frase a frase (app/conferencia.py) tira a frase sem apoio
+   nas fontes; se sobrar pouco, vai para uma pessoa.
 5. O plano B: se a IA falhar, a resposta é o trecho do artigo achado, com "uma pessoa vai
    confirmar". Sem artigo, vai para uma pessoa. O atendimento nunca para.
 
@@ -25,8 +27,8 @@ import re
 import time
 from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
-from typing import Literal
+from dataclasses import dataclass, field
+from typing import Any, Literal
 
 import anthropic
 
@@ -40,6 +42,7 @@ from app.base_conhecimento import (
 from app.busca import Busca, Modo, ResultadoBusca, criar_busca
 from app.busca_palavras import normalizar
 from app.classificador import Uso
+from app.conferencia import ConferenteClaude, ErroConferencia
 from app.config import Configuracao
 from app.esquemas import Canal, Categoria, Origem, Prioridade
 from app.ferramentas import DadosLojistas, LojistaDesconhecido
@@ -223,6 +226,10 @@ class ResultadoAtendimento:
     tempo_triagem_ms: int
     tempo_busca_ms: int
     tempo_resposta_ms: int
+    # A conferência frase a frase: as frases tiradas, o custo e o tempo a mais.
+    frases_removidas: list[str] = field(default_factory=list)
+    custo_conferencia_usd: float = 0.0
+    tempo_conferencia_ms: int = 0
 
 
 def _busca_vazia(texto: str, aviso: str) -> ResultadoBusca:
@@ -252,9 +259,11 @@ class ServicoAtendimento:
         contatos_permitidos: frozenset[str] = frozenset(),
         modo_busca: Modo = "sentido",
         horarios: Artigo | None = None,
+        conferente: ConferenteClaude | None = None,
     ) -> None:
         self._triagem = triagem
         self._horarios = horarios  # a fonte da mensagem de urgência
+        self._conferente = conferente  # a conferência frase a frase (sem ela, não confere)
         self._busca = busca
         self._agente = agente
         self._dados = dados
@@ -346,6 +355,7 @@ class ServicoAtendimento:
             motivos.append("reclamação: vai para a Ouvidoria")
         artigos = [achado.artigo for achado in busca.achados]
         uso_resposta, modelo, usadas = Uso(), None, []
+        consultas: dict[str, Any] = {}
         tempo_resposta_ms = 0
         origem: OrigemResposta
 
@@ -369,6 +379,7 @@ class ServicoAtendimento:
                     resultado.modelo,
                     resultado.ferramentas_usadas,
                 )
+                consultas = resultado.consultas
                 resposta, fontes, origem = self._conferir(resultado, artigos, motivos)
             except ErroAgente as erro:
                 log.warning("O agente falhou, usando o plano B: %s", erro)
@@ -401,13 +412,42 @@ class ServicoAtendimento:
             if seguranca not in fontes:
                 fontes = [*fontes, seguranca]
 
+        # A conferência frase a frase (decisão 3): só na resposta da IA que sairia SEM uma
+        # pessoa. Frase sem apoio sai; se sobrar pouco, chama uma pessoa.
+        uso_conferencia, tempo_conferencia_ms, removidas = Uso(), 0, []
+        if not motivos and origem == "ia" and self._conferente is not None:
+            comeco = time.perf_counter()
+            try:
+                conferencia = self._conferente.conferir(
+                    texto, resposta, fontes, consultas, self._dados.hoje()
+                )
+                uso_conferencia, removidas = conferencia.uso, conferencia.removidas
+                if conferencia.sobrou_pouco:
+                    motivos.append(
+                        f"conferência frase a frase: {len(removidas)} de "
+                        f"{conferencia.total_frases} frases sem apoio, sobrou pouco"
+                    )
+                if conferencia.texto:
+                    resposta = conferencia.texto
+                else:
+                    resposta, fontes, origem = RESPOSTA_ESPERA, [], "fixa"
+            except ErroConferencia as erro:
+                log.warning("A conferência falhou: %s", erro)
+                uso_conferencia = erro.uso
+                motivos.append(f"a conferência frase a frase falhou ({erro})")
+            except Exception:
+                log.exception("Erro inesperado na conferência")
+                motivos.append("erro inesperado na conferência frase a frase")
+            tempo_conferencia_ms = int((time.perf_counter() - comeco) * 1000)
+
         precisa_pessoa = bool(motivos)
         if precisa_pessoa and origem == "ia" and not urgente and AVISO_PESSOA not in resposta:
             resposta = f"{resposta}\n\n{AVISO_PESSOA}"
 
         custo_busca = round(busca.tokens_embedding * self._preco_embedding / 1_000_000, 8)
         custo_resposta = calcular_custo(uso_resposta, self._preco_entrada, self._preco_saida)
-        custo_total = round(triagem.custo_usd + custo_busca + custo_resposta, 8)
+        custo_conferencia = calcular_custo(uso_conferencia, self._preco_entrada, self._preco_saida)
+        custo_total = round(triagem.custo_usd + custo_busca + custo_resposta + custo_conferencia, 8)
         tempo_ms = int((time.perf_counter() - inicio) * 1000)
         log.info(
             "atendimento: categoria=%s busca=%s origem=%s pessoa=%s ferramentas=%d "
@@ -446,6 +486,9 @@ class ServicoAtendimento:
             tempo_triagem_ms=triagem.tempo_ms,
             tempo_busca_ms=tempo_busca_ms,
             tempo_resposta_ms=tempo_resposta_ms,
+            frases_removidas=removidas,
+            custo_conferencia_usd=custo_conferencia,
+            tempo_conferencia_ms=tempo_conferencia_ms,
         )
 
 
@@ -459,10 +502,11 @@ def criar_atendimento(config: Configuracao) -> ServicoAtendimento:
     artigos = carregar_artigos()
     dados = DadosLojistas()
     chave = config.anthropic_api_key.get_secret_value().strip() if config.anthropic_api_key else ""
-    agente = None
+    agente, conferente = None, None
     if chave:
         cliente = anthropic.Anthropic(api_key=chave, timeout=config.timeout_llm_s, max_retries=2)
         agente = AgenteClaude(cliente, dados, modelo=config.modelo_agente)
+        conferente = ConferenteClaude(cliente, modelo=config.modelo_agente)
     return ServicoAtendimento(
         triagem=triagem,
         busca=criar_busca(config),
@@ -475,4 +519,5 @@ def criar_atendimento(config: Configuracao) -> ServicoAtendimento:
         contatos_permitidos=contatos_da_empresa(artigos),
         modo_busca=config.modo_busca_agente,
         horarios=artigo_de_horarios(artigos),
+        conferente=conferente,
     )

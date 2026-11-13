@@ -201,17 +201,20 @@ def para_atendimento_saida(registro: banco.AtendimentoRegistro) -> AtendimentoSa
         ferramentas_usadas=registro.ferramentas_usadas,
         avisos=registro.avisos,
         texto_mascarado=registro.texto_mascarado,
+        frases_removidas=registro.frases_removidas,
         custo=CustoAtendimento(
             total_usd=registro.custo_usd,
             triagem_usd=registro.custo_triagem_usd,
             busca_usd=registro.custo_busca_usd,
             resposta_usd=registro.custo_resposta_usd,
+            conferencia_usd=registro.custo_conferencia_usd,
         ),
         tempo=TempoAtendimento(
             total_ms=registro.tempo_ms,
             triagem_ms=registro.tempo_triagem_ms,
             busca_ms=registro.tempo_busca_ms,
             resposta_ms=registro.tempo_resposta_ms,
+            conferencia_ms=registro.tempo_conferencia_ms,
         ),
     )
 

@@ -242,3 +242,58 @@ class ClienteAgenteFalso:
     def todo_o_texto_enviado(self) -> str:
         """Tudo o que a IA leu em todas as chamadas, para procurar dado que não devia estar."""
         return json.dumps(self.chamadas, ensure_ascii=False, default=lambda o: vars(o))
+
+
+class ClienteConferenciaFalso:
+    """Imita o cliente da Anthropic na conferência frase a frase.
+
+    Lê as frases numeradas do pedido e marca como sem apoio as que têm um dos trechos de
+    `sem_apoio`. `faltando` tira números da marcação, para testar marcação incompleta.
+    Guarda uma cópia de cada pedido.
+    """
+
+    def __init__(
+        self,
+        *sem_apoio: str,
+        erro: Exception | None = None,
+        stop_reason: str = "tool_use",
+        faltando: tuple[int, ...] = (),
+    ) -> None:
+        self.chamadas: list[dict[str, Any]] = []
+        self.messages = self
+        self._sem_apoio = sem_apoio
+        self._erro = erro
+        self._stop_reason = stop_reason
+        self._faltando = faltando
+
+    def create(self, **kwargs: Any) -> SimpleNamespace:
+        self.chamadas.append(copy.deepcopy(kwargs))
+        if self._erro is not None:
+            raise self._erro
+        pedido = kwargs["messages"][0]["content"]
+        bloco = pedido.split("<frases>\n", 1)[1].split("\n</frases>", 1)[0]
+        marcacoes = []
+        for linha in bloco.split("\n"):
+            numero, _, frase = linha.partition(": ")
+            if int(numero) in self._faltando:
+                continue
+            apoiada = not any(trecho in frase for trecho in self._sem_apoio)
+            marcacoes.append({"numero": int(numero), "apoiada": apoiada})
+        return SimpleNamespace(
+            content=[
+                SimpleNamespace(
+                    type="tool_use",
+                    id="toolu_conferencia",
+                    name="conferir_frases",
+                    input={"frases": marcacoes},
+                )
+            ],
+            usage=SimpleNamespace(
+                input_tokens=1500,
+                output_tokens=60,
+                cache_creation_input_tokens=0,
+                cache_read_input_tokens=0,
+            ),
+            model="claude-haiku-5-5",
+            stop_reason=self._stop_reason,
+        )

@@ -247,12 +247,13 @@ class FonteSaida(BaseModel):
 
 
 class CustoAtendimento(BaseModel):
-    """Em dólar. A soma da triagem, da busca (embeddings) e da resposta."""
+    """Em dólar. A soma da triagem, da busca (embeddings), da resposta e da conferência."""
 
     total_usd: float
     triagem_usd: float
     busca_usd: float
     resposta_usd: float
+    conferencia_usd: float = 0.0
 
 
 class TempoAtendimento(BaseModel):
@@ -262,6 +263,7 @@ class TempoAtendimento(BaseModel):
     triagem_ms: int
     busca_ms: int
     resposta_ms: int
+    conferencia_ms: int = 0
 
 
 class AtendimentoSaida(BaseModel):
@@ -280,5 +282,7 @@ class AtendimentoSaida(BaseModel):
     ferramentas_usadas: list[str]
     avisos: list[str]
     texto_mascarado: str
+    # As frases que a conferência tirou da resposta por não estarem nas fontes.
+    frases_removidas: list[str] = []
     custo: CustoAtendimento
     tempo: TempoAtendimento
