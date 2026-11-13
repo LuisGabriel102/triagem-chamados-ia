@@ -1,5 +1,6 @@
 """Dublês dos testes. Nenhum teste chama a API real da Anthropic nem a do Google."""
 
+import hashlib
 import json
 from types import SimpleNamespace
 from typing import Any
@@ -7,6 +8,7 @@ from typing import Any
 import httpx
 from google.genai import types
 
+from app.busca_palavras import tokenizar
 from app.classificador import NOME_FERRAMENTA
 
 REQUISICAO_FALSA = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
@@ -117,3 +119,60 @@ class ClienteGeminiFalso:
             usage_metadata=self._uso,
             model_version=self._modelo or kwargs["model"],
         )
+
+
+class ClienteEmbeddingFalso:
+    """Imita o cliente do Google nos embeddings: `cliente.models.embed_content(...)`.
+
+    Devolve um vetor fixo do tamanho pedido e guarda o que recebeu.
+    """
+
+    def __init__(self, erro: Exception | None = None, dimensoes: int | None = None) -> None:
+        self.chamadas: list[dict[str, Any]] = []
+        self.models = self
+        self._erro = erro
+        self._dimensoes = dimensoes
+
+    def embed_content(self, **kwargs: Any) -> SimpleNamespace:
+        self.chamadas.append(kwargs)
+        if self._erro is not None:
+            raise self._erro
+        tamanho = self._dimensoes or kwargs["config"].output_dimensionality
+        valores = [3.0, 4.0] + [0.0] * (tamanho - 2)
+        return SimpleNamespace(embeddings=[SimpleNamespace(values=valores)])
+
+
+class GeradorVetoresFalso:
+    """Gera vetores sem chamar o Google: cada palavra da pergunta cai numa posição fixa.
+
+    Textos com as mesmas palavras ficam parecidos, como num embedding de verdade (só que
+    sem entender sinônimo). Guarda tudo o que recebeu, para os testes conferirem.
+    """
+
+    def __init__(
+        self, modelo: str = "modelo-falso", dimensoes: int = 64, erro: Exception | None = None
+    ) -> None:
+        self.modelo = modelo
+        self.dimensoes = dimensoes
+        self.documentos: list[str] = []
+        self.perguntas: list[str] = []
+        self._erro = erro
+
+    def _vetor(self, texto: str) -> list[float]:
+        vetor = [0.0] * self.dimensoes
+        for palavra in tokenizar(texto):
+            posicao = int(hashlib.md5(palavra.encode("utf-8")).hexdigest(), 16) % self.dimensoes
+            vetor[posicao] += 1.0
+        return vetor
+
+    def vetor_documento(self, titulo: str, texto: str) -> list[float]:
+        self.documentos.append(titulo)
+        if self._erro is not None:
+            raise self._erro
+        return self._vetor(f"{titulo} {texto}")
+
+    def vetor_pergunta(self, texto: str) -> list[float]:
+        self.perguntas.append(texto)
+        if self._erro is not None:
+            raise self._erro
+        return self._vetor(texto)

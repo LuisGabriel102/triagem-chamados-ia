@@ -28,6 +28,13 @@ class Configuracao(BaseSettings):
     # "padrao" deixa o modelo decidir (use se algum modelo recusar o nível).
     raciocinio_gemini: Literal["padrao", "low", "medium", "high"] = "low"
 
+    # Busca na base de conhecimento do atendimento (docs/ATENDIMENTO.md).
+    # Embeddings do Gemini pela chave do Google AI Studio. Sem ela, vale o Vertex AI
+    # (GOOGLE_CLOUD_PROJECT). Sem nenhum dos dois, a busca roda só por palavras.
+    gemini_api_key: SecretStr | None = None
+    modelo_embedding: str = "gemini-embedding-2"
+    dimensoes_embedding: int = Field(default=768, ge=128, le=3072)
+
     database_url: str = "sqlite:///./triagem.db"
     # Chave que quem chama a API envia no cabeçalho X-API-Key. Vazia = API aberta (só local).
     chave_api_app: SecretStr | None = None
