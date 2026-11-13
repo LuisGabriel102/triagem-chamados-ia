@@ -283,6 +283,13 @@ def rodar_pergunta(
         "tempo_triagem_ms": resultado.tempo_triagem_ms,
         "tempo_busca_ms": resultado.tempo_busca_ms,
         "tempo_resposta_ms": resultado.tempo_resposta_ms,
+        # Versão 2: a resposta refeita quando a conferência tirou frase, e a confiança do
+        # agente (só registrada).
+        "refeita": resultado.refeita,
+        "frases_removidas_refeita": resultado.frases_removidas_refeita,
+        "custo_refeita_usd": resultado.custo_refeita_usd,
+        "tempo_refeita_ms": resultado.tempo_refeita_ms,
+        "confianca_resposta": resultado.confianca_resposta,
         # Quantos blocos de raciocínio e quantos tokens de saída voltaram em cada parte.
         "blocos_de_raciocinio": {
             g.papel: g.blocos_de_raciocinio - antes_raciocinio[g.papel] for g in gravadores_ia
@@ -488,7 +495,7 @@ def contar_motivos(linhas: list[dict[str, Any]]) -> dict[str, int]:
     return saida
 
 
-PARTES = ["triagem", "busca", "resposta", "conferencia"]
+PARTES = ["triagem", "busca", "resposta", "conferencia", "refeita"]
 PAPEIS_DA_IA = ["triagem", "agente", "conferencia"]
 
 
@@ -588,6 +595,12 @@ def resumir(linhas: list[dict[str, Any]]) -> dict[str, Any]:
         "custo_conferencia_medio_usd": (
             round(sum(custos_conf) / len(custos_conf), 8) if custos_conf else 0.0
         ),
+        # Versão 2: quando a conferência tira frase, o agente refaz a resposta uma vez.
+        "refeitas": sum(bool(x.get("refeita")) for x in conferidas),
+        "refeita_ainda_sem_apoio": sum(bool(x.get("frases_removidas_refeita")) for x in conferidas),
+        "frases_removidas_refeita": sum(
+            len(x.get("frases_removidas_refeita") or []) for x in conferidas
+        ),
         "tempo_conferencia_medio_ms": (
             round(sum(tempos_conf) / len(tempos_conf)) if tempos_conf else 0
         ),
@@ -615,7 +628,9 @@ MEDIDAS_DAS_REPETICOES = [
     ("dados_enviados_embeddings", "Dados pessoais enviados aos embeddings"),
     ("conferidas", "Respostas conferidas frase a frase"),
     ("conferencia_tirou_frase", "... em que a conferência tirou frase"),
-    ("conferencia_chamou_pessoa", "... em que sobrou pouco e chamou uma pessoa"),
+    ("conferencia_chamou_pessoa", "... em que a conferência chamou uma pessoa"),
+    ("refeitas", "... em que o agente refez a resposta"),
+    ("refeita_ainda_sem_apoio", "... em que a resposta refeita ainda tinha frase sem apoio"),
     ("custo_medio_usd", "Custo médio por mensagem (US$)"),
     ("custo_conferencia_medio_usd", "Custo médio da conferência, nas conferidas (US$)"),
     ("tempo_medio_ms", "Tempo médio por mensagem (ms)"),
@@ -630,6 +645,7 @@ NOMES_DAS_PARTES = {
     "busca": "a busca",
     "resposta": "a resposta",
     "conferencia": "a conferência",
+    "refeita": "a resposta refeita",
 }
 MEDIDAS_DAS_REPETICOES += [
     *[
@@ -738,8 +754,11 @@ def relatorio(
         "## A conferência frase a frase",
         "",
         f"Rodou em {r['conferidas']} respostas (as que sairiam sem uma pessoa). Tirou frase em "
-        f"{r['conferencia_tirou_frase']} delas ({r['frases_removidas']} frases no total); em "
-        f"{r['conferencia_chamou_pessoa']}, sobrou pouco e chamou uma pessoa. Custo a mais: US$ "
+        f"{r['conferencia_tirou_frase']} delas ({r['frases_removidas']} frases no total). O "
+        f"agente refez a resposta em {r.get('refeitas', 0)}; a resposta refeita ainda tinha "
+        f"frase sem apoio em {r.get('refeita_ainda_sem_apoio', 0)} "
+        f"({r.get('frases_removidas_refeita', 0)} frases). A conferência chamou uma pessoa em "
+        f"{r['conferencia_chamou_pessoa']}. Custo a mais: US$ "
         f"{r['custo_conferencia_medio_usd']:.6f} por resposta conferida. Tempo a mais: "
         f"{r['tempo_conferencia_medio_ms']} ms em média, {r['tempo_conferencia_pior_ms']} ms no "
         "pior caso. O custo e o tempo da conferência já estão dentro do custo e do tempo por "
@@ -822,6 +841,9 @@ def relatorio(
             veredito = "certa" if juiz["certa"] else "errada"
         motivos = "; ".join(x["motivos_pessoa"]).replace("|", "/") or "—"
         tiradas = " / ".join(x.get("frases_removidas") or []).replace("|", "/") or "—"
+        if x.get("refeita"):
+            depois = " / ".join(x.get("frases_removidas_refeita") or []).replace("|", "/")
+            tiradas += f" (refeita; depois: {depois or 'nada'})"
         comentario = " ".join(str(juiz.get("comentario", "")).split()).replace("|", "/")
         partes.append(
             f"| {x['id']} | {x['grupo']} | {'sim' if x['gabarito']['chamar_pessoa'] else 'não'} | "

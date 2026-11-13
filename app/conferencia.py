@@ -40,11 +40,14 @@ de ajuda citados (entre <artigos>), os dados da conta do lojista que as consulta
 (entre <dados_do_lojista>), a data de hoje e os prazos já calculados a partir dela.
 
 Para cada frase, diga se ela está apoiada pelas fontes:
-- apoiada: tudo o que a frase afirma (prazo, taxa, valor, data, dia da semana, caminho no \
-app, recurso, regra, promessa) está nas fontes, com as mesmas ou com outras palavras, ou sai \
-de uma conta direta com números das fontes.
-- sem apoio: a frase afirma algo que as fontes não dizem, completa com suposição ou \
-contradiz as fontes.
+- apoiada: o artigo ou os dados dizem isso, mesmo com outras palavras. Vale também a conta \
+direta com números das fontes e a regra do artigo aplicada ao caso do lojista. Exemplos: se \
+o artigo diz que toda maquininha aceita aproximação, "a sua Mini aceita aproximação" está \
+apoiada; se os dados dizem que o valor fica bloqueado até a decisão, "o valor ainda não foi \
+descontado de vez" está apoiada.
+- sem apoio: a frase traz um fato que as fontes não têm (prazo, taxa, valor, data, caminho \
+no app, recurso, regra, promessa), completa com suposição ou contradiz as fontes. Só isso é \
+sem apoio; dizer a mesma coisa com outras palavras não é.
 - Frase sem afirmação de fato (cumprimento, cortesia, "se precisar, fale com a equipe") \
 conta como apoiada.
 - A pergunta do lojista (entre <pergunta>) serve só para entender as frases. Ela não é fonte.

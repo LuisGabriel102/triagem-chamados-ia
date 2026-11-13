@@ -105,17 +105,45 @@ def test_paragrafo_que_fica_vazio_nao_deixa_linhas_em_branco_sobrando():
 # --- A conferência no atendimento ---
 
 
-def test_frase_sem_apoio_sai_e_o_resto_chega_sem_chamar_pessoa():
+RESPOSTA_REFEITA = "A bobina é térmica, de 57 mm. Compre no app, em Loja › Bobinas."
+
+
+def test_frase_sem_apoio_faz_o_agente_refazer_a_resposta_uma_vez():
+    # Versão 2: a resposta cortada não sai. O agente refaz, só com o que tem apoio, e a
+    # conferência confere de novo.
     conferencia = ClienteConferenciaFalso("transferir o saldo")
-    resultado = atender(montar(conferencia, agente_que_responde(RESPOSTA_COM_INVENCAO)))
-    assert "transferir" not in resultado.resposta
-    assert resultado.resposta == (
-        "A bobina é térmica, de 57 mm. Compre no app, em Loja › Bobinas. "
-        "O kit chega em 5 dias úteis."
+    agente = ClienteAgenteFalso(
+        ("resposta", resposta_agente(resposta=RESPOSTA_COM_INVENCAO)),
+        ("resposta", resposta_agente(resposta=RESPOSTA_REFEITA)),
     )
+    resultado = atender(montar(conferencia, agente))
+    assert resultado.refeita
     assert resultado.frases_removidas == ["Dá para transferir o saldo para outra conta."]
+    assert resultado.frases_removidas_refeita == []
+    assert resultado.resposta == RESPOSTA_REFEITA
     assert not resultado.precisa_pessoa
     assert resultado.origem_resposta == "ia"
+    assert len(conferencia.chamadas) == 2
+    # O agente recebeu as frases sem apoio para refazer.
+    refazer = agente.chamadas[1]["messages"][0]["content"]
+    assert "<frases_sem_apoio>\n- Dá para transferir o saldo para outra conta." in refazer
+    assert resultado.custo_refeita_usd > 0
+    assert resultado.custo_usd == pytest.approx(
+        resultado.custo_triagem_usd
+        + resultado.custo_busca_usd
+        + resultado.custo_resposta_usd
+        + resultado.custo_conferencia_usd
+        + resultado.custo_refeita_usd
+    )
+
+
+def test_resposta_que_passa_na_primeira_nao_e_refeita():
+    conferencia = ClienteConferenciaFalso()
+    agente = ClienteAgenteFalso(("resposta", resposta_agente(resposta=RESPOSTA_REFEITA)))
+    resultado = atender(montar(conferencia, agente))
+    assert not resultado.refeita
+    assert len(agente.chamadas) == 1
+    assert resultado.resposta == RESPOSTA_REFEITA
 
 
 def test_custo_e_tempo_da_conferencia_aparecem_e_entram_no_total():
@@ -131,12 +159,24 @@ def test_custo_e_tempo_da_conferencia_aparecem_e_entram_no_total():
     assert resultado.tempo_conferencia_ms >= 0
 
 
-def test_se_sobra_pouco_chama_uma_pessoa_com_o_que_sobrou():
-    conferencia = ClienteConferenciaFalso("transferir", "Compre", "kit")
+def test_se_a_resposta_refeita_ainda_tem_frase_sem_apoio_chama_uma_pessoa():
+    # O agente falso repete a mesma resposta: a frase sem apoio volta e a pessoa é chamada,
+    # com só o que tem apoio.
+    conferencia = ClienteConferenciaFalso("transferir")
     resultado = atender(montar(conferencia, agente_que_responde(RESPOSTA_COM_INVENCAO)))
+    assert resultado.refeita
     assert resultado.precisa_pessoa
-    assert any("3 de 4 frases sem apoio, sobrou pouco" in m for m in resultado.motivos_pessoa)
-    assert resultado.resposta == f"A bobina é térmica, de 57 mm.\n\n{AVISO_PESSOA}"
+    assert any("a resposta refeita ainda tinha 1 frase(s)" in m for m in resultado.motivos_pessoa)
+    assert "transferir" not in resultado.resposta
+    assert resultado.resposta == (
+        "A bobina é térmica, de 57 mm. Compre no app, em Loja › Bobinas. "
+        f"O kit chega em 5 dias úteis.\n\n{AVISO_PESSOA}"
+    )
+
+
+def test_a_regra_de_apoio_aceita_outras_palavras_e_a_regra_aplicada_ao_caso():
+    assert "o artigo ou os dados dizem isso, mesmo com outras palavras" in PROMPT_CONFERENCIA
+    assert "a regra do artigo aplicada ao caso do lojista" in PROMPT_CONFERENCIA
 
 
 def test_sem_nenhuma_frase_apoiada_vira_a_mensagem_de_espera():

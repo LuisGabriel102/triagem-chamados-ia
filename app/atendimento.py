@@ -231,6 +231,40 @@ class ResultadoAtendimento:
     custo_conferencia_usd: float = 0.0
     tempo_conferencia_ms: int = 0
     conferida: bool = False  # a conferência frase a frase rodou nesta resposta
+    # Quando a conferência tirou frase, o agente refez a resposta uma vez (versão 2).
+    refeita: bool = False
+    frases_removidas_refeita: list[str] = field(default_factory=list)
+    custo_refeita_usd: float = 0.0
+    tempo_refeita_ms: int = 0
+    # A confiança que o agente deu para a própria resposta. Só fica registrada: desde a
+    # versão 2, ela não chama uma pessoa.
+    confianca_resposta: float | None = None
+
+
+@dataclass
+class _Conferencia:
+    """O que sai da conferência frase a frase (e da resposta refeita, se houve)."""
+
+    resposta: str
+    fontes: list[Artigo]
+    origem: OrigemResposta
+    removidas: list[str] = field(default_factory=list)
+    refeita: bool = False
+    removidas_refeita: list[str] = field(default_factory=list)
+    ferramentas_refeita: list[str] = field(default_factory=list)
+    uso_conferencia: Uso = field(default_factory=Uso)
+    uso_refeita: Uso = field(default_factory=Uso)
+    tempo_conferencia_ms: int = 0
+    tempo_refeita_ms: int = 0
+
+
+def somar_uso(a: Uso, b: Uso) -> Uso:
+    return Uso(
+        tokens_entrada=a.tokens_entrada + b.tokens_entrada,
+        tokens_saida=a.tokens_saida + b.tokens_saida,
+        tokens_cache_escrita=a.tokens_cache_escrita + b.tokens_cache_escrita,
+        tokens_cache_leitura=a.tokens_cache_leitura + b.tokens_cache_leitura,
+    )
 
 
 def _busca_vazia(texto: str, aviso: str) -> ResultadoBusca:
@@ -331,6 +365,98 @@ class ServicoAtendimento:
         fontes = [artigo for artigo in artigos if artigo.id in dados.artigos_usados]
         return mascarada.texto, fontes, "ia"
 
+    def _conferir_e_refazer(
+        self,
+        texto: str,
+        canal: Canal,
+        artigos: Sequence[Artigo],
+        lojista_id: str,
+        resposta: str,
+        fontes: list[Artigo],
+        consultas: dict[str, Any],
+        motivos: list[str],
+    ) -> _Conferencia:
+        """Confere a resposta frase a frase. Se alguma frase não tem apoio, o agente refaz a
+        resposta uma vez, só com o que tem apoio, e a conferência confere de novo. Se ainda
+        sobrar frase sem apoio, vai para uma pessoa (com as frases que têm apoio)."""
+        assert self._conferente is not None and self._agente is not None
+        saida = _Conferencia(resposta, fontes, "ia")
+        hoje = self._dados.hoje()
+        comeco = time.perf_counter()
+        try:
+            primeira = self._conferente.conferir(texto, resposta, fontes, consultas, hoje)
+        except ErroConferencia as erro:
+            log.warning("A conferência falhou: %s", erro)
+            saida.uso_conferencia = erro.uso
+            motivos.append(f"a conferência frase a frase falhou ({erro})")
+            saida.tempo_conferencia_ms = int((time.perf_counter() - comeco) * 1000)
+            return saida
+        except Exception:
+            log.exception("Erro inesperado na conferência")
+            motivos.append("erro inesperado na conferência frase a frase")
+            saida.tempo_conferencia_ms = int((time.perf_counter() - comeco) * 1000)
+            return saida
+        saida.uso_conferencia = primeira.uso
+        saida.removidas = primeira.removidas
+        saida.tempo_conferencia_ms = int((time.perf_counter() - comeco) * 1000)
+        if not primeira.removidas:
+            return saida
+
+        # A resposta cortada não sai: o agente refaz uma vez, só com o que tem apoio.
+        saida.refeita = True
+        comeco = time.perf_counter()
+        try:
+            refeita = self._agente.responder(
+                texto, canal.value, artigos, lojista_id, hoje, sem_apoio=primeira.removidas
+            )
+        except Exception as erro:
+            log.warning("O agente falhou ao refazer a resposta: %s", erro)
+            saida.uso_refeita = getattr(erro, "uso", Uso())
+            saida.tempo_refeita_ms = int((time.perf_counter() - comeco) * 1000)
+            motivos.append("a IA falhou ao refazer a resposta sem as frases sem apoio")
+            return self._so_o_que_tem_apoio(saida, primeira.texto)
+        saida.uso_refeita = refeita.uso
+        saida.ferramentas_refeita = list(refeita.ferramentas_usadas)
+        saida.tempo_refeita_ms = int((time.perf_counter() - comeco) * 1000)
+        motivos_refeita: list[str] = []
+        resposta2, fontes2, origem2 = self._conferir(refeita, artigos, motivos_refeita)
+        saida.resposta, saida.fontes, saida.origem = resposta2, fontes2, origem2
+        if motivos_refeita:
+            # A resposta refeita já vai para uma pessoa (a IA pediu, sem fonte...).
+            motivos.extend(motivos_refeita)
+            return saida
+
+        comeco = time.perf_counter()
+        try:
+            segunda = self._conferente.conferir(
+                texto, resposta2, fontes2, refeita.consultas or consultas, hoje
+            )
+        except Exception as erro:
+            log.warning("A segunda conferência falhou: %s", erro)
+            saida.uso_conferencia = somar_uso(saida.uso_conferencia, getattr(erro, "uso", Uso()))
+            saida.tempo_conferencia_ms += int((time.perf_counter() - comeco) * 1000)
+            motivos.append("a conferência frase a frase falhou na resposta refeita")
+            return saida
+        saida.uso_conferencia = somar_uso(saida.uso_conferencia, segunda.uso)
+        saida.tempo_conferencia_ms += int((time.perf_counter() - comeco) * 1000)
+        saida.removidas_refeita = segunda.removidas
+        if segunda.removidas:
+            motivos.append(
+                f"conferência frase a frase: a resposta refeita ainda tinha "
+                f"{len(segunda.removidas)} frase(s) sem apoio"
+            )
+            return self._so_o_que_tem_apoio(saida, segunda.texto)
+        return saida
+
+    @staticmethod
+    def _so_o_que_tem_apoio(saida: _Conferencia, texto_com_apoio: str) -> _Conferencia:
+        """Vai para uma pessoa com as frases que têm apoio; sem nenhuma, a mensagem de espera."""
+        if texto_com_apoio:
+            saida.resposta = texto_com_apoio
+        else:
+            saida.resposta, saida.fontes, saida.origem = RESPOSTA_ESPERA, [], "fixa"
+        return saida
+
     def atender(self, mensagem: str, canal: Canal, lojista_id: str) -> ResultadoAtendimento:
         if not self._dados.existe(lojista_id):
             raise LojistaDesconhecido(lojista_id)
@@ -357,6 +483,7 @@ class ServicoAtendimento:
         artigos = [achado.artigo for achado in busca.achados]
         uso_resposta, modelo, usadas = Uso(), None, []
         consultas: dict[str, Any] = {}
+        confianca: float | None = None
         tempo_resposta_ms = 0
         origem: OrigemResposta
 
@@ -381,6 +508,7 @@ class ServicoAtendimento:
                     resultado.ferramentas_usadas,
                 )
                 consultas = resultado.consultas
+                confianca = resultado.resposta.confianca
                 resposta, fontes, origem = self._conferir(resultado, artigos, motivos)
             except ErroAgente as erro:
                 log.warning("O agente falhou, usando o plano B: %s", erro)
@@ -413,34 +541,19 @@ class ServicoAtendimento:
             if seguranca not in fontes:
                 fontes = [*fontes, seguranca]
 
-        # A conferência frase a frase (decisão 3): só na resposta da IA que sairia SEM uma
-        # pessoa. Frase sem apoio sai; se sobrar pouco, chama uma pessoa.
-        uso_conferencia, tempo_conferencia_ms, removidas = Uso(), 0, []
+        # A conferência frase a frase: só na resposta da IA que sairia SEM uma pessoa. Se ela
+        # tirar alguma frase, a resposta cortada não sai: o agente refaz a resposta uma vez,
+        # só com o que tem apoio, e a conferência confere de novo. Se falhar de novo, chama
+        # uma pessoa.
         conferida = not motivos and origem == "ia" and self._conferente is not None
+        conf = _Conferencia(resposta, fontes, origem)
         if conferida:
-            comeco = time.perf_counter()
-            try:
-                conferencia = self._conferente.conferir(
-                    texto, resposta, fontes, consultas, self._dados.hoje()
-                )
-                uso_conferencia, removidas = conferencia.uso, conferencia.removidas
-                if conferencia.sobrou_pouco:
-                    motivos.append(
-                        f"conferência frase a frase: {len(removidas)} de "
-                        f"{conferencia.total_frases} frases sem apoio, sobrou pouco"
-                    )
-                if conferencia.texto:
-                    resposta = conferencia.texto
-                else:
-                    resposta, fontes, origem = RESPOSTA_ESPERA, [], "fixa"
-            except ErroConferencia as erro:
-                log.warning("A conferência falhou: %s", erro)
-                uso_conferencia = erro.uso
-                motivos.append(f"a conferência frase a frase falhou ({erro})")
-            except Exception:
-                log.exception("Erro inesperado na conferência")
-                motivos.append("erro inesperado na conferência frase a frase")
-            tempo_conferencia_ms = int((time.perf_counter() - comeco) * 1000)
+            conf = self._conferir_e_refazer(
+                texto, canal, artigos, lojista_id, resposta, fontes, consultas, motivos
+            )
+            resposta, fontes, origem = conf.resposta, conf.fontes, conf.origem
+            usadas = [*usadas, *conf.ferramentas_refeita]
+        uso_conferencia, tempo_conferencia_ms = conf.uso_conferencia, conf.tempo_conferencia_ms
 
         precisa_pessoa = bool(motivos)
         if precisa_pessoa and origem == "ia" and not urgente and AVISO_PESSOA not in resposta:
@@ -449,7 +562,11 @@ class ServicoAtendimento:
         custo_busca = round(busca.tokens_embedding * self._preco_embedding / 1_000_000, 8)
         custo_resposta = calcular_custo(uso_resposta, self._preco_entrada, self._preco_saida)
         custo_conferencia = calcular_custo(uso_conferencia, self._preco_entrada, self._preco_saida)
-        custo_total = round(triagem.custo_usd + custo_busca + custo_resposta + custo_conferencia, 8)
+        custo_refeita = calcular_custo(conf.uso_refeita, self._preco_entrada, self._preco_saida)
+        custo_total = round(
+            triagem.custo_usd + custo_busca + custo_resposta + custo_conferencia + custo_refeita,
+            8,
+        )
         tempo_ms = int((time.perf_counter() - inicio) * 1000)
         log.info(
             "atendimento: categoria=%s busca=%s origem=%s pessoa=%s ferramentas=%d "
@@ -488,10 +605,15 @@ class ServicoAtendimento:
             tempo_triagem_ms=triagem.tempo_ms,
             tempo_busca_ms=tempo_busca_ms,
             tempo_resposta_ms=tempo_resposta_ms,
-            frases_removidas=removidas,
+            frases_removidas=conf.removidas,
             custo_conferencia_usd=custo_conferencia,
             tempo_conferencia_ms=tempo_conferencia_ms,
             conferida=conferida,
+            refeita=conf.refeita,
+            frases_removidas_refeita=conf.removidas_refeita,
+            custo_refeita_usd=custo_refeita,
+            tempo_refeita_ms=conf.tempo_refeita_ms,
+            confianca_resposta=confianca,
         )
 
 

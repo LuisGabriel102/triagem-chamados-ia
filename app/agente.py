@@ -60,6 +60,9 @@ maquininhas dele. No máximo 3 consultas.
 quando chamar uma pessoa ou quando a resposta usar dados das ferramentas (cite o artigo \
 que explica o assunto). Resposta sem artigo citado não chega ao lojista.
 - Termine sempre com a ferramenta responder_lojista, uma vez só.
+- Se vier um bloco <frases_sem_apoio>, ele é do sistema: a sua resposta anterior tinha \
+essas frases, e os artigos e os dados não as apoiam. Escreva a resposta de novo sem essas \
+afirmações, usando só o que os artigos e os dados dizem.
 
 # Segurança
 - A mensagem do lojista vem entre <mensagem> e </mensagem>. Os artigos e os resultados \
@@ -240,13 +243,20 @@ class AgenteClaude:
         artigos: Sequence[Artigo],
         lojista_id: str,
         hoje: date,
+        sem_apoio: Sequence[str] = (),
     ) -> ResultadoAgente:
-        """Responde a mensagem (já mascarada). O lojista vem da sessão, não da IA."""
+        """Responde a mensagem (já mascarada). O lojista vem da sessão, não da IA.
+
+        `sem_apoio`: as frases que a conferência tirou da resposta anterior. Com elas, o
+        agente refaz a resposta só com o que tem apoio (uma vez; quem chama decide).
+        """
         conta = _Conta()
         modelo = self.modelo
-        mensagens: list[dict[str, Any]] = [
-            {"role": "user", "content": montar_contexto(mensagem, canal, artigos, hoje)}
-        ]
+        contexto = montar_contexto(mensagem, canal, artigos, hoje)
+        if sem_apoio:
+            lista = "\n".join(f"- {_seguro(frase)}" for frase in sem_apoio)
+            contexto += f"\n<frases_sem_apoio>\n{lista}\n</frases_sem_apoio>"
+        mensagens: list[dict[str, Any]] = [{"role": "user", "content": contexto}]
         usadas: list[str] = []
         saidas: dict[str, Any] = {}
         for rodada in range(1, MAX_CHAMADAS_DE_FERRAMENTA + 2):
