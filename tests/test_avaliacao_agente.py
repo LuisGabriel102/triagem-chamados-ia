@@ -361,3 +361,69 @@ def test_total_que_muda_entre_rodadas_nao_vira_um_total_unico():
     assert fonte["todos"] == [1, 2]
     texto = modulo.relatorio_das_repeticoes("agora", "Teste", {"perguntas": "x"}, juntas)
     assert "1/1, 2/2" in texto
+
+
+# --- Versão 2, mudança 4: a rubrica nova conhece a mensagem fixa de urgência ---
+
+from app.atendimento import MENSAGEM_URGENCIA  # noqa: E402
+
+COM_MENSAGEM = MENSAGEM_URGENCIA.format(fila="Suporte") + "\n\nBloqueie a maquininha no app."
+
+
+def test_a_nota_so_entra_quando_a_resposta_traz_a_mensagem_fixa():
+    juiz = JuizFalso()
+    artigos = {a.id: a for a in modulo.carregar_artigos()}
+    dados = modulo.DadosLojistas(agora=lambda: modulo.AGORA)
+    comum = _linha(id="a", pergunta_mascarada="p", resposta="A bobina é de 57 mm.")
+    comum["gabarito"].update({"lojista": "loja-001", "por_que": "x", "fato": None})
+    modulo.julgar_com_as_duas_rubricas(juiz, comum, artigos, dados)
+    assert len(juiz.chamadas) == 1
+    assert len(juiz.chamadas[0]["system"]) == 1  # só a rubrica de sempre
+    assert "juiz_rubrica_antiga" not in comum
+
+    urgente = _linha(id="b", pergunta_mascarada="p", resposta=COM_MENSAGEM)
+    urgente["gabarito"].update({"lojista": "loja-001", "por_que": "x", "fato": None})
+    modulo.julgar_com_as_duas_rubricas(juiz, urgente, artigos, dados)
+    nova, antiga = juiz.chamadas[1], juiz.chamadas[2]
+    assert nova["system"][1]["text"] == modulo.NOTA_MENSAGEM_FIXA
+    assert len(antiga["system"]) == 1
+    assert nova["system"][0]["text"] == antiga["system"][0]["text"] == modulo.RUBRICA
+    assert "juiz_rubrica_antiga" in urgente
+
+
+def test_resposta_certa_com_as_duas_rubricas():
+    linhas = [
+        _linha(id="a"),
+        _linha(
+            id="b",
+            juiz={"julgou": True, "pelo_juiz": True, "certa": True},
+            juiz_rubrica_antiga={"julgou": True, "pelo_juiz": True, "certa": False},
+        ),
+    ]
+    resumo = modulo.resumir(linhas)
+    assert resumo["resposta_certa"]["parte"] == 2
+    assert resumo["resposta_certa_rubrica_antiga"]["parte"] == 1
+    assert resumo["julgadas_com_as_duas_rubricas"] == 1
+
+
+def test_rejulgar_so_mexe_nas_respostas_com_a_mensagem_fixa(monkeypatch, tmp_path):
+    clientes = _preparar(monkeypatch)
+    assert modulo.main(["--saida", str(tmp_path), "--limite", "6", "--nome", "base"]) == 0
+    salvo = json.loads((tmp_path / "base.json").read_text("utf-8"))
+    salvo["linhas"][0]["resposta"] = COM_MENSAGEM
+    salvo["linhas"][0]["resposta_fixa"] = False
+    (tmp_path / "base.json").write_text(json.dumps(salvo, ensure_ascii=False), "utf-8")
+    antes = len(clientes["juiz"].chamadas)
+    argumentos = ["--saida", str(tmp_path), "--rejulgar", str(tmp_path / "base.json")]
+    assert modulo.main(argumentos) == 0
+    com_mensagem = [
+        x
+        for x in salvo["linhas"]
+        if not x["resposta_fixa"] and modulo.tem_mensagem_fixa(x["resposta"])
+    ]
+    assert salvo["linhas"][0] in com_mensagem
+    # Cada resposta com a mensagem é julgada duas vezes; as outras não são julgadas de novo.
+    assert len(clientes["juiz"].chamadas) - antes == 2 * len(com_mensagem)
+    novo = json.loads((tmp_path / "base_rejulgado.json").read_text("utf-8"))
+    assert novo["resumo"]["julgadas_com_as_duas_rubricas"] == len(com_mensagem)
+    assert "rubrica antiga" in (tmp_path / "base_rejulgado.md").read_text("utf-8")
