@@ -205,3 +205,80 @@ class Metricas(BaseModel):
     custo_total_usd: float
     custo_medio_usd: float
     tempo_medio_ms: float
+
+
+# --- Atendimento (etapa 2): o agente responde o lojista ---
+
+IdLojista = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[a-z0-9-]{1,40}$")]
+
+
+class SessaoLojista(BaseModel):
+    """Quem está logado. Em produção, vem do login; na demonstração, a sessão é simulada.
+
+    O lojista vem daqui, nunca do texto da mensagem.
+    """
+
+    lojista_id: IdLojista
+
+
+class AtendimentoEntrada(BaseModel):
+    """Uma mensagem do lojista. Uma por vez: conversa com histórico fica para depois."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "mensagem": "A bobina acabou, onde compro mais?",
+                    "canal": "chat",
+                    "sessao": {"lojista_id": "loja-001"},
+                }
+            ]
+        }
+    )
+
+    mensagem: TextoChamado
+    canal: Canal = Canal.CHAT
+    sessao: SessaoLojista
+
+
+class FonteSaida(BaseModel):
+    id: str
+    titulo: str
+
+
+class CustoAtendimento(BaseModel):
+    """Em dólar. A soma da triagem, da busca (embeddings) e da resposta."""
+
+    total_usd: float
+    triagem_usd: float
+    busca_usd: float
+    resposta_usd: float
+
+
+class TempoAtendimento(BaseModel):
+    """Em milissegundos. A triagem e a busca rodam ao mesmo tempo: o total não é a soma."""
+
+    total_ms: int
+    triagem_ms: int
+    busca_ms: int
+    resposta_ms: int
+
+
+class AtendimentoSaida(BaseModel):
+    """A resposta ao lojista, como fica guardada. O texto original nunca é guardado."""
+
+    id: int
+    criado_em: datetime
+    resposta: str
+    fontes: list[FonteSaida]
+    fila: str
+    precisa_pessoa: bool
+    motivos_pessoa: list[str]
+    origem_resposta: str
+    categoria: Categoria
+    prioridade: Prioridade
+    ferramentas_usadas: list[str]
+    avisos: list[str]
+    texto_mascarado: str
+    custo: CustoAtendimento
+    tempo: TempoAtendimento

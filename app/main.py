@@ -19,8 +19,21 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app import banco
+from app.atendimento import ServicoAtendimento, criar_atendimento
 from app.config import Configuracao
-from app.esquemas import ChamadoDemo, ChamadoEntrada, ChamadoSaida, Metricas, TriagemDemo
+from app.esquemas import (
+    AtendimentoEntrada,
+    AtendimentoSaida,
+    ChamadoDemo,
+    ChamadoEntrada,
+    ChamadoSaida,
+    CustoAtendimento,
+    FonteSaida,
+    Metricas,
+    TempoAtendimento,
+    TriagemDemo,
+)
+from app.ferramentas import LojistaDesconhecido
 from app.limite import LimiteDeUso
 from app.servico import ServicoTriagem, criar_servico, para_demo
 
@@ -173,6 +186,58 @@ def listar_chamados(
     return banco.listar(sessao, revisao_humana=revisao_humana, limite=limite)
 
 
+def para_atendimento_saida(registro: banco.AtendimentoRegistro) -> AtendimentoSaida:
+    return AtendimentoSaida(
+        id=registro.id,
+        criado_em=registro.criado_em,
+        resposta=registro.resposta,
+        fontes=[FonteSaida(**fonte) for fonte in registro.fontes],
+        fila=registro.fila,
+        precisa_pessoa=registro.precisa_pessoa,
+        motivos_pessoa=registro.motivos_pessoa,
+        origem_resposta=registro.origem_resposta,
+        categoria=registro.categoria,
+        prioridade=registro.prioridade,
+        ferramentas_usadas=registro.ferramentas_usadas,
+        avisos=registro.avisos,
+        texto_mascarado=registro.texto_mascarado,
+        custo=CustoAtendimento(
+            total_usd=registro.custo_usd,
+            triagem_usd=registro.custo_triagem_usd,
+            busca_usd=registro.custo_busca_usd,
+            resposta_usd=registro.custo_resposta_usd,
+        ),
+        tempo=TempoAtendimento(
+            total_ms=registro.tempo_ms,
+            triagem_ms=registro.tempo_triagem_ms,
+            busca_ms=registro.tempo_busca_ms,
+            resposta_ms=registro.tempo_resposta_ms,
+        ),
+    )
+
+
+@rotas_protegidas.post(
+    "/atendimento",
+    response_model=AtendimentoSaida,
+    summary="Responde uma mensagem do lojista com a base de conhecimento e chama uma pessoa "
+    "quando precisa",
+)
+def atender(entrada: AtendimentoEntrada, request: Request, sessao: Sessao) -> AtendimentoSaida:
+    atendimento: ServicoAtendimento | None = request.app.state.atendimento
+    if atendimento is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="O atendimento não está disponível neste servidor.",
+        )
+    try:
+        resultado = atendimento.atender(entrada.mensagem, entrada.canal, entrada.sessao.lojista_id)
+    except LojistaDesconhecido as erro:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Lojista da sessão não encontrado."
+        ) from erro
+    return para_atendimento_saida(banco.salvar_atendimento(sessao, resultado))
+
+
 @rotas_protegidas.get(
     "/metricas", response_model=Metricas, summary="Totais, revisão humana, custo e tempo"
 )
@@ -184,6 +249,7 @@ def criar_app(
     config: Configuracao | None = None,
     servico: ServicoTriagem | None = None,
     motor: Engine | None = None,
+    atendimento: ServicoAtendimento | None = None,
 ) -> FastAPI:
     """Monta a API. Os testes passam peças prontas; em produção tudo vem do .env."""
 
@@ -199,6 +265,14 @@ def criar_app(
         app.state.servico = servico or criar_servico(cfg)
         app.state.fabrica_sessao = sessionmaker(mot, expire_on_commit=False)
         app.state.limite_demo = LimiteDeUso(cfg.demo_limite_por_hora, cfg.demo_limite_por_dia)
+        app.state.atendimento = atendimento
+        if atendimento is None:
+            # Sem a base ou os dados (por exemplo, numa imagem antiga), a triagem segue no ar
+            # e só a rota /atendimento responde 503.
+            try:
+                app.state.atendimento = criar_atendimento(cfg, app.state.servico)
+            except Exception:
+                log.exception("Atendimento desligado: não deu para montar a busca e o agente.")
         if not app.state.servico.ia_configurada:
             falta = "GOOGLE_CLOUD_PROJECT" if cfg.provedor_ia == "gemini" else "ANTHROPIC_API_KEY"
             log.warning("%s vazia: os chamados serão classificados só por regras.", falta)
