@@ -13,6 +13,7 @@ com maquininha de cartão, numa empresa **inventada**: a Tapiri Pagamentos
 | 2. O agente | Responde com a fonte, consulta dados inventados e chama uma pessoa; rota `POST /atendimento` | **Pronta.** |
 | 3. A avaliação completa | 4 consertos da fumaça; 60 perguntas novas e independentes; a escolha da busca; o agente inteiro com um juiz | **Pronta.** Duas rodadas (a 2ª depois de consertar um defeito achado na 1ª). |
 | 3B. Resolvido sem pessoa, com segurança | A triagem só para a fila e a urgência; conferência frase a frase; mensagem fixa de urgência; o número "resolvido sem uma pessoa E certo"; um conjunto de prova novo | **Pronta e medida.** A prova rodou 3 vezes e as 60 uma vez, com IA de verdade. Resolvido sem uma pessoa E certo: 10/24 na prova (mediana), 19/35 nas 60 (etapa 3: 12/35). |
+| 3C. A versão 2, medida numa prova nova | A conferência refaz a resposta; a confiança do agente só registrada; o que é urgente na Tapiri; a rubrica do juiz conhece a mensagem fixa; a prova 2 | **Pronta e medida.** Prova 2 (3 rodadas): resolvido sem uma pessoa E certo 11/21; e errado 2/40. |
 | 4. A página e a publicação | Conversa no celular e no computador; pgvector no banco | Não começou. Lembrete: o Dockerfile de hoje copia só `app/`; `base/` e `dados/` vão precisar entrar na imagem. Até lá, a API sobe sem o atendimento e a rota responde 503. |
 | 5. Opcional | O Gemini no Vertex AI comparado com o Claude | Não começou |
 
@@ -391,6 +392,125 @@ triagem: na reavaliação de 13/11, ela gastou de 290 a 414 tokens de saída por
 o que combina com só o JSON da ferramenta. A partir da etapa 3B, a avaliação conta os blocos de
 raciocínio de cada parte.
 
+## Etapa 3C: a versão 2, medida numa prova nova
+
+A prova da 3B passou a se chamar **prova 1** e não decide mais nada. Cada mudança foi
+confirmada, consertada e medida nas 60 de desenvolvimento, com um commit e um teste cada. Depois o
+código foi congelado (commit `979a83e`), e só então a **prova 2** foi escrita e aberta.
+
+### As 4 mudanças da versão 2
+
+1. **A conferência não manda resposta cortada.** Nas 60 da 3B, 3 das 4 frases cortadas estavam
+   no artigo ou nos dados. A conferência já recebia o artigo citado inteiro; o que mudou:
+   - a regra de apoio ficou "o artigo ou os dados dizem isso, mesmo com outras palavras",
+     incluindo a regra do artigo aplicada ao caso do lojista;
+   - se ela tirar alguma frase, o agente refaz a resposta uma vez, recebendo as frases sem
+     apoio, e a conferência confere de novo; se ainda houver frase sem apoio, chama uma pessoa;
+   - na primeira medida, ainda cortava frase copiada do artigo (a14, a43). Isolada, a mesma
+     conferência marcou bem essa resposta 3 vezes em 3. Por isso entrou uma segunda regra: para
+     cortar, ela copia da frase o trecho com o fato sem apoio, e o código confere que o trecho
+     está mesmo naquela frase.
+2. **A confiança do agente só fica registrada.** Ela não chama mais uma pessoa (a mesma lição da
+   triagem). O prompt lista os motivos objetivos para pedir uma pessoa e diz que nunca é "por
+   precaução".
+3. **O que é urgente na Tapiri** está escrito na configuração da triagem do atendimento: o lojista
+   não consegue vender agora; suspeita de golpe, roubo ou fraude; dinheiro que sumiu. Perguntar
+   quando cai uma venda não é urgente. A triagem padrão (`/chamados`) não muda.
+4. **A rubrica do juiz conhece a mensagem fixa de urgência.** A rubrica nova é a antiga mais uma
+   nota, que só entra quando a resposta traz a mensagem fixa. Essas respostas são julgadas com as
+   duas rubricas; nas outras, as duas são iguais.
+
+### As medidas nas 60, mudança por mudança
+
+| Rodada nas 60 | Resolvido sem uma pessoa E certo | Sem uma pessoa e errado | Chamou sem precisar |
+|---|---|---|---|
+| 3B (versão 1) | 19/35 | 2/60 | 14 |
+| Mudança 1, primeira parte | 17/35 | 3/60 | 15 |
+| Mudança 1 completa (trecho obrigatório) | 20/35 | 2/60 | 13 |
+| Mudanças 1 e 2 | 20/35 | 1/60 | 14 |
+| Mudanças 1 a 4 (o código final) | **23/35** | **2/60** | **10** |
+
+A mudança 4, julgando de novo as 60 da 3B: resposta certa 26/44 pela rubrica antiga (a mesma nota
+da 3B) e 29/44 pela nova; as marcas de "inventou" caíram de 14 para 8. A rodada com as mudanças 1
+a 4 usou o código congelado e vale como "as 60 uma vez".
+
+**A conferência medida sozinha.** Ela rodou de novo, isolada, nas 53 respostas guardadas de duas
+rodadas, e cortou 22 frases. Classificadas à mão: 10 a 13 eram certas (várias copiadas do artigo
+ou dos dados), 6 eram cortes certos e 3 ficaram em dúvida. A regra do trecho protege contra número
+trocado, mas não contra o julgamento errado: o modelo aponta a frase inteira como trecho. Com o
+raciocínio ligado, o resultado foi o mesmo, porque o Claude Haiku 5.5 pula o raciocínio quando a
+ferramenta é forçada. O efeito do corte errado é limitado: o pior caso é chamar uma pessoa sem
+precisar (3 vezes nas 60 finais), não deixar passar invenção.
+
+### A prova 2
+
+40 perguntas escritas por um agente separado, que só recebeu o texto do `base/EMPRESA.md` (sem a
+prova 1, as 60 nem o código): 25 que a base responde, 7 que não responde, 4 tentativas e 4
+urgentes, 6 com dado pessoal de teste. O gabarito veio depois, sem mudar as perguntas: 21 devem
+sair sem uma pessoa. Como o pedido e o modelo foram os mesmos da prova 1, uns 10 assuntos se
+repetem (alguns quase iguais: q04/p04, q36/p39, q03/p03).
+
+### Os números
+
+| | Versão 1, prova 1 (3B, 3 rodadas) | Versão 2, prova 2 (3 rodadas) |
+|---|---|---|
+| **Resolvido sem uma pessoa E certo** | **10/24** (9 a 11) | **11/21** (11 nas 3) |
+| **Resolvido sem uma pessoa e errado** | **3/40** (2 a 4) | **2/40** (1 a 2) |
+| Resolvido sem uma pessoa, certo ou não | 13/24 | 12/21 (11 a 13) |
+| Chamou uma pessoa sem precisar | 11 | 9 (8 a 10) |
+| Resposta certa (juiz), rubrica nova / antiga | 14/29 (só a antiga) | 17/28 (15 a 19) / 17/28 (13 a 17) |
+| "Não sei" certo nas sem resposta | 7/7 | 8/8 |
+| Chamou uma pessoa nas urgentes e nas tentativas | 8/8 | 8/8 |
+| Respostas com instrução que citam artigo | todas | 27/27 |
+| Dados pessoais enviados à IA e aos embeddings | 0 | 0 |
+| Custo médio por mensagem | US$ 0,00075 | US$ 0,00091 |
+| Tempo médio por mensagem | 5,3 s | 6,3 s |
+
+Os totais são diferentes (24 e 21 perguntas que deviam sair sem pessoa); em porcentagem, o "E
+certo" foi de 42% para 52%, e o "e errado", de 7,5% para 5%. Com 40 perguntas, uma diferença de 1
+ou 2 é ruído.
+
+**A prova 1 de novo, só como referência (já vista), com a versão 2, uma rodada:** E certo 9/24; e
+errado 2/40. Nela, a versão 2 não foi melhor que a versão 1. A melhora clara apareceu nas 60, onde
+os consertos foram feitos; nas provas, ela é pequena.
+
+**Por que chamou uma pessoa na prova 2** (mediana; uma mensagem pode ter mais de um motivo).
+Chamou em 27 das 40, 9 delas sem precisar.
+
+| Motivo | Aparece | Nas que chamaram sem precisar |
+|---|---|---|
+| Nada encontrado na busca | 10 | 2 |
+| A IA pediu uma pessoa | 10 | 3 |
+| Urgente | 8 | 2 |
+| Tentativa de enganar | 3 | 0 |
+| A conferência (resposta refeita ainda sem apoio) | 2 | 2 |
+| Tema de segurança | 2 | 0 |
+| Confiança baixa do agente | 0 (não chama mais) | 0 |
+
+**O tempo e o custo de cada parte** (prova 2, mediana, por mensagem): triagem US$ 0,00025 e 2,7
+s; busca US$ 0,000007 e 0,7 s; resposta US$ 0,00037 e 2,1 s; conferência US$ 0,00017 e 1,0 s;
+resposta refeita US$ 0,00009 e 0,4 s; total US$ 0,00091 e 6,3 s. Por resposta conferida, a
+conferência custa US$ 0,00044 e leva 2,5 s. Raciocínio: 0 blocos em todas as partes.
+
+**As que saíram sem pessoa e erradas na prova 2:** q22 (2 rodadas: o gabarito pede uma pessoa,
+porque o lojista não consegue vender, e a resposta saiu sem pessoa), q29, q36 e q27 (uma rodada
+cada). A mensagem de urgência ainda saiu em q04, q08 e q20, perguntas que o gabarito não trata como
+urgentes (q04 vai para uma pessoa pelo artigo).
+
+**O custo das rodadas da 3C:** cerca de US$ 2,97 (o atendimento, US$ 0,36; o juiz, US$ 2,57).
+Entram as 4 medidas nas 60, o novo julgamento da 3B, a prova 1 de referência, as 3 rodadas da
+prova 2 e US$ 0,05 de testes da conferência isolada.
+
+### O que fica para decidir (nas 60, nunca nas provas)
+
+1. **A conferência julga mal cerca de metade dos cortes.** Caminhos: um modelo mais forte só na
+   conferência (por exemplo, o Claude Sonnet 5.5, a cerca de 20 vezes o preço dela); ou deixar o
+   Haiku raciocinar, chamando a ferramenta sem forçar; ou aceitar o custo de chamar uma pessoa a
+   mais.
+2. **"A IA pediu uma pessoa" e "nada encontrado"** são agora os maiores motivos.
+3. **As provas se parecem:** a próxima prova deveria vir de outro pedido (por exemplo, com
+   assuntos sorteados) para ser mais independente.
+
 ## Como rodar
 
 ```bash
@@ -407,6 +527,10 @@ python -m avaliacao.avaliar_agente --perguntas avaliacao/perguntas_prova.jsonl \
     --nome prova --titulo "Conjunto de prova (etapa 3B)" --repeticoes 3
 python -m avaliacao.avaliar_agente --nome desenvolvimento_3b \
     --titulo "As 60 de desenvolvimento (etapa 3B)"
+# Etapa 3C: a prova 2 três vezes, e julgar de novo um resultado salvo com as duas rubricas
+python -m avaliacao.avaliar_agente --perguntas avaliacao/perguntas_prova2.jsonl \
+    --nome prova2 --titulo "Prova 2 (etapa 3C, versão 2)" --repeticoes 3
+python -m avaliacao.avaliar_agente --rejulgar avaliacao/resultados/desenvolvimento_3b.json
 ```
 
 ## As chaves
