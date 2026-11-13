@@ -230,6 +230,7 @@ class ResultadoAtendimento:
     frases_removidas: list[str] = field(default_factory=list)
     custo_conferencia_usd: float = 0.0
     tempo_conferencia_ms: int = 0
+    conferida: bool = False  # a conferência frase a frase rodou nesta resposta
 
 
 def _busca_vazia(texto: str, aviso: str) -> ResultadoBusca:
@@ -415,7 +416,8 @@ class ServicoAtendimento:
         # A conferência frase a frase (decisão 3): só na resposta da IA que sairia SEM uma
         # pessoa. Frase sem apoio sai; se sobrar pouco, chama uma pessoa.
         uso_conferencia, tempo_conferencia_ms, removidas = Uso(), 0, []
-        if not motivos and origem == "ia" and self._conferente is not None:
+        conferida = not motivos and origem == "ia" and self._conferente is not None
+        if conferida:
             comeco = time.perf_counter()
             try:
                 conferencia = self._conferente.conferir(
@@ -489,6 +491,7 @@ class ServicoAtendimento:
             frases_removidas=removidas,
             custo_conferencia_usd=custo_conferencia,
             tempo_conferencia_ms=tempo_conferencia_ms,
+            conferida=conferida,
         )
 
 

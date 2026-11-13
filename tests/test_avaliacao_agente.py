@@ -5,7 +5,13 @@ from types import SimpleNamespace
 
 from app.config import Configuracao
 from avaliacao import avaliar_agente as modulo
-from tests.falsos import ClienteAgenteFalso, ClienteFalso, entrada_valida, resposta_agente
+from tests.falsos import (
+    ClienteAgenteFalso,
+    ClienteConferenciaFalso,
+    ClienteFalso,
+    entrada_valida,
+    resposta_agente,
+)
 
 
 class JuizFalso:
@@ -51,6 +57,7 @@ def _preparar(monkeypatch, juiz=None):
             entrada_valida(categoria="suporte_tecnico", prioridade="media", numero_pedido=None)
         ),
         "agente": ClienteAgenteFalso(("resposta", resposta_agente(artigos_usados=["bobina"]))),
+        "conferencia": ClienteConferenciaFalso(),
         "juiz": juiz or JuizFalso(),
     }
     monkeypatch.setattr(modulo, "criar_cliente_anthropic", lambda config, papel: clientes[papel])
@@ -150,3 +157,80 @@ def test_resumo_mede_cada_coisa_no_grupo_certo():
     assert resumo["custo_pior_usd"] == 0.003
     assert resumo["tempo_pior_ms"] == 9000
     assert resumo["tempo_medio_ms"] == 4500
+
+
+def test_numero_principal_e_numero_perigoso():
+    linhas = [
+        _linha(id="a"),  # saiu sem pessoa e certa
+        _linha(id="b", juiz={"julgou": True, "pelo_juiz": True, "certa": False}),  # errada
+        _linha(id="c", juiz={"julgou": False, "motivo": "falha"}),  # não julgou: não conta
+        _linha(
+            id="d",
+            grupo="urgente",
+            gabarito={"artigos": ["bobina"], "chamar_pessoa": True, "fila": "Suporte"},
+        ),  # devia chamar uma pessoa e saiu sem: errada, mesmo com o juiz dizendo certa
+        _linha(id="e", precisa_pessoa=True, juiz={"julgou": True, "certa": False}),
+    ]
+    resumo = modulo.resumir(linhas)
+    assert resumo["resolvido_sem_pessoa_e_certo"] == {"parte": 1, "todo": 4, "taxa": 0.25}
+    assert resumo["resolvido_sem_pessoa_e_errado"] == {"parte": 2, "todo": 5, "taxa": 0.4}
+    assert resumo["saiu_sem_pessoa"]["parte"] == 4
+
+
+def test_medidas_da_conferencia():
+    linhas = [
+        _linha(
+            id="a",
+            conferida=True,
+            frases_removidas=["Dá para transferir o saldo."],
+            custo_conferencia_usd=0.0002,
+            tempo_conferencia_ms=800,
+            motivos_pessoa=[],
+        ),
+        _linha(
+            id="b",
+            conferida=True,
+            precisa_pessoa=True,
+            frases_removidas=["Uma.", "Outra."],
+            custo_conferencia_usd=0.0004,
+            tempo_conferencia_ms=1200,
+            motivos_pessoa=["conferência frase a frase: 2 de 3 frases sem apoio, sobrou pouco"],
+        ),
+        _linha(id="c", motivos_pessoa=[]),
+    ]
+    resumo = modulo.resumir(linhas)
+    assert resumo["conferidas"] == 2
+    assert resumo["conferencia_tirou_frase"] == 2
+    assert resumo["frases_removidas"] == 3
+    assert resumo["conferencia_chamou_pessoa"] == 1
+    assert resumo["custo_conferencia_medio_usd"] == 0.0003
+    assert resumo["tempo_conferencia_medio_ms"] == 1000
+
+
+def test_repeticoes_dao_mediana_menor_e_maior(monkeypatch, tmp_path):
+    clientes = _preparar(monkeypatch)
+    argumentos = ["--saida", str(tmp_path), "--repeticoes", "3", "--nome", "prova"]
+    assert modulo.main(argumentos) == 0
+    for numero in (1, 2, 3):
+        assert (tmp_path / f"prova_{numero}.json").exists()
+    resumo = json.loads((tmp_path / "prova_resumo.json").read_text("utf-8"))["resumo"]
+    assert resumo["repeticoes"] == 3
+    principal = resumo["resolvido_sem_pessoa_e_certo"]
+    assert set(principal) == {"mediana", "menor", "maior", "todo", "valores"}
+    assert len(principal["valores"]) == 3
+    assert principal["menor"] <= principal["mediana"] <= principal["maior"]
+    texto = (tmp_path / "prova_resumo.md").read_text("utf-8")
+    assert "Resolvido sem uma pessoa E certo" in texto
+    assert "Resolvido sem uma pessoa e errado" in texto
+    # A conferência também passa pelo gravador: a conta de dados pessoais inclui ela.
+    assert clientes["conferencia"].chamadas
+
+
+def test_relatorio_poe_os_dois_numeros_no_topo(monkeypatch, tmp_path):
+    _preparar(monkeypatch)
+    assert modulo.main(["--saida", str(tmp_path), "--limite", "3"]) == 0
+    texto = (tmp_path / "agente.md").read_text("utf-8")
+    tabela = texto.split("| Medida | Resultado | O certo |", 1)[1].split("\n")
+    assert "Resolvido sem uma pessoa E certo" in tabela[2]
+    assert "Resolvido sem uma pessoa e errado" in tabela[3]
+    assert "A conferência frase a frase" in texto

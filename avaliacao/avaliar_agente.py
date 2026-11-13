@@ -1,15 +1,22 @@
-"""Avaliação completa do agente (etapa 3): as 60 perguntas novas, de ponta a ponta.
+"""Avaliação completa do agente, de ponta a ponta, com um juiz.
 
 Uso:
     python -m avaliacao.avaliar_agente              # uma rodada inteira (IA de verdade)
     python -m avaliacao.avaliar_agente --rodada 2   # 2ª rodada, só se um defeito for consertado
+    # Etapa 3B: as 40 de prova, 3 rodadas, com a mediana, o menor e o maior
+    python -m avaliacao.avaliar_agente --perguntas avaliacao/perguntas_prova.jsonl \
+        --nome prova --titulo "Conjunto de prova (etapa 3B)" --repeticoes 3
 
-As perguntas (avaliacao/perguntas_agente.jsonl) foram escritas por um agente separado, que só
-viu o base/EMPRESA.md; o gabarito foi montado depois. O relógio é fixo: sexta, 13/11/2026,
+Os conjuntos (avaliacao/perguntas_agente.jsonl, o de desenvolvimento, e
+avaliacao/perguntas_prova.jsonl, o de prova) foram escritos por agentes separados, que só
+viram o base/EMPRESA.md; o gabarito foi montado depois. O relógio é fixo: sexta, 13/11/2026,
 10h, porque os fatos do gabarito com data valem para esse dia.
 
 Mede:
-- resolvido sem uma pessoa, entre as que deviam ser resolvidas sem pessoa (o número principal);
+- resolvido sem uma pessoa E certo (o número principal), entre as que deviam sair sem pessoa;
+- resolvido sem uma pessoa e errado (o número perigoso), entre todas;
+- resolvido sem uma pessoa (certo ou não), entre as que deviam sair sem pessoa;
+- a conferência frase a frase: quantas rodou, o que tirou, o custo e o tempo a mais;
 - a resposta certa, por um juiz com rubrica escrita (Claude Sonnet 5.5, mais forte que o
   Claude Haiku 5.5 que responde; sem temperature e sem troca automática de modelo);
 - o "não sei" certo nas sem resposta, e quantas inventaram (o certo é 0);
@@ -25,6 +32,7 @@ Custo aproximado de uma rodada: o atendimento (cerca de US$ 0,001 por pergunta) 
 import argparse
 import json
 import random
+import statistics
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -47,6 +55,7 @@ from app.base_conhecimento import Artigo, carregar_artigos, descricao_do_negocio
 from app.busca import Busca, escolher_limiares
 from app.busca_sentido import ARQUIVO_INDICE, carregar_indice_memoria, criar_gerador
 from app.classificador import ClassificadorClaude
+from app.conferencia import ConferenteClaude
 from app.config import Configuracao
 from app.esquemas import Canal
 from app.ferramentas import DadosLojistas
@@ -69,7 +78,7 @@ RESSALVA = (
     "As perguntas foram escritas por um agente separado (Claude), que só viu o "
     "base/EMPRESA.md e não viu os artigos. O gabarito foi montado depois, por quem escreveu "
     "a base e o agente (também o Claude). A resposta certa é julgada por um modelo (Claude "
-    "Sonnet 5.5), não por uma pessoa; conferi o juiz em 10 casos."
+    "Sonnet 5.5), não por uma pessoa."
 )
 
 RUBRICA = """\
@@ -149,11 +158,15 @@ def carregar_perguntas(caminho: Path = ARQUIVO_PERGUNTAS) -> list[dict[str, Any]
 
 def montar_atendimento(
     config: Configuracao, artigos: list[Artigo], caminho_indice: Path = ARQUIVO_INDICE
-) -> tuple[ServicoAtendimento, ClienteAnthropicGravador, ClienteAnthropicGravador, Any]:
-    """O mesmo atendimento de app/atendimento.py, com gravadores no caminho da IA e do Google."""
+) -> tuple[ServicoAtendimento, list[ClienteAnthropicGravador], Any]:
+    """O mesmo atendimento de app/atendimento.py, com gravadores no caminho da IA e do Google.
+
+    Os gravadores da IA são três: a triagem, o agente e a conferência frase a frase.
+    """
     dados = DadosLojistas(agora=lambda: AGORA)
     triagem_ia = ClienteAnthropicGravador(criar_cliente_anthropic(config, "triagem"))
     agente_ia = ClienteAnthropicGravador(criar_cliente_anthropic(config, "agente"))
+    conferencia_ia = ClienteAnthropicGravador(criar_cliente_anthropic(config, "conferencia"))
     precos = precos_do_provedor(config)
     triagem = ServicoTriagem(
         ClassificadorClaude(triagem_ia, config.modelo_llm, negocio=descricao_do_negocio()),
@@ -192,8 +205,9 @@ def montar_atendimento(
         contatos_permitidos=contatos_da_empresa(artigos),
         modo_busca=config.modo_busca_agente,
         horarios=artigo_de_horarios(artigos),
+        conferente=ConferenteClaude(conferencia_ia, config.modelo_agente),
     )
-    return atendimento, triagem_ia, agente_ia, gravador
+    return atendimento, [triagem_ia, agente_ia, conferencia_ia], gravador
 
 
 def rodar_pergunta(
@@ -233,6 +247,10 @@ def rodar_pergunta(
         ),
         "custo_usd": resultado.custo_usd,
         "tempo_ms": resultado.tempo_ms,
+        "conferida": resultado.conferida,
+        "frases_removidas": resultado.frases_removidas,
+        "custo_conferencia_usd": resultado.custo_conferencia_usd,
+        "tempo_conferencia_ms": resultado.tempo_conferencia_ms,
     }
 
 
@@ -338,6 +356,23 @@ def _fracao(parte: int, todo: int) -> dict[str, Any]:
     return {"parte": parte, "todo": todo, "taxa": round(parte / todo, 4) if todo else None}
 
 
+def _certa(x: dict[str, Any]) -> bool:
+    return bool(x["juiz"].get("certa"))
+
+
+def saiu_errada_sem_pessoa(x: dict[str, Any]) -> bool:
+    """O número perigoso: a resposta chegou ao lojista sem uma pessoa e estava errada.
+
+    Errada quando o gabarito mandava chamar uma pessoa, ou quando o juiz julgou e reprovou.
+    Resposta que o juiz não julgou (falha da API) não entra: aparece em "não julgou".
+    """
+    if x["precisa_pessoa"]:
+        return False
+    if x["gabarito"]["chamar_pessoa"]:
+        return True
+    return bool(x["juiz"]["julgou"]) and not _certa(x)
+
+
 def resumir(linhas: list[dict[str, Any]]) -> dict[str, Any]:
     sem_pessoa = [x for x in linhas if not x["gabarito"]["chamar_pessoa"]]
     com_artigo = [x for x in linhas if x["gabarito"]["artigos"]]
@@ -345,21 +380,26 @@ def resumir(linhas: list[dict[str, Any]]) -> dict[str, Any]:
     devem_chamar = [x for x in linhas if x["grupo"] in ("urgente", "tentativa")]
     com_instrucao = [x for x in linhas if not x["resposta_fixa"]]
     julgadas = [x for x in linhas if x["juiz"]["julgou"]]
-
-    def certa(x: dict[str, Any]) -> bool:
-        return bool(x["juiz"].get("certa"))
+    conferidas = [x for x in linhas if x.get("conferida")]
 
     custos = [x["custo_usd"] for x in linhas]
     tempos = [x["tempo_ms"] for x in linhas]
+    custos_conf = [x.get("custo_conferencia_usd", 0.0) for x in conferidas]
+    tempos_conf = [x.get("tempo_conferencia_ms", 0) for x in conferidas]
     return {
         "perguntas": len(linhas),
+        # O número principal e, ao lado, o número perigoso.
+        "resolvido_sem_pessoa_e_certo": _fracao(
+            sum(not x["precisa_pessoa"] and _certa(x) for x in sem_pessoa), len(sem_pessoa)
+        ),
+        "resolvido_sem_pessoa_e_errado": _fracao(
+            sum(saiu_errada_sem_pessoa(x) for x in linhas), len(linhas)
+        ),
+        "saiu_sem_pessoa": _fracao(sum(not x["precisa_pessoa"] for x in linhas), len(linhas)),
         "resolvido_sem_pessoa": _fracao(
             sum(not x["precisa_pessoa"] for x in sem_pessoa), len(sem_pessoa)
         ),
-        "resolvido_sem_pessoa_e_certo": _fracao(
-            sum(not x["precisa_pessoa"] and certa(x) for x in sem_pessoa), len(sem_pessoa)
-        ),
-        "resposta_certa": _fracao(sum(certa(x) for x in com_artigo), len(com_artigo)),
+        "resposta_certa": _fracao(sum(_certa(x) for x in com_artigo), len(com_artigo)),
         "nao_sei_certo": _fracao(
             sum(
                 x["precisa_pessoa"] and x["juiz"].get("disse_que_nao_sabe", False)
@@ -393,10 +433,69 @@ def resumir(linhas: list[dict[str, Any]]) -> dict[str, Any]:
         "custo_pior_usd": max(custos, default=0.0),
         "tempo_medio_ms": round(sum(tempos) / len(tempos)) if tempos else 0,
         "tempo_pior_ms": max(tempos, default=0),
+        # A conferência frase a frase: quantas rodou, o que tirou, o custo e o tempo a mais.
+        "conferidas": len(conferidas),
+        "conferencia_tirou_frase": sum(bool(x.get("frases_removidas")) for x in conferidas),
+        "frases_removidas": sum(len(x.get("frases_removidas") or []) for x in conferidas),
+        "conferencia_chamou_pessoa": sum(
+            any("conferência frase a frase" in m for m in x["motivos_pessoa"]) for x in conferidas
+        ),
+        "custo_conferencia_medio_usd": (
+            round(sum(custos_conf) / len(custos_conf), 8) if custos_conf else 0.0
+        ),
+        "tempo_conferencia_medio_ms": (
+            round(sum(tempos_conf) / len(tempos_conf)) if tempos_conf else 0
+        ),
+        "tempo_conferencia_pior_ms": max(tempos_conf, default=0),
         "julgadas_pelo_juiz": sum(x["juiz"].get("pelo_juiz", False) for x in linhas),
         "juiz_nao_julgou": sum(not x["juiz"]["julgou"] for x in linhas),
         "custo_do_juiz_usd": round(sum(x["juiz"].get("custo_usd", 0.0) for x in linhas), 6),
     }
+
+
+# As medidas que entram na tabela das repetições (mediana, menor e maior), na ordem.
+MEDIDAS_DAS_REPETICOES = [
+    ("resolvido_sem_pessoa_e_certo", "**Resolvido sem uma pessoa E certo** (o número principal)"),
+    ("resolvido_sem_pessoa_e_errado", "**Resolvido sem uma pessoa e errado** (o número perigoso)"),
+    ("resolvido_sem_pessoa", "Resolvido sem uma pessoa (certo ou não)"),
+    ("resposta_certa", "Resposta certa (juiz), nas que a base responde"),
+    ("nao_sei_certo", '"Não sei" certo nas sem resposta'),
+    ("inventou_nas_sem_resposta", "Sem resposta em que inventou"),
+    ("chamou_pessoa_quando_devia", "Chamou uma pessoa nas urgentes e nas tentativas"),
+    ("fonte_nas_respostas_com_instrucao", "Respostas com instrução que citam artigo"),
+    ("fila_certa", "Fila certa"),
+    ("dados_enviados_ia", "Dados pessoais enviados à IA"),
+    ("dados_enviados_embeddings", "Dados pessoais enviados aos embeddings"),
+    ("conferidas", "Respostas conferidas frase a frase"),
+    ("conferencia_tirou_frase", "... em que a conferência tirou frase"),
+    ("conferencia_chamou_pessoa", "... em que sobrou pouco e chamou uma pessoa"),
+    ("custo_medio_usd", "Custo médio por mensagem (US$)"),
+    ("custo_conferencia_medio_usd", "Custo médio da conferência, nas conferidas (US$)"),
+    ("tempo_medio_ms", "Tempo médio por mensagem (ms)"),
+    ("tempo_conferencia_medio_ms", "Tempo médio da conferência, nas conferidas (ms)"),
+    ("juiz_nao_julgou", "O juiz não julgou"),
+    ("custo_do_juiz_usd", "Custo do juiz por rodada (US$)"),
+]
+
+
+def _valor(medida: Any) -> float:
+    return medida["parte"] if isinstance(medida, dict) else medida
+
+
+def resumir_repeticoes(resumos: list[dict[str, Any]]) -> dict[str, Any]:
+    """A mediana, o menor e o maior de cada medida, entre as repetições."""
+    saida: dict[str, Any] = {"repeticoes": len(resumos)}
+    for chave, _ in MEDIDAS_DAS_REPETICOES:
+        valores = [_valor(r[chave]) for r in resumos]
+        todo = resumos[0][chave]["todo"] if isinstance(resumos[0][chave], dict) else None
+        saida[chave] = {
+            "mediana": statistics.median(valores),
+            "menor": min(valores),
+            "maior": max(valores),
+            "todo": todo,
+            "valores": valores,
+        }
+    return saida
 
 
 def amostra_para_conferir(linhas: list[dict[str, Any]]) -> list[str]:
@@ -415,25 +514,32 @@ def _pct(fracao: dict[str, Any]) -> str:
 
 
 def relatorio(
-    quando: str, rodada: int, contexto: dict[str, Any], resumo: dict[str, Any], linhas: list
+    quando: str,
+    titulo: str,
+    contexto: dict[str, Any],
+    resumo: dict[str, Any],
+    linhas: list,
 ) -> str:
     r = resumo
     partes = [
-        f"# Avaliação completa do agente (rodada {rodada})",
+        f"# {titulo}",
         "",
         f"Rodada em {quando}, com IA de verdade: triagem com `{contexto['modelo_triagem']}` "
-        f"(negócio da Tapiri), resposta com `{contexto['modelo_agente']}`, busca "
-        f"`{contexto['modo_busca']}` com `{contexto['modelo_embedding']}`, juiz "
-        f"`{MODELO_JUIZ}`. Relógio fixo: sexta, 13/11/2026, 10h. "
-        f"{r['perguntas']} perguntas (`avaliacao/perguntas_agente.jsonl`).",
+        f"(negócio da Tapiri), resposta e conferência frase a frase com "
+        f"`{contexto['modelo_agente']}`, busca `{contexto['modo_busca']}` com "
+        f"`{contexto['modelo_embedding']}`, juiz `{MODELO_JUIZ}`. Relógio fixo: sexta, "
+        f"13/11/2026, 10h. {r['perguntas']} perguntas (`{contexto['perguntas']}`).",
         "",
         f"> **Ressalva:** {RESSALVA}",
         "",
         "| Medida | Resultado | O certo |",
         "|---|---|---|",
-        f"| **Resolvido sem uma pessoa**, entre as que deviam ser resolvidas sem pessoa | "
-        f"**{_pct(r['resolvido_sem_pessoa'])}** | o mais alto possível |",
-        f"| ... e com a resposta certa (juiz) | {_pct(r['resolvido_sem_pessoa_e_certo'])} | |",
+        f"| **Resolvido sem uma pessoa E certo** (o número principal), entre as que deviam "
+        f"sair sem pessoa | **{_pct(r['resolvido_sem_pessoa_e_certo'])}** | o mais alto possível |",
+        f"| **Resolvido sem uma pessoa e errado** (o número perigoso), entre todas | "
+        f"**{_pct(r['resolvido_sem_pessoa_e_errado'])}** | 0 |",
+        f"| Resolvido sem uma pessoa (certo ou não), entre as que deviam sair sem pessoa | "
+        f"{_pct(r['resolvido_sem_pessoa'])} | |",
         f"| Resposta certa (juiz), nas que a base responde | {_pct(r['resposta_certa'])} | |",
         f'| "Não sei" certo nas sem resposta (disse que não sabe e chamou uma pessoa) | '
         f"{_pct(r['nao_sei_certo'])} | 100% |",
@@ -453,6 +559,16 @@ def relatorio(
         f"| Tempo por mensagem: média / pior caso | {r['tempo_medio_ms']} ms / "
         f"{r['tempo_pior_ms']} ms | |",
         "",
+        "## A conferência frase a frase",
+        "",
+        f"Rodou em {r['conferidas']} respostas (as que sairiam sem uma pessoa). Tirou frase em "
+        f"{r['conferencia_tirou_frase']} delas ({r['frases_removidas']} frases no total); em "
+        f"{r['conferencia_chamou_pessoa']}, sobrou pouco e chamou uma pessoa. Custo a mais: US$ "
+        f"{r['custo_conferencia_medio_usd']:.6f} por resposta conferida. Tempo a mais: "
+        f"{r['tempo_conferencia_medio_ms']} ms em média, {r['tempo_conferencia_pior_ms']} ms no "
+        "pior caso. O custo e o tempo da conferência já estão dentro do custo e do tempo por "
+        "mensagem.",
+        "",
         f'O juiz julgou {r["julgadas_pelo_juiz"]} respostas; as mensagens fixas ("não sei", '
         "espera e segurança) não passam por ele. Não julgou: "
         f"{r['juiz_nao_julgou']}. Custo do juiz: US$ {r['custo_do_juiz_usd']:.4f} (fora do custo "
@@ -460,21 +576,21 @@ def relatorio(
         "",
         "## Tabela curta para o README",
         "",
-        f"| Atendimento com IA (60 perguntas novas, rodada {rodada}) | Resultado |",
+        f"| Atendimento com IA ({r['perguntas']} perguntas) | Resultado |",
         "|---|---|",
-        f"| Resolvido sem uma pessoa | {_pct(r['resolvido_sem_pessoa'])} |",
+        f"| Resolvido sem uma pessoa E certo | {_pct(r['resolvido_sem_pessoa_e_certo'])} |",
+        f"| Resolvido sem uma pessoa e errado | {_pct(r['resolvido_sem_pessoa_e_errado'])} |",
         f"| Resposta certa (juiz) | {_pct(r['resposta_certa'])} |",
         f"| Chamou uma pessoa nas urgentes e nas tentativas | "
         f"{_pct(r['chamou_pessoa_quando_devia'])} |",
-        f"| Sem resposta em que inventou | {r['inventou_nas_sem_resposta']} |",
         f"| Dados pessoais enviados à IA | {r['dados_enviados_ia']} |",
         f"| Custo médio por mensagem | US$ {r['custo_medio_usd']:.4f} |",
         "",
         "## Pergunta por pergunta",
         "",
         "| Pergunta | Grupo | Devia chamar pessoa? | Chamou? | Juiz | Fontes | Motivos "
-        "| Comentário do juiz |",
-        "|---|---|---|---|---|---|---|---|",
+        "| Frases tiradas | Comentário do juiz |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for x in linhas:
         juiz = x["juiz"]
@@ -485,39 +601,73 @@ def relatorio(
         else:
             veredito = "certa" if juiz["certa"] else "errada"
         motivos = "; ".join(x["motivos_pessoa"]).replace("|", "/") or "—"
+        tiradas = " / ".join(x.get("frases_removidas") or []).replace("|", "/") or "—"
         comentario = " ".join(str(juiz.get("comentario", "")).split()).replace("|", "/")
         partes.append(
             f"| {x['id']} | {x['grupo']} | {'sim' if x['gabarito']['chamar_pessoa'] else 'não'} | "
             f"{'sim' if x['precisa_pessoa'] else 'não'} | {veredito} | "
-            f"{', '.join(x['fontes']) or '—'} | {motivos} | {comentario} |"
+            f"{', '.join(x['fontes']) or '—'} | {motivos} | {tiradas} | {comentario} |"
         )
     return "\n".join(partes) + "\n"
 
 
-def main(argumentos: list[str] | None = None) -> int:
-    leitor = argparse.ArgumentParser(description="Avaliação completa do agente.")
-    leitor.add_argument("--rodada", type=int, default=1)
-    leitor.add_argument("--saida", type=Path, default=PASTA_RESULTADOS)
-    leitor.add_argument("--perguntas", type=Path, default=ARQUIVO_PERGUNTAS)
-    leitor.add_argument("--indice", type=Path, default=ARQUIVO_INDICE)
-    leitor.add_argument("--limite", type=int, help="só as N primeiras perguntas (para testar)")
-    args = leitor.parse_args(argumentos)
+def _numero(valor: float, chave: str) -> str:
+    if "usd" in chave:
+        return f"{valor:.6f}" if valor < 0.1 else f"{valor:.4f}"
+    return f"{valor:g}"
 
-    config = Configuracao()
-    if not (config.anthropic_api_key and config.anthropic_api_key.get_secret_value().strip()):
-        print("Não rodou: falta a ANTHROPIC_API_KEY no .env.", file=sys.stderr)
-        return 1
-    artigos = carregar_artigos()
+
+def relatorio_das_repeticoes(
+    quando: str, titulo: str, contexto: dict[str, Any], resumo: dict[str, Any]
+) -> str:
+    partes = [
+        f"# {titulo}: {resumo['repeticoes']} rodadas",
+        "",
+        f"Rodadas terminadas em {quando}, com IA de verdade, as mesmas perguntas "
+        f"(`{contexto['perguntas']}`) e o mesmo código. A IA não responde sempre igual: "
+        "a mediana é o número a citar; o menor e o maior mostram a variação.",
+        "",
+        f"> **Ressalva:** {RESSALVA}",
+        "",
+        "| Medida | Mediana | Menor | Maior | Em cada rodada |",
+        "|---|---|---|---|---|",
+    ]
+    for chave, nome in MEDIDAS_DAS_REPETICOES:
+        m = resumo[chave]
+        de = f"/{m['todo']}" if m["todo"] is not None else ""
+        cada = ", ".join(_numero(v, chave) for v in m["valores"])
+        partes.append(
+            f"| {nome} | {_numero(m['mediana'], chave)}{de} | {_numero(m['menor'], chave)}{de} | "
+            f"{_numero(m['maior'], chave)}{de} | {cada} |"
+        )
+    return "\n".join(partes) + "\n"
+
+
+def _salvar(pasta: Path, nome: str, texto: str, dados: dict[str, Any]) -> None:
+    pasta.mkdir(parents=True, exist_ok=True)
+    (pasta / f"{nome}.md").write_text(texto, "utf-8")
+    (pasta / f"{nome}.json").write_text(
+        json.dumps(dados, ensure_ascii=False, indent=2) + "\n", "utf-8"
+    )
+
+
+def rodar_uma_vez(
+    config: Configuracao,
+    artigos: list[Artigo],
+    perguntas: list[dict[str, Any]],
+    indice: Path,
+    rotulo: str,
+) -> list[dict[str, Any]]:
+    """Uma rodada inteira: o atendimento pergunta por pergunta e depois o juiz."""
     por_id = {artigo.id: artigo for artigo in artigos}
-    atendimento, triagem_ia, agente_ia, gravador = montar_atendimento(config, artigos, args.indice)
-    perguntas = carregar_perguntas(args.perguntas)[: args.limite]
-
+    atendimento, gravadores_ia, gravador = montar_atendimento(config, artigos, indice)
     linhas = []
     for numero, pergunta in enumerate(perguntas, start=1):
-        linha = rodar_pergunta(atendimento, pergunta, [triagem_ia, agente_ia], gravador)
+        linha = rodar_pergunta(atendimento, pergunta, gravadores_ia, gravador)
         linhas.append(linha)
         print(
-            f"{numero}/{len(perguntas)} {linha['id']}: pessoa={linha['precisa_pessoa']}", flush=True
+            f"{rotulo} {numero}/{len(perguntas)} {linha['id']}: pessoa={linha['precisa_pessoa']}",
+            flush=True,
         )
 
     # O juiz roda depois, em paralelo. As mensagens fixas não passam por ele.
@@ -535,37 +685,84 @@ def main(argumentos: list[str] | None = None) -> int:
     with ThreadPoolExecutor(max_workers=4) as executor:
         for linha, julgamento in zip(linhas, executor.map(julgar_linha, linhas), strict=True):
             linha["juiz"] = julgamento
-    print(f"juiz: {time.perf_counter() - inicio:.0f} s", flush=True)
+    print(f"{rotulo} juiz: {time.perf_counter() - inicio:.0f} s", flush=True)
+    return linhas
 
-    resumo = resumir(linhas)
-    contexto = {
+
+def main(argumentos: list[str] | None = None) -> int:
+    leitor = argparse.ArgumentParser(description="Avaliação completa do agente.")
+    leitor.add_argument("--rodada", type=int, default=1)
+    leitor.add_argument("--nome", help="nome dos arquivos de resultado (padrão: agente)")
+    leitor.add_argument("--titulo", help="título do relatório")
+    leitor.add_argument(
+        "--repeticoes",
+        type=int,
+        default=1,
+        help="quantas rodadas inteiras; com mais de uma, sai também a mediana, o menor e o maior",
+    )
+    leitor.add_argument("--saida", type=Path, default=PASTA_RESULTADOS)
+    leitor.add_argument("--perguntas", type=Path, default=ARQUIVO_PERGUNTAS)
+    leitor.add_argument("--indice", type=Path, default=ARQUIVO_INDICE)
+    leitor.add_argument("--limite", type=int, help="só as N primeiras perguntas (para testar)")
+    args = leitor.parse_args(argumentos)
+
+    config = Configuracao()
+    if not (config.anthropic_api_key and config.anthropic_api_key.get_secret_value().strip()):
+        print("Não rodou: falta a ANTHROPIC_API_KEY no .env.", file=sys.stderr)
+        return 1
+    artigos = carregar_artigos()
+    perguntas = carregar_perguntas(args.perguntas)[: args.limite]
+    nome = args.nome or ("agente" if args.rodada == 1 else f"agente_rodada{args.rodada}")
+    titulo = args.titulo or f"Avaliação completa do agente (rodada {args.rodada})"
+    try:
+        arquivo = args.perguntas.resolve().relative_to(PASTA.parent).as_posix()
+    except ValueError:
+        arquivo = args.perguntas.name
+    contexto_base = {
         "modelo_triagem": config.modelo_llm,
         "modelo_agente": config.modelo_agente,
         "modo_busca": config.modo_busca_agente,
         "modelo_embedding": config.modelo_embedding,
-        "amostra_para_conferir": amostra_para_conferir(linhas),
+        "perguntas": arquivo,
     }
-    quando = datetime.now(UTC).strftime("%d/%m/%Y %H:%M UTC")
-    nome = "agente" if args.rodada == 1 else f"agente_rodada{args.rodada}"
-    args.saida.mkdir(parents=True, exist_ok=True)
-    texto = relatorio(quando, args.rodada, contexto, resumo, linhas)
-    (args.saida / f"{nome}.md").write_text(texto, "utf-8")
-    (args.saida / f"{nome}.json").write_text(
-        json.dumps(
+
+    resumos = []
+    for repeticao in range(1, args.repeticoes + 1):
+        rotulo = f"[{repeticao}/{args.repeticoes}]"
+        linhas = rodar_uma_vez(config, artigos, perguntas, args.indice, rotulo)
+        resumo = resumir(linhas)
+        resumos.append(resumo)
+        contexto = {**contexto_base, "amostra_para_conferir": amostra_para_conferir(linhas)}
+        quando = datetime.now(UTC).strftime("%d/%m/%Y %H:%M UTC")
+        nome_da_vez = nome if args.repeticoes == 1 else f"{nome}_{repeticao}"
+        titulo_da_vez = titulo if args.repeticoes == 1 else f"{titulo}, rodada {repeticao}"
+        texto = relatorio(quando, titulo_da_vez, contexto, resumo, linhas)
+        _salvar(
+            args.saida,
+            nome_da_vez,
+            texto,
             {
                 "quando": quando,
                 "rodada": args.rodada,
+                "repeticao": repeticao,
                 "contexto": contexto,
                 "resumo": resumo,
                 "linhas": linhas,
             },
-            ensure_ascii=False,
-            indent=2,
         )
-        + "\n",
-        "utf-8",
-    )
-    print(texto)
+        print(texto)
+
+    if args.repeticoes > 1:
+        quando = datetime.now(UTC).strftime("%d/%m/%Y %H:%M UTC")
+        juntas = resumir_repeticoes(resumos)
+        texto = relatorio_das_repeticoes(quando, titulo, contexto_base, juntas)
+        _salvar(
+            args.saida,
+            f"{nome}_resumo",
+            texto,
+            {"quando": quando, "contexto": contexto_base, "resumo": juntas},
+        )
+        print(texto)
     return 0
 
 
