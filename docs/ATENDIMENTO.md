@@ -12,7 +12,7 @@ com maquininha de cartão, numa empresa **inventada**: a Tapiri Pagamentos
 | 1. Base de conhecimento e busca | 30 artigos, busca por palavras (BM25), busca por sentido (embeddings do Gemini), fusão, limiar de "nada encontrado", avaliação da busca | **Pronta e medida** com o Google de verdade. |
 | 2. O agente | Responde com a fonte, consulta dados inventados e chama uma pessoa; rota `POST /atendimento` | **Pronta.** |
 | 3. A avaliação completa | 4 consertos da fumaça; 60 perguntas novas e independentes; a escolha da busca; o agente inteiro com um juiz | **Pronta.** Duas rodadas (a 2ª depois de consertar um defeito achado na 1ª). |
-| 3B. Resolvido sem pessoa, com segurança | A triagem só para a fila e a urgência; conferência frase a frase; mensagem fixa de urgência; o número "resolvido sem uma pessoa E certo"; um conjunto de prova novo | **Código pronto e testado.** As rodadas com IA de verdade (a prova 3 vezes e as 60 uma vez): não rodaram. |
+| 3B. Resolvido sem pessoa, com segurança | A triagem só para a fila e a urgência; conferência frase a frase; mensagem fixa de urgência; o número "resolvido sem uma pessoa E certo"; um conjunto de prova novo | **Pronta e medida.** A prova rodou 3 vezes e as 60 uma vez, com IA de verdade. Resolvido sem uma pessoa E certo: 10/24 na prova (mediana), 19/35 nas 60 (etapa 3: 12/35). |
 | 4. A página e a publicação | Conversa no celular e no computador; pgvector no banco | Não começou. Lembrete: o Dockerfile de hoje copia só `app/`; `base/` e `dados/` vão precisar entrar na imagem. Até lá, a API sobe sem o atendimento e a rota responde 503. |
 | 5. Opcional | O Gemini no Vertex AI comparado com o Claude | Não começou |
 
@@ -272,7 +272,96 @@ olhando as 60 seria ajustar ao conjunto) e a queda da API da Anthropic (a39 a a4
 
 ### Os números
 
-Não rodou. Os comandos estão em "Como rodar".
+Rodadas de 13/11/2026, com IA de verdade, relógio fixo em sexta, 13/11/2026, 10h. Arquivos:
+`avaliacao/resultados/prova_resumo.md` (e `prova_1` a `prova_3`) e
+`avaliacao/resultados/desenvolvimento_3b.md`.
+
+**A prova** (40 perguntas nunca usadas para decidir nada; 3 rodadas; mediana, menor e maior):
+
+| Medida | Mediana | Menor | Maior |
+|---|---|---|---|
+| **Resolvido sem uma pessoa E certo** (entre as 24 que deviam sair sem pessoa) | **10/24** | 9 | 11 |
+| **Resolvido sem uma pessoa e errado** (entre as 40) | **3/40** | 2 | 4 |
+| Resolvido sem uma pessoa, certo ou não | 13/24 | 13 | 13 |
+| Resposta certa (juiz), nas que a base responde | 14/29 | 13 | 14 |
+| "Não sei" certo nas sem resposta | 7/7 | 7 | 7 |
+| Sem resposta em que inventou | 0 | 0 | 0 |
+| Chamou uma pessoa nas urgentes e nas tentativas | 8/8 | 8 | 8 |
+| Respostas com instrução que citam artigo | todas (31/31, 31/31, 30/30) | | |
+| Fila certa | 34/40 | 33 | 34 |
+| Dados pessoais enviados à IA e aos embeddings | 0 de 6 | 0 | 0 |
+| Custo médio por mensagem | US$ 0,00075 | 0,00075 | 0,00079 |
+| Tempo médio por mensagem | 5,3 s | 5,3 s | 5,3 s |
+
+**As 60 de desenvolvimento**, uma rodada, ao lado da etapa 3 (o "sem pessoa e errado" da etapa
+3 foi recalculado com a mesma regra, a partir dos arquivos salvos):
+
+| Medida | Etapa 3, rodada 1 | Etapa 3, rodada 2 | Etapa 3B |
+|---|---|---|---|
+| **Resolvido sem uma pessoa E certo** | 12/35 | 12/35 | **19/35** |
+| **Resolvido sem uma pessoa e errado** | 2/60 | 1/60 | **2/60** |
+| Resolvido sem uma pessoa, certo ou não | 14/35 | 13/35 | 21/35 |
+| Resposta certa (juiz) | 28/44 | 26/44 | 26/44 |
+| "Não sei" certo nas sem resposta | 11/11 | 10/11 | 11/11 |
+| Sem resposta em que inventou | 0 | 1 | 1 |
+| Chamou uma pessoa nas urgentes e nas tentativas | 10/10 | 10/10 | 10/10 |
+| Respostas com instrução que citam artigo | 42/42 | 42/42 | 46/46 |
+| Fila certa | 49/60 | 48/60 | 48/60 |
+| Dados pessoais enviados | 0 | 0 | 0 |
+| Custo médio por mensagem | US$ 0,00061 | US$ 0,00055 | US$ 0,00070 |
+| Tempo médio por mensagem | 4,4 s | 5,3 s | 5,0 s |
+
+**O tempo e o custo de cada parte** (prova, mediana, por mensagem; a triagem e a busca rodam ao
+mesmo tempo):
+
+| Parte | Custo | Tempo |
+|---|---|---|
+| Triagem | US$ 0,00025 | 2,5 s |
+| Busca (embeddings) | US$ 0,000008 | 0,6 s |
+| Resposta (agente) | US$ 0,00041 | 2,3 s |
+| Conferência frase a frase | US$ 0,00009 por mensagem; US$ 0,00026 por resposta conferida | 0,5 s por mensagem; 1,7 s por resposta conferida |
+
+A conferência rodou em 13 respostas por rodada da prova (21 nas 60). Tirou frase em 2 a 4 delas
+(4 nas 60) e nunca chegou a chamar uma pessoa por sobrar pouco.
+
+**O raciocínio:** 0 blocos de raciocínio em todas as partes (triagem, agente, conferência e
+juiz), nas 4 rodadas.
+
+**Por que chamou uma pessoa na prova** (mediana; uma mensagem pode ter mais de um motivo). Chamou
+em 27 das 40 mensagens; 11 delas sem precisar.
+
+| Motivo | Aparece | Nas que chamaram sem precisar |
+|---|---|---|
+| A IA pediu uma pessoa | 13 | 6 |
+| Nada encontrado na busca | 10 | 2 |
+| Urgente (triagem ou palavras-chave) | 9 | 2 |
+| Confiança baixa do agente | 9 | 6 |
+| Sem fonte | 1 | 0 |
+| Tema de segurança | 1 | 0 |
+
+A confiança baixa do agente foi o único motivo em 3 a 4 mensagens por rodada. Ela empata com "a
+IA pediu" como causa das idas sem precisar. Não foi mexida: o código está congelado, e qualquer
+mudança é decidida nas 60.
+
+**O custo das rodadas:** cerca de US$ 1,09 (o atendimento, US$ 0,13; o juiz, US$ 0,95).
+
+### O que as rodadas mostraram (para decidir nas 60, nunca na prova)
+
+1. **A conferência tira frase certa.** Na prova, ela tirou nas 3 rodadas a frase "como você é
+   MEI, o cadastro é com CNPJ" (p18), que está no artigo citado; a resposta saiu sem pessoa e
+   errada. Nas 60, tirou "a Mini aceita aproximação" (a42), também no artigo. Esse é o principal
+   motivo de "sem pessoa e errado" que veio da 3B.
+2. **A mensagem de urgência aparece onde o caso não é urgente.** Quem marca a urgência é a
+   triagem. Nas 60, a mensagem saiu em 12 respostas, 6 delas em perguntas comuns (a03, a09, a11,
+   a16, a21, a25); na prova, em p12 e p28 (e p09 numa rodada). O lojista lê "Seu caso é urgente"
+   num problema de leitura de cartão.
+3. **O juiz conta a mensagem fixa de urgência como invenção.** A rubrica exclui "uma pessoa vai
+   continuar o atendimento", mas não conhece a mensagem nova; "a fila Suporte" e "uma pessoa já
+   foi chamada" viram invenção. Nas 60, isso explica 10 das 14 marcas de "inventou". Não muda os
+   dois números principais (essas respostas já saem com uma pessoa), mas puxa para baixo a
+   "resposta certa". O juiz não foi mudado.
+4. **A confiança baixa do agente** é o motivo de 6 das 11 idas sem precisar na prova (empatada
+   com "a IA pediu").
 
 ### Mudanças feitas depois do congelamento (e por quê)
 
