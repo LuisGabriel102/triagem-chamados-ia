@@ -218,7 +218,7 @@ def test_repeticoes_dao_mediana_menor_e_maior(monkeypatch, tmp_path):
     resumo = json.loads((tmp_path / "prova_resumo.json").read_text("utf-8"))["resumo"]
     assert resumo["repeticoes"] == 3
     principal = resumo["resolvido_sem_pessoa_e_certo"]
-    assert set(principal) == {"mediana", "menor", "maior", "todo", "valores"}
+    assert set(principal) == {"mediana", "menor", "maior", "todo", "todos", "valores"}
     assert len(principal["valores"]) == 3
     assert principal["menor"] <= principal["mediana"] <= principal["maior"]
     texto = (tmp_path / "prova_resumo.md").read_text("utf-8")
@@ -351,3 +351,13 @@ def test_relatorio_mostra_as_partes_o_raciocinio_e_os_motivos(monkeypatch, tmp_p
     assert "## Por que chamou uma pessoa" in texto
     linhas = json.loads((tmp_path / "agente.json").read_text("utf-8"))["linhas"]
     assert set(linhas[0]["blocos_de_raciocinio"]) == {"triagem", "agente", "conferencia"}
+
+
+def test_total_que_muda_entre_rodadas_nao_vira_um_total_unico():
+    resumos = [modulo.resumir([_linha(id="a")]), modulo.resumir([_linha(id="a"), _linha(id="b")])]
+    juntas = modulo.resumir_repeticoes(resumos)
+    fonte = juntas["fonte_nas_respostas_com_instrucao"]
+    assert fonte["todo"] is None
+    assert fonte["todos"] == [1, 2]
+    texto = modulo.relatorio_das_repeticoes("agora", "Teste", {"perguntas": "x"}, juntas)
+    assert "1/1, 2/2" in texto

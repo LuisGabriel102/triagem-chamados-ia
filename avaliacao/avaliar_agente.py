@@ -660,12 +660,15 @@ def resumir_repeticoes(resumos: list[dict[str, Any]]) -> dict[str, Any]:
     saida: dict[str, Any] = {"repeticoes": len(resumos)}
     for chave, _ in MEDIDAS_DAS_REPETICOES:
         valores = [_valor(r[chave]) for r in resumos]
-        todo = resumos[0][chave]["todo"] if isinstance(resumos[0][chave], dict) else None
+        # O total pode mudar de uma rodada para outra (por exemplo, quantas respostas tinham
+        # instrução). Só vale um total único quando ele é o mesmo em todas.
+        todos = [r[chave]["todo"] if isinstance(r[chave], dict) else None for r in resumos]
         saida[chave] = {
             "mediana": statistics.median(valores),
             "menor": min(valores),
             "maior": max(valores),
-            "todo": todo,
+            "todo": todos[0] if len(set(todos)) == 1 else None,
+            "todos": todos,
             "valores": valores,
         }
     return saida
@@ -852,7 +855,10 @@ def relatorio_das_repeticoes(
     for chave, nome in MEDIDAS_DAS_REPETICOES:
         m = resumo[chave]
         de = f"/{m['todo']}" if m["todo"] is not None else ""
-        cada = ", ".join(_numero(v, chave) for v in m["valores"])
+        cada = ", ".join(
+            _numero(v, chave) + (f"/{t}" if t is not None and m["todo"] is None else "")
+            for v, t in zip(m["valores"], m.get("todos") or [None] * len(m["valores"]), strict=True)
+        )
         partes.append(
             f"| {nome} | {_numero(m['mediana'], chave)}{de} | {_numero(m['menor'], chave)}{de} | "
             f"{_numero(m['maior'], chave)}{de} | {cada} |"
