@@ -202,6 +202,20 @@ def test_a_regra_da_fonte_tambem_esta_no_prompt():
     assert "Resposta sem artigo citado não chega ao lojista" in PROMPT_AGENTE
 
 
+def test_regras_gerais_da_etapa_3b_no_prompt():
+    # Tiradas dos tipos de erro das 60 de desenvolvimento
+    # (avaliacao/resultados/erros_do_juiz_etapa3.md), nunca de um caso só.
+    for regra in (
+        "Comece pelo que responde a pergunta",  # incompleta
+        "Não escolha a venda mais parecida",  # inventou
+        "siga os dados",  # errada
+        "Não prometa ação da equipe",  # inventou
+        "Se for só uma possibilidade",  # chamou uma pessoa por precaução
+        "No máximo umas 120 palavras",
+    ):
+        assert regra in PROMPT_AGENTE, regra
+
+
 def test_resposta_da_ia_passa_de_novo_pelo_mascaramento():
     texto = "Mande um e-mail para fulano@example.com com o CPF 529.982.247-25."
     agente = ClienteAgenteFalso(("resposta", resposta_agente(resposta=texto)))
