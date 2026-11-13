@@ -18,6 +18,7 @@ from app.agente import (
 from app.atendimento import (
     AVISO_PESSOA,
     FECHO_PLANO_B,
+    RESPOSTA_ESPERA,
     RESPOSTA_NAO_SEI,
     RESPOSTA_SEGURANCA,
     ServicoAtendimento,
@@ -153,11 +154,44 @@ def test_artigo_citado_que_nao_veio_da_busca_nao_vale():
     assert resultado.resposta.endswith(FECHO_PLANO_B)
 
 
-def test_resposta_sem_fonte_nem_consulta_nao_vale():
+# --- Conserto 3: sem fonte, sem conselho ---
+
+
+def test_resposta_sem_artigo_citado_vira_a_mensagem_de_espera():
     agente = ClienteAgenteFalso(("resposta", resposta_agente(artigos_usados=[])))
     resultado = atender(montar(agente))
-    assert resultado.origem_resposta == "plano_b"
-    assert any("sem citar artigo" in m for m in resultado.motivos_pessoa)
+    assert resultado.resposta == RESPOSTA_ESPERA
+    assert resultado.fontes == []
+    assert resultado.origem_resposta == "fixa"
+    assert resultado.precisa_pessoa
+    assert any("sem fonte, sem conselho" in m for m in resultado.motivos_pessoa)
+
+
+def test_ia_que_chama_pessoa_sem_citar_artigo_nao_da_conselho():
+    resposta = resposta_agente(
+        resposta="Enquanto isso, receba Pix pelo QR code do app.",
+        artigos_usados=[],
+        precisa_pessoa=True,
+        motivo="maquininha roubada",
+    )
+    resultado = atender(montar(ClienteAgenteFalso(("resposta", resposta))))
+    assert resultado.resposta == RESPOSTA_ESPERA
+    assert "Pix" not in resultado.resposta
+    assert "a IA pediu uma pessoa: maquininha roubada" in resultado.motivos_pessoa
+
+
+def test_resposta_so_com_dados_das_ferramentas_tambem_precisa_citar_artigo():
+    agente = ClienteAgenteFalso(
+        ("consulta", "consultar_recebimentos"),
+        ("resposta", resposta_agente(resposta="Cai hoje, até as 18h.", artigos_usados=[])),
+    )
+    resultado = atender(montar(agente), "o dinheiro da venda de ontem não caiu na conta")
+    assert resultado.ferramentas_usadas == ["consultar_recebimentos"]
+    assert resultado.resposta == RESPOSTA_ESPERA
+
+
+def test_a_regra_da_fonte_tambem_esta_no_prompt():
+    assert "Resposta sem artigo citado não chega ao lojista" in PROMPT_AGENTE
 
 
 def test_resposta_da_ia_passa_de_novo_pelo_mascaramento():

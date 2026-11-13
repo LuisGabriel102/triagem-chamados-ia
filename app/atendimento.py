@@ -49,6 +49,8 @@ log = logging.getLogger(__name__)
 AVISO_PESSOA = "Uma pessoa da nossa equipe vai continuar o atendimento."
 RESPOSTA_NAO_SEI = "Não sei responder isso com segurança. " + AVISO_PESSOA
 RESPOSTA_SEGURANCA = "Não posso ajudar com esse pedido por aqui. " + AVISO_PESSOA
+# Quando a IA não cita artigo da busca: sem fonte, sem conselho.
+RESPOSTA_ESPERA = "Passei a sua mensagem para uma pessoa da nossa equipe. " + AVISO_PESSOA
 FECHO_PLANO_B = "Uma pessoa da nossa equipe vai confirmar."
 TAMANHO_DO_TRECHO = 600
 
@@ -236,13 +238,13 @@ class ServicoAtendimento:
         if fora:
             motivos.append(f"a IA citou artigo que não veio da busca ({', '.join(fora)})")
             return resposta_plano_b(artigos[0]), [artigos[0]], "plano_b"
-        if (
-            not dados.artigos_usados
-            and not resultado.ferramentas_usadas
-            and not dados.precisa_pessoa
-        ):
-            motivos.append("a IA respondeu sem citar artigo nem consultar dados")
-            return resposta_plano_b(artigos[0]), [artigos[0]], "plano_b"
+        if not dados.artigos_usados:
+            # Sem fonte, sem conselho: toda instrução precisa citar um artigo da busca.
+            # Vale também quando a IA chama uma pessoa ou só usou dados das ferramentas.
+            motivos.append("a IA não citou artigo da busca: sem fonte, sem conselho")
+            if dados.precisa_pessoa:
+                motivos.append(f"a IA pediu uma pessoa: {dados.motivo or 'sem motivo informado'}")
+            return RESPOSTA_ESPERA, [], "fixa"
         # A resposta também passa pelo mascaramento (defesa extra). Os contatos da própria
         # empresa, que estão nos artigos, não são dado pessoal e ficam.
         mascarada = mascarar_resposta(dados.resposta, self._contatos_permitidos)

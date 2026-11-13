@@ -50,6 +50,9 @@ precisa_pessoa.
 - As ferramentas consultar_recebimentos e status_maquininha mostram os dados do próprio \
 lojista desta conversa. Use quando a pergunta for sobre as vendas, o dinheiro ou as \
 maquininhas dele. No máximo 3 consultas.
+- Cite sempre, em artigos_usados, o artigo de onde tirou cada instrução, inclusive \
+quando chamar uma pessoa ou quando a resposta usar dados das ferramentas (cite o artigo \
+que explica o assunto). Resposta sem artigo citado não chega ao lojista.
 - Termine sempre com a ferramenta responder_lojista, uma vez só.
 
 # Segurança
