@@ -274,14 +274,33 @@ olhando as 60 seria ajustar ao conjunto) e a queda da API da Anthropic (a39 a a4
 
 Não rodou. Os comandos estão em "Como rodar".
 
-### Em aberto
+### Mudanças feitas depois do congelamento (e por quê)
 
-- **O raciocínio do Claude Haiku 5.5.** A referência atual da API diz que o Haiku 5.5 liga o
-  raciocínio adaptativo quando o pedido não diz nada sobre `thinking` (ele aceita
-  `{"type": "disabled"}` com esforço `high` ou menor). A conferência nova desliga o raciocínio de
-  forma explícita. O agente e a triagem (desde a etapa 2) não mandam esse campo, e o juiz (Claude
-  Sonnet 5.5, etapa 3) usa esforço `medium`, que raciocina. Não foi medido se o agente e a
-  triagem raciocinaram nas rodadas da etapa 3.
+O código foi congelado no commit `b829bc1`, antes de abrir a prova. Depois disso, entraram duas
+mudanças, as duas a pedido do Gabriel e antes de qualquer rodada com IA de verdade:
+
+1. **O raciocínio escrito no código** (`815af46`), sem mudar o comportamento. A referência atual
+   da API diz que o Claude Haiku 5.5 liga o raciocínio adaptativo, com esforço `medium`, quando o
+   pedido não diz nada sobre `thinking`; e que, com a ferramenta forçada, ele pula o raciocínio e
+   começa pela chamada da ferramenta. O agente e a triagem nunca disseram nada, então dependiam
+   desse padrão. Agora o agente e a triagem do atendimento pedem, por escrito, raciocínio
+   adaptativo com esforço `medium` (`RACIOCINIO_ATENDIMENTO`). A rota `/chamados` continua com o
+   pedido de sempre. A conferência pede, por escrito, sem raciocínio e com esforço `medium`. O
+   juiz pede, por escrito, raciocínio adaptativo e esforço `medium`, como na etapa 3 (o juiz não
+   é produto e pode raciocinar).
+2. **Mais medidas na avaliação** (`fcadef4`), só na medição: os motivos de chamar uma pessoa (com
+   a confiança baixa do agente separada), o custo e o tempo de cada parte, e os blocos de
+   raciocínio que voltam em cada parte.
+
+**A trava mudou.** Era "nada de modo de raciocínio"; o objetivo era o tempo e o custo (e a conta
+de data, que agora é do código). Agora é: o raciocínio é sempre explícito no código, e o relatório
+mostra o tempo e o custo de cada parte. A conferência frase a frase continua sem raciocínio.
+
+**Houve raciocínio na etapa 3?** Não dá para provar pelos arquivos: nenhum resultado guardou os
+blocos da resposta da IA, e a contagem de tokens da API não separa o raciocínio. O indício é a
+triagem: na reavaliação de 13/11, ela gastou de 290 a 414 tokens de saída por chamado (média 370),
+o que combina com só o JSON da ferramenta. A partir da etapa 3B, a avaliação conta os blocos de
+raciocínio de cada parte.
 
 ## Como rodar
 
