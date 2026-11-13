@@ -86,6 +86,15 @@ def carregar_perguntas(caminho: Path) -> list[dict[str, Any]]:
     return [json.loads(linha) for linha in linhas if linha.strip()]
 
 
+def artigos_certos(pergunta: dict[str, Any]) -> list[str]:
+    """Os artigos aceitos. Nas perguntas da busca, o gabarito é um artigo (ou None);
+    nas do agente, é um dicionário com a lista de artigos aceitos, o principal primeiro."""
+    gabarito = pergunta["gabarito"]
+    if isinstance(gabarito, dict):
+        return list(gabarito.get("artigos") or [])
+    return [gabarito] if gabarito else []
+
+
 def avaliar_modo(
     busca: Busca,
     perguntas: list[dict[str, Any]],
@@ -98,24 +107,25 @@ def avaliar_modo(
         resultado = busca.buscar(pergunta["pergunta"], modo)
         enviados = gravador.enviados[antes:] if gravador else []
         candidatos = [achado.artigo.id for achado in resultado.candidatos]
-        gabarito = pergunta["gabarito"]
+        aceitos = artigos_certos(pergunta)
+        gabarito = aceitos[0] if aceitos else None
+        certo_entre_os_3 = any(id_artigo in aceitos for id_artigo in candidatos)
         dados = pergunta.get("dados_pessoais", [])
         linhas.append(
             {
                 "id": pergunta["id"],
                 "gabarito": gabarito,
+                "aceitos": aceitos,
                 "modo_que_rodou": resultado.modo,
                 "candidatos": candidatos,
                 "criterio": resultado.criterio,
                 "melhor_nota": round(resultado.melhor_nota, 4),
                 "nada_encontrado": resultado.nada_encontrado,
-                "acerto_1": bool(gabarito) and candidatos[:1] == [gabarito],
-                "acerto_3": bool(gabarito) and gabarito in candidatos,
+                "acerto_1": bool(candidatos) and candidatos[0] in aceitos,
+                "acerto_3": certo_entre_os_3,
                 # O que importa para o agente: passou do limiar E o artigo certo está
                 # entre os 3 que ele vai ler.
-                "respondida_certa": bool(gabarito)
-                and not resultado.nada_encontrado
-                and gabarito in candidatos,
+                "respondida_certa": certo_entre_os_3 and not resultado.nada_encontrado,
                 "dados_pessoais": len(dados),
                 "dados_enviados": sum(any(dado_sobrou(d, t) for t in enviados) for d in dados),
                 "dados_no_texto_mascarado": sum(
@@ -247,9 +257,11 @@ def relatorio_busca(quando: str, contexto: dict[str, Any], resultados: dict[str,
     def fracao(parte: int, todo: int) -> str:
         return f"{parte}/{todo} ({parte / todo:.0%})" if todo else "—"
 
+    modos = contexto.get("modos", list(MODOS))
+
     def celulas(chave: str) -> str:
         valores = []
-        for modo in MODOS:
+        for modo in modos:
             resultado = resultados[modo]
             if not resultado["rodou"]:
                 valores.append("não rodou")
@@ -269,23 +281,24 @@ def relatorio_busca(quando: str, contexto: dict[str, Any], resultados: dict[str,
                 valores.append(fracao(resumo[chave], resumo["com_resposta"]))
         return " | ".join(valores)
 
-    palavras = resultados["palavras"]["resumo"]
+    palavras = next(resultados[modo]["resumo"] for modo in modos if resultados[modo]["rodou"])
+    arquivo = contexto.get("arquivo", "avaliacao/perguntas_busca.jsonl")
     partes = [
         "# Avaliação da busca na base de conhecimento",
         "",
         f"Rodada em {quando}. Base: {contexto['artigos']} artigos (`base/artigos/`). "
-        f"Perguntas: {palavras['perguntas']} (`avaliacao/perguntas_busca.jsonl`), "
+        f"Perguntas: {palavras['perguntas']} (`{arquivo}`), "
         f"{palavras['com_resposta']} com o artigo certo no gabarito e "
         f"{palavras['sem_resposta']} sem resposta na base.",
         "",
-        f"> **Ressalva:** {RESSALVA}",
+        f"> **Ressalva:** {contexto.get('ressalva') or RESSALVA}",
         "",
         f"- Busca por sentido: {contexto['sentido']}.",
         f"- Limiar do BM25: {contexto['limiar_bm25']:g} ({contexto['origem_limiar_bm25']}).",
         f"- Limiar da similaridade: {contexto['limiar_similaridade']}.",
         "",
-        f"| Medida | {' | '.join(NOMES_DOS_MODOS[modo] for modo in MODOS)} |",
-        "|---|---|---|---|",
+        f"| Medida | {' | '.join(NOMES_DOS_MODOS[modo] for modo in modos)} |",
+        "|---" * (len(modos) + 1) + "|",
         f"| **Respondidas e certas** (acima do limiar e com o artigo certo entre os 3) | "
         f"{celulas('respondidas_certas')} |",
         f"| Acerto no 1º lugar | {celulas('acerto_1')} |",
@@ -308,12 +321,12 @@ def relatorio_busca(quando: str, contexto: dict[str, Any], resultados: dict[str,
         "mostram o efeito do limiar: barrar as sem resposta é o certo; barrar uma com resposta "
         "faz o agente chamar uma pessoa sem precisar.",
     ]
-    if any(not resultados[modo]["rodou"] for modo in MODOS):
+    if any(not resultados[modo]["rodou"] for modo in modos):
         partes += ["", "Por que não rodou:"]
-        for modo in MODOS:
+        for modo in modos:
             if not resultados[modo]["rodou"]:
                 partes.append(f"- {NOMES_DOS_MODOS[modo]}: {resultados[modo]['motivo']}.")
-    for modo in MODOS:
+    for modo in modos:
         if not resultados[modo]["rodou"]:
             continue
         erros = [
@@ -415,6 +428,10 @@ def main(argumentos: list[str] | None = None) -> int:
     leitor.add_argument("--saida", type=Path, default=PASTA_RESULTADOS)
     leitor.add_argument("--indice", type=Path, default=ARQUIVO_INDICE)
     leitor.add_argument("--limiares", type=Path, default=ARQUIVO_LIMIARES)
+    leitor.add_argument("--perguntas", type=Path, default=ARQUIVO_PERGUNTAS)
+    leitor.add_argument("--nome", default="busca", help="nome do relatório (sem extensão)")
+    leitor.add_argument("--modos", nargs="+", choices=MODOS, default=list(MODOS))
+    leitor.add_argument("--ressalva", help="troca a ressalva padrão do relatório")
     args = leitor.parse_args(argumentos)
 
     config = Configuracao()
@@ -464,6 +481,11 @@ def main(argumentos: list[str] | None = None) -> int:
 
     contexto: dict[str, Any] = {
         "artigos": len(artigos),
+        "arquivo": args.perguntas.resolve().relative_to(PASTA.parent).as_posix()
+        if args.perguntas.resolve().is_relative_to(PASTA.parent)
+        else str(args.perguntas),
+        "modos": list(args.modos),
+        "ressalva": args.ressalva,
         "limiar_bm25": limiares.bm25,
         "origem_limiar_bm25": limiares.origem_bm25,
         "sentido": f"pela {acesso_ao_google(config) or 'gerador configurado'}, "
@@ -486,9 +508,9 @@ def main(argumentos: list[str] | None = None) -> int:
                     "calibração e não gravado; rode --calibrar para gravar)"
                 )
 
-    perguntas = carregar_perguntas(ARQUIVO_PERGUNTAS)
+    perguntas = carregar_perguntas(args.perguntas)
     resultados: dict[str, Any] = {}
-    for modo in MODOS:
+    for modo in args.modos:
         if modo != "palavras" and gravador is None:
             resultados[modo] = {"rodou": False, "motivo": motivo}
             continue
@@ -505,7 +527,7 @@ def main(argumentos: list[str] | None = None) -> int:
     texto = relatorio_busca(quando, contexto, resultados)
     _gravar(
         args.saida,
-        "busca",
+        args.nome,
         texto,
         {"quando": quando, "contexto": contexto, "resultados": resultados},
     )

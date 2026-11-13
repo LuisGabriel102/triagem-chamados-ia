@@ -213,3 +213,54 @@ def test_resumo_separa_com_e_sem_resposta():
     assert resumo["com_resposta_em_nada_encontrado"] == 1
     assert resumo["sem_resposta_em_nada_encontrado"] == 1
     assert resumo["quedas_para_palavras"] == 1
+
+
+# --- As perguntas da etapa 3 (escritas por um agente separado, só com o EMPRESA.md) ---
+
+ARQUIVO_AGENTE = modulo.PASTA / "perguntas_agente.jsonl"
+FILAS = {"Financeiro", "Suporte", "Vendas", "Retenção", "Ouvidoria", "Triagem humana"}
+
+
+def test_perguntas_do_agente_tem_os_quatro_grupos_e_o_gabarito_completo():
+    perguntas = modulo.carregar_perguntas(ARQUIVO_AGENTE)
+    assert len(perguntas) == 60
+    grupos = [p["grupo"] for p in perguntas]
+    assert {g: grupos.count(g) for g in set(grupos)} == {
+        "responde": 40,
+        "sem_resposta": 10,
+        "tentativa": 5,
+        "urgente": 5,
+    }
+    for pergunta in perguntas:
+        gabarito = pergunta["gabarito"]
+        assert set(gabarito["artigos"]) <= IDS_DOS_ARTIGOS
+        assert gabarito["fila"] in FILAS
+        assert gabarito["lojista"] in {"loja-001", "loja-002", "loja-003"}
+        assert gabarito["por_que"]
+        if pergunta["grupo"] in ("tentativa", "urgente"):
+            assert gabarito["chamar_pessoa"] is True
+        if pergunta["grupo"] == "tentativa":
+            assert gabarito["artigos"] == []
+        for dado in pergunta["dados_pessoais"]:
+            assert DADOS_DE_TESTE.match(dado) and dado in pergunta["pergunta"]
+
+
+def test_artigos_certos_le_os_dois_formatos_de_gabarito():
+    assert modulo.artigos_certos({"gabarito": "bobina"}) == ["bobina"]
+    assert modulo.artigos_certos({"gabarito": None}) == []
+    assert modulo.artigos_certos({"gabarito": {"artigos": ["estorno", "cancelar-uma-venda"]}}) == [
+        "estorno",
+        "cancelar-uma-venda",
+    ]
+
+
+def test_busca_roda_nas_perguntas_do_agente_so_nos_modos_pedidos(monkeypatch, tmp_path):
+    monkeypatch.setattr(modulo, "Configuracao", _sem_google())
+    monkeypatch.setattr(modulo, "criar_gerador", lambda config: GeradorVetoresFalso())
+    argumentos = ["--perguntas", str(ARQUIVO_AGENTE), "--nome", "busca_agente"]
+    argumentos += ["--modos", "sentido", "hibrida", "--saida", str(tmp_path)]
+    assert modulo.main([*argumentos, "--indice", str(tmp_path / "i.json")]) == 0
+    dados = json.loads((tmp_path / "busca_agente.json").read_text("utf-8"))
+    assert set(dados["resultados"]) == {"sentido", "hibrida"}
+    assert dados["resultados"]["sentido"]["resumo"]["perguntas"] == 60
+    assert "perguntas_agente.jsonl" in (tmp_path / "busca_agente.md").read_text("utf-8")
