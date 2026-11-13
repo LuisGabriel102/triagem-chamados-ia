@@ -34,11 +34,11 @@
       ]
     },
     "loja-003": {
-      "nome_fantasia": "Bicicletaria Roda Viva",
+      "nome_fantasia": "Bicicletaria Dois Aros",
       "plano": "Plano Na Hora",
       "documento": "529.982.247-25",
       "conta_recebimento": {"banco": "000", "agencia": "0003", "conta": "11223-4"},
-      "email": "rodaviva@example.com",
+      "email": "doisaros@example.com",
       "maquininhas": [
         {"apelido": "Oficina", "modelo": "Tapiri Smart", "numero_serie": "TPS-0003-0301", "situacao": "ligada", "ultima_conexao_em_minutos": 1},
         {"apelido": "Feira", "modelo": "Tapiri Mini", "numero_serie": "TPM-0003-0302", "situacao": "sem_conexao", "ultima_conexao_em_minutos": 2880}
