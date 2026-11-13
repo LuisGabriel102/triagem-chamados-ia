@@ -4,6 +4,7 @@ import re
 import pytest
 
 from app.base_conhecimento import carregar_artigos
+from app.busca import ARQUIVO_LIMIARES
 from app.config import Configuracao
 from avaliacao import avaliar_busca as modulo
 from tests.falsos import GeradorVetoresFalso
@@ -123,13 +124,39 @@ def test_queda_do_google_na_primeira_pergunta_marca_nao_rodou(monkeypatch, tmp_p
     assert "ServerError 503" in resultados["sentido"]["motivo"]
 
 
-def test_limiar_do_bm25_da_configuracao_e_o_da_calibracao(monkeypatch, tmp_path):
+def test_limiar_do_bm25_em_base_limiares_e_o_da_calibracao(monkeypatch, tmp_path):
     """Se a base ou as perguntas de calibração mudarem, este teste lembra de recalibrar."""
     monkeypatch.setattr(modulo, "Configuracao", _sem_google())
-    assert modulo.main(["--calibrar", "--saida", str(tmp_path)]) == 0
+    destino = tmp_path / "limiares.json"
+    assert modulo.main(["--calibrar", "--saida", str(tmp_path), "--limiares", str(destino)]) == 0
     calibracao = json.loads((tmp_path / "calibracao.json").read_text("utf-8"))
-    assert calibracao["nota_bm25"]["limiar"] == Configuracao(_env_file=None).limiar_bm25
-    assert calibracao["similaridade"] is None
+    versionado = json.loads(ARQUIVO_LIMIARES.read_text("utf-8"))
+    assert calibracao["nota_bm25"]["limiar"] == versionado["bm25"]["limiar"]
+    gravado = json.loads(destino.read_text("utf-8"))
+    assert gravado["bm25"]["limiar"] == versionado["bm25"]["limiar"]
+    assert gravado["conjunto_de_calibracao"] == "avaliacao/perguntas_calibracao.jsonl"
+    assert gravado["bm25"]["calibrado_em"]
+
+
+def test_calibrar_sem_google_mantem_o_limiar_da_similaridade_do_arquivo(monkeypatch, tmp_path):
+    monkeypatch.setattr(modulo, "Configuracao", _sem_google())
+    destino = tmp_path / "limiares.json"
+    anterior = {"modelo": "gemini-embedding-2", "dimensoes": 768, "limiar": 0.61}
+    destino.write_text(json.dumps({"similaridade": anterior}), "utf-8")
+    assert modulo.main(["--calibrar", "--saida", str(tmp_path), "--limiares", str(destino)]) == 0
+    assert json.loads(destino.read_text("utf-8"))["similaridade"] == anterior
+
+
+def test_calibrar_com_gerador_grava_o_limiar_da_similaridade_com_o_modelo(monkeypatch, tmp_path):
+    monkeypatch.setattr(modulo, "Configuracao", _sem_google())
+    monkeypatch.setattr(modulo, "criar_gerador", lambda config: GeradorVetoresFalso())
+    destino = tmp_path / "limiares.json"
+    argumentos = ["--calibrar", "--saida", str(tmp_path), "--limiares", str(destino)]
+    assert modulo.main([*argumentos, "--indice", str(tmp_path / "i.json")]) == 0
+    similaridade = json.loads(destino.read_text("utf-8"))["similaridade"]
+    assert similaridade["modelo"] == "modelo-falso"
+    assert similaridade["dimensoes"] == 1024
+    assert -1 <= similaridade["limiar"] <= 1
 
 
 def test_gravador_reaproveita_o_vetor_e_guarda_o_que_foi_enviado():
@@ -148,6 +175,7 @@ def test_resumo_separa_com_e_sem_resposta():
             "gabarito": "bobina",
             "acerto_1": True,
             "acerto_3": True,
+            "respondida_certa": True,
             "nada_encontrado": False,
             "dados_pessoais": 1,
             "dados_enviados": 0,
@@ -158,6 +186,7 @@ def test_resumo_separa_com_e_sem_resposta():
             "gabarito": "pix-na-maquininha",
             "acerto_1": False,
             "acerto_3": True,
+            "respondida_certa": False,
             "nada_encontrado": True,
             "dados_pessoais": 0,
             "dados_enviados": 0,
@@ -168,6 +197,7 @@ def test_resumo_separa_com_e_sem_resposta():
             "gabarito": None,
             "acerto_1": False,
             "acerto_3": False,
+            "respondida_certa": False,
             "nada_encontrado": True,
             "dados_pessoais": 0,
             "dados_enviados": 0,
@@ -178,6 +208,8 @@ def test_resumo_separa_com_e_sem_resposta():
     resumo = modulo.resumir(linhas, "hibrida")
     assert resumo["com_resposta"] == 2 and resumo["sem_resposta"] == 1
     assert resumo["acerto_1"] == 1 and resumo["acerto_3"] == 2
+    # Acertou o artigo mas ficou abaixo do limiar: não conta como respondida e certa.
+    assert resumo["respondidas_certas"] == 1
     assert resumo["com_resposta_em_nada_encontrado"] == 1
     assert resumo["sem_resposta_em_nada_encontrado"] == 1
     assert resumo["quedas_para_palavras"] == 1

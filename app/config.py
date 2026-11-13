@@ -35,11 +35,10 @@ class Configuracao(BaseSettings):
     modelo_embedding: str = "gemini-embedding-2"
     dimensoes_embedding: int = Field(default=768, ge=128, le=3072)
     # Abaixo do limiar, a busca devolve "nada encontrado" e o agente chama uma pessoa.
-    # Com a busca por sentido, vale o da similaridade; sem ela, o do BM25. Os dois saem
-    # das perguntas de calibração (python -m avaliacao.avaliar_busca --calibrar).
-    # O do BM25 depende da base: recalibre quando os artigos mudarem.
-    limiar_bm25: float = Field(default=6.2882, ge=0)
-    # Vazio até ser calibrado com a busca por sentido rodando (precisa do acesso ao Google).
+    # Os limiares não são segredo: ficam em base/limiares.json, versionado, gravado pela
+    # calibração (python -m avaliacao.avaliar_busca --calibrar). Estas duas variáveis só
+    # servem para sobrescrever o arquivo; vazias, vale o arquivo.
+    limiar_bm25: float | None = Field(default=None, ge=0)
     limiar_similaridade: float | None = Field(default=None, ge=-1, le=1)
 
     database_url: str = "sqlite:///./triagem.db"
@@ -56,8 +55,8 @@ class Configuracao(BaseSettings):
     # prévia do link no LinkedIn. Vazio = sem prévia.
     url_publica: str = ""
 
-    @field_validator("limiar_similaridade", mode="before")
+    @field_validator("limiar_bm25", "limiar_similaridade", mode="before")
     @classmethod
     def _vazio_e_sem_limiar(cls, valor: object) -> object:
-        """LIMIAR_SIMILARIDADE= (vazio) no .env quer dizer "ainda não calibrado"."""
+        """LIMIAR_...= (vazio) no .env quer dizer "use o de base/limiares.json"."""
         return None if isinstance(valor, str) and not valor.strip() else valor

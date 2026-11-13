@@ -1,13 +1,17 @@
+import json
+
 import pytest
 from google.genai import errors as erros_google
 
 from app.base_conhecimento import carregar_artigos
 from app.busca import (
+    ARQUIVO_LIMIARES,
     SEM_ACESSO,
     SEM_LIMIAR_SIMILARIDADE,
     Busca,
     criar_busca,
     escolher_limiar,
+    escolher_limiares,
     fundir_rankings,
 )
 from app.busca_sentido import (
@@ -232,9 +236,66 @@ def test_criar_busca_com_chave_e_sem_indice_avisa_para_indexar(monkeypatch, tmp_
     assert "scripts/indexar_base.py" in resultado.avisos[0]
 
 
-def test_limiar_de_similaridade_vazio_no_env_quer_dizer_sem_limiar():
-    config = Configuracao(_env_file=None, limiar_similaridade="")
+def test_limiar_vazio_no_env_quer_dizer_use_o_arquivo():
+    config = Configuracao(_env_file=None, limiar_similaridade="", limiar_bm25="")
     assert config.limiar_similaridade is None
+    assert config.limiar_bm25 is None
+
+
+# --- Limiares: base/limiares.json, versionado; o ambiente só sobrescreve ---
+
+LIMIARES_DE_TESTE = {
+    "bm25": {"limiar": 4.5, "calibrado_em": "2026-11-13"},
+    "similaridade": {
+        "limiar": 0.62,
+        "modelo": "gemini-embedding-2",
+        "dimensoes": 768,
+        "calibrado_em": "2026-11-13",
+    },
+}
+
+
+def _config_limiares(**valores):
+    return Configuracao(_env_file=None, anthropic_api_key=None, **valores)
+
+
+def test_limiares_vem_do_arquivo_versionado(tmp_path):
+    caminho = tmp_path / "limiares.json"
+    caminho.write_text(json.dumps(LIMIARES_DE_TESTE), "utf-8")
+    limiares = escolher_limiares(_config_limiares(), "gemini-embedding-2", 768, caminho)
+    assert limiares.bm25 == 4.5
+    assert limiares.similaridade == 0.62
+    assert "calibrado em 2026-11-13" in limiares.origem_bm25
+
+
+def test_variavel_de_ambiente_sobrescreve_o_arquivo(tmp_path):
+    caminho = tmp_path / "limiares.json"
+    caminho.write_text(json.dumps(LIMIARES_DE_TESTE), "utf-8")
+    config = _config_limiares(limiar_bm25=7.0, limiar_similaridade=0.7)
+    limiares = escolher_limiares(config, "gemini-embedding-2", 768, caminho)
+    assert (limiares.bm25, limiares.similaridade) == (7.0, 0.7)
+    assert "ambiente" in limiares.origem_bm25 and "ambiente" in limiares.origem_similaridade
+
+
+def test_limiar_de_outro_modelo_nao_vale(tmp_path):
+    caminho = tmp_path / "limiares.json"
+    caminho.write_text(json.dumps(LIMIARES_DE_TESTE), "utf-8")
+    limiares = escolher_limiares(_config_limiares(), "gemini-embedding-001", 768, caminho)
+    assert limiares.similaridade is None
+    assert "outro modelo" in limiares.origem_similaridade
+
+
+def test_sem_arquivo_de_limiares_nao_ha_limiar(tmp_path):
+    limiares = escolher_limiares(_config_limiares(), None, None, tmp_path / "nao-existe.json")
+    assert limiares.bm25 == 0.0
+    assert limiares.similaridade is None
+
+
+def test_o_arquivo_versionado_tem_data_e_conjunto_de_calibracao():
+    dados = json.loads(ARQUIVO_LIMIARES.read_text("utf-8"))
+    assert dados["conjunto_de_calibracao"] == "avaliacao/perguntas_calibracao.jsonl"
+    assert dados["bm25"]["calibrado_em"]
+    assert dados["bm25"]["limiar"] > 0
 
 
 def test_erro_inesperado_do_sdk_tambem_cai_para_a_busca_por_palavras():

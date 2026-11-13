@@ -15,12 +15,14 @@ Passo a passo de uma busca:
 Como os limiares foram escolhidos: docs/ATENDIMENTO.md.
 """
 
+import json
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Literal
+from pathlib import Path
+from typing import Any, Literal
 
-from app.base_conhecimento import Artigo, carregar_artigos
+from app.base_conhecimento import PASTA_BASE, Artigo, carregar_artigos
 from app.busca_palavras import BuscaPalavras
 from app.busca_sentido import (
     ErroSentido,
@@ -34,6 +36,8 @@ from app.mascaramento import mascarar
 
 QUANTOS_ARTIGOS = 3
 K_RRF = 60
+# Os limiares de "nada encontrado", gravados pela calibração. Não são segredo.
+ARQUIVO_LIMIARES = PASTA_BASE / "limiares.json"
 # Os marcadores do mascaramento não são palavras da pergunta: saem antes do BM25.
 _MARCADOR = re.compile(r"\[(?:CPF|CNPJ|CARTAO|EMAIL|TELEFONE)\]")
 
@@ -45,9 +49,72 @@ SEM_ACESSO = (
     "Busca por sentido desligada: falta a GEMINI_API_KEY ou o GOOGLE_CLOUD_PROJECT. " + SO_PALAVRAS
 )
 SEM_LIMIAR_SIMILARIDADE = (
-    "O limiar da similaridade ainda não foi calibrado (LIMIAR_SIMILARIDADE): "
+    "O limiar da similaridade ainda não foi calibrado para este modelo (base/limiares.json): "
     "a decisão de 'nada encontrado' usou a nota do BM25."
 )
+
+
+@dataclass(frozen=True)
+class Limiares:
+    """Os limiares em uso e de onde cada um veio (para o relatório e para o log)."""
+
+    bm25: float
+    similaridade: float | None
+    origem_bm25: str
+    origem_similaridade: str
+
+
+def ler_limiares(caminho: Path = ARQUIVO_LIMIARES) -> dict[str, Any]:
+    """O conteúdo de base/limiares.json, ou {} se ele não existe ou está estragado."""
+    try:
+        dados = json.loads(caminho.read_text("utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+    return dados if isinstance(dados, dict) else {}
+
+
+def escolher_limiares(
+    config: Configuracao,
+    modelo: str | None = None,
+    dimensoes: int | None = None,
+    caminho: Path = ARQUIVO_LIMIARES,
+) -> Limiares:
+    """A variável de ambiente, se existir, sobrescreve; senão vale base/limiares.json.
+
+    O limiar da similaridade só vale para o modelo e as dimensões com que foi calibrado.
+    """
+    arquivo = ler_limiares(caminho)
+    bm25 = arquivo.get("bm25") if isinstance(arquivo.get("bm25"), dict) else {}
+    sentido = arquivo.get("similaridade") if isinstance(arquivo.get("similaridade"), dict) else {}
+
+    if config.limiar_bm25 is not None:
+        limiar_bm25, origem_bm25 = config.limiar_bm25, "LIMIAR_BM25 do ambiente"
+    elif "limiar" in bm25:
+        limiar_bm25 = float(bm25["limiar"])
+        origem_bm25 = f"base/limiares.json, calibrado em {bm25.get('calibrado_em', '?')}"
+    else:
+        limiar_bm25, origem_bm25 = 0.0, "nenhum: base/limiares.json sem o limiar do BM25"
+
+    limiar_sentido: float | None = None
+    if config.limiar_similaridade is not None:
+        limiar_sentido, origem_sentido = (
+            config.limiar_similaridade,
+            "LIMIAR_SIMILARIDADE do ambiente",
+        )
+    elif "limiar" not in sentido:
+        origem_sentido = "não calibrado"
+    elif sentido.get("modelo") == modelo and sentido.get("dimensoes") == dimensoes:
+        limiar_sentido = float(sentido["limiar"])
+        origem_sentido = (
+            f"base/limiares.json ({modelo}, {dimensoes} dimensões), "
+            f"calibrado em {sentido.get('calibrado_em', '?')}"
+        )
+    else:
+        origem_sentido = (
+            f"o de base/limiares.json é de outro modelo ({sentido.get('modelo')}, "
+            f"{sentido.get('dimensoes')} dimensões): recalibre"
+        )
+    return Limiares(limiar_bm25, limiar_sentido, origem_bm25, origem_sentido)
 
 
 @dataclass(frozen=True)
@@ -203,11 +270,16 @@ def criar_busca(config: Configuracao, artigos: Sequence[Artigo] | None = None) -
             indice = carregar_indice_memoria(artigos, gerador.modelo, gerador.dimensoes)
         except ErroSentido as erro:
             motivo = f"Busca por sentido desligada: {erro}. {SO_PALAVRAS}"
+    limiares = escolher_limiares(
+        config,
+        gerador.modelo if gerador else None,
+        gerador.dimensoes if gerador else None,
+    )
     return Busca(
         artigos,
         gerador=gerador,
         indice=indice,
-        limiar_bm25=config.limiar_bm25,
-        limiar_similaridade=config.limiar_similaridade,
+        limiar_bm25=limiares.bm25,
+        limiar_similaridade=limiares.similaridade,
         motivo_sem_sentido=motivo,
     )

@@ -25,7 +25,14 @@ from pathlib import Path
 from typing import Any
 
 from app.base_conhecimento import Artigo, carregar_artigos
-from app.busca import Busca, Modo, escolher_limiar
+from app.busca import (
+    ARQUIVO_LIMIARES,
+    Busca,
+    Modo,
+    escolher_limiar,
+    escolher_limiares,
+    ler_limiares,
+)
 from app.busca_sentido import (
     ARQUIVO_INDICE,
     ErroSentido,
@@ -104,6 +111,11 @@ def avaliar_modo(
                 "nada_encontrado": resultado.nada_encontrado,
                 "acerto_1": bool(gabarito) and candidatos[:1] == [gabarito],
                 "acerto_3": bool(gabarito) and gabarito in candidatos,
+                # O que importa para o agente: passou do limiar E o artigo certo está
+                # entre os 3 que ele vai ler.
+                "respondida_certa": bool(gabarito)
+                and not resultado.nada_encontrado
+                and gabarito in candidatos,
                 "dados_pessoais": len(dados),
                 "dados_enviados": sum(any(dado_sobrou(d, t) for t in enviados) for d in dados),
                 "dados_no_texto_mascarado": sum(
@@ -124,6 +136,7 @@ def resumir(linhas: list[dict[str, Any]], modo: Modo) -> dict[str, Any]:
         "sem_resposta": len(sem),
         "acerto_1": sum(linha["acerto_1"] for linha in com),
         "acerto_3": sum(linha["acerto_3"] for linha in com),
+        "respondidas_certas": sum(linha["respondida_certa"] for linha in com),
         "com_resposta_em_nada_encontrado": sum(linha["nada_encontrado"] for linha in com),
         "sem_resposta_em_nada_encontrado": sum(linha["nada_encontrado"] for linha in sem),
         "dados_pessoais": sum(linha["dados_pessoais"] for linha in linhas),
@@ -273,6 +286,8 @@ def relatorio_busca(quando: str, contexto: dict[str, Any], resultados: dict[str,
         "",
         f"| Medida | {' | '.join(NOMES_DOS_MODOS[modo] for modo in MODOS)} |",
         "|---|---|---|---|",
+        f"| **Respondidas e certas** (acima do limiar e com o artigo certo entre os 3) | "
+        f"{celulas('respondidas_certas')} |",
         f"| Acerto no 1º lugar | {celulas('acerto_1')} |",
         f"| Acerto entre os 3 primeiros | {celulas('acerto_3')} |",
         f'| Sem resposta que ficaram em "nada encontrado" | '
@@ -286,7 +301,9 @@ def relatorio_busca(quando: str, contexto: dict[str, Any], resultados: dict[str,
         "mascarado, que é o texto que vai para os embeddings: "
         f"{palavras['dados_no_texto_mascarado']} de {palavras['dados_pessoais']}.",
         "",
-        "Como ler: o acerto no 1º lugar e entre os 3 primeiros olha a ordem dos artigos antes "
+        'Como ler: "respondidas e certas" é a medida que importa para o agente: a busca '
+        "passou do limiar e entregou o artigo certo entre os 3 que ele vai ler. "
+        "O acerto no 1º lugar e entre os 3 primeiros olha a ordem dos artigos antes "
         'do limiar, só nas perguntas com resposta. As duas linhas de "nada encontrado" '
         "mostram o efeito do limiar: barrar as sem resposta é o certo; barrar uma com resposta "
         "faz o agente chamar uma pessoa sem precisar.",
@@ -342,6 +359,46 @@ def _preparar_sentido(
     return GeradorGravador(gerador), indice, ""
 
 
+def gravar_limiares(
+    caminho: Path,
+    data: str,
+    bm25: dict[str, Any],
+    similaridade: dict[str, Any] | None,
+    modelo: str | None,
+    dimensoes: int | None,
+) -> None:
+    """Grava base/limiares.json. Sem a busca por sentido nesta rodada, o limiar da
+    similaridade que já estava no arquivo fica como estava."""
+
+    def resumo(dados: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "limiar": dados["limiar"],
+            "calibrado_em": data,
+            "com_resposta_que_passam": dados["com_resposta_que_passam"],
+            "com_resposta": dados["com_resposta"],
+            "sem_resposta_barradas": dados["sem_resposta_barradas"],
+            "sem_resposta": dados["sem_resposta"],
+        }
+
+    anterior = ler_limiares(caminho)
+    conteudo: dict[str, Any] = {
+        "conjunto_de_calibracao": "avaliacao/perguntas_calibracao.jsonl",
+        "regra": "o limiar que mais separa as perguntas com resposta das sem resposta, "
+        "pesando os dois grupos igualmente (app/busca.py, escolher_limiar)",
+        "sobrescrever": "LIMIAR_BM25 e LIMIAR_SIMILARIDADE no ambiente, se existirem",
+        "bm25": resumo(bm25),
+        "similaridade": anterior.get("similaridade"),
+    }
+    if similaridade is not None:
+        conteudo["similaridade"] = {
+            "modelo": modelo,
+            "dimensoes": dimensoes,
+            **resumo(similaridade),
+        }
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    caminho.write_text(json.dumps(conteudo, ensure_ascii=False, indent=2) + "\n", "utf-8")
+
+
 def _gravar(pasta: Path, nome: str, texto: str, dados: dict[str, Any]) -> None:
     pasta.mkdir(parents=True, exist_ok=True)
     (pasta / f"{nome}.md").write_text(texto, "utf-8")
@@ -357,19 +414,27 @@ def main(argumentos: list[str] | None = None) -> int:
     )
     leitor.add_argument("--saida", type=Path, default=PASTA_RESULTADOS)
     leitor.add_argument("--indice", type=Path, default=ARQUIVO_INDICE)
+    leitor.add_argument("--limiares", type=Path, default=ARQUIVO_LIMIARES)
     args = leitor.parse_args(argumentos)
 
     config = Configuracao()
     artigos = carregar_artigos()
     gravador, indice, motivo = _preparar_sentido(config, artigos, args.indice)
+    limiares = escolher_limiares(
+        config,
+        gravador.modelo if gravador else None,
+        gravador.dimensoes if gravador else None,
+        args.limiares,
+    )
     busca = Busca(
         artigos,
         gravador,
         indice,
-        limiar_bm25=config.limiar_bm25,
-        limiar_similaridade=config.limiar_similaridade,
+        limiar_bm25=limiares.bm25,
+        limiar_similaridade=limiares.similaridade,
     )
-    quando = datetime.now(UTC).strftime("%d/%m/%Y %H:%M UTC")
+    agora = datetime.now(UTC)
+    quando = agora.strftime("%d/%m/%Y %H:%M UTC")
     calibracao = carregar_perguntas(ARQUIVO_CALIBRACAO)
 
     if args.calibrar:
@@ -385,16 +450,22 @@ def main(argumentos: list[str] | None = None) -> int:
             texto,
             {"quando": quando, "nota_bm25": bm25, "similaridade": similaridade},
         )
+        gravar_limiares(
+            args.limiares,
+            agora.date().isoformat(),
+            bm25,
+            similaridade,
+            gravador.modelo if gravador else None,
+            gravador.dimensoes if gravador else None,
+        )
         print(texto)
-        print(f"Para usar: LIMIAR_BM25={bm25['limiar']:g} no .env (ou o padrão em app/config.py).")
-        if similaridade:
-            print(f"           LIMIAR_SIMILARIDADE={similaridade['limiar']:g}")
+        print(f"Limiares gravados em {args.limiares}.")
         return 0
 
     contexto: dict[str, Any] = {
         "artigos": len(artigos),
-        "limiar_bm25": config.limiar_bm25,
-        "origem_limiar_bm25": "LIMIAR_BM25 da configuração, calibrado em calibracao.md",
+        "limiar_bm25": limiares.bm25,
+        "origem_limiar_bm25": limiares.origem_bm25,
         "sentido": f"pela {acesso_ao_google(config) or 'gerador configurado'}, "
         f"modelo {gravador.modelo}, {gravador.dimensoes} dimensões"
         if gravador
@@ -402,15 +473,17 @@ def main(argumentos: list[str] | None = None) -> int:
         "limiar_similaridade": "não se aplica (a busca por sentido não rodou)",
     }
     if gravador:
-        if config.limiar_similaridade is not None:
-            contexto["limiar_similaridade"] = f"{config.limiar_similaridade:g} (da configuração)"
+        if limiares.similaridade is not None:
+            contexto["limiar_similaridade"] = (
+                f"{limiares.similaridade:g} ({limiares.origem_similaridade})"
+            )
         else:
             calibrado = calibrar(busca, calibracao, "sentido")
             if calibrado is not None:
                 busca.limiar_similaridade = calibrado["limiar"]
                 contexto["limiar_similaridade"] = (
                     f"{calibrado['limiar']:g} (calibrado nesta rodada com as perguntas de "
-                    "calibração; grave LIMIAR_SIMILARIDADE no .env)"
+                    "calibração e não gravado; rode --calibrar para gravar)"
                 )
 
     perguntas = carregar_perguntas(ARQUIVO_PERGUNTAS)
