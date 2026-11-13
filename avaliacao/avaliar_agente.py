@@ -54,7 +54,7 @@ from app.atendimento import (
 from app.base_conhecimento import Artigo, carregar_artigos, descricao_do_negocio
 from app.busca import Busca, escolher_limiares
 from app.busca_sentido import ARQUIVO_INDICE, carregar_indice_memoria, criar_gerador
-from app.classificador import ClassificadorClaude
+from app.classificador import RACIOCINIO_ATENDIMENTO, ClassificadorClaude
 from app.conferencia import ConferenteClaude
 from app.config import Configuracao
 from app.esquemas import Canal
@@ -169,7 +169,12 @@ def montar_atendimento(
     conferencia_ia = ClienteAnthropicGravador(criar_cliente_anthropic(config, "conferencia"))
     precos = precos_do_provedor(config)
     triagem = ServicoTriagem(
-        ClassificadorClaude(triagem_ia, config.modelo_llm, negocio=descricao_do_negocio()),
+        ClassificadorClaude(
+            triagem_ia,
+            config.modelo_llm,
+            negocio=descricao_do_negocio(),
+            raciocinio=RACIOCINIO_ATENDIMENTO,
+        ),
         limite_confianca=config.limite_confianca,
         preco_entrada=precos.entrada,
         preco_saida=precos.saida,
@@ -296,6 +301,9 @@ def julgar(cliente: Any, pedido: str) -> dict[str, Any]:
             max_tokens=16000,
             system=[{"type": "text", "text": RUBRICA, "cache_control": {"type": "ephemeral"}}],
             messages=[{"role": "user", "content": pedido}],
+            # O juiz não é produto: pode raciocinar. Escrito no código, igual à etapa 3
+            # (raciocínio adaptativo, o padrão do Sonnet 5.5, com esforço medium).
+            thinking={"type": "adaptive"},
             output_config={
                 "effort": "medium",
                 "format": {"type": "json_schema", "schema": ESQUEMA_JUIZ},

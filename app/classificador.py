@@ -219,14 +219,32 @@ def ler_uso_claude(usage: Any) -> Uso:
     )
 
 
+# O raciocínio do Claude Haiku 5.5 no atendimento (o agente e a triagem do atendimento),
+# escrito no código para não depender do padrão da API. É o mesmo padrão que rodou na etapa
+# 3: raciocínio adaptativo, com esforço medium. Com a ferramenta forçada (é sempre o caso
+# aqui), o Haiku 5.5 pula o raciocínio e começa direto pela chamada da ferramenta.
+RACIOCINIO_ATENDIMENTO: dict[str, Any] = {
+    "thinking": {"type": "adaptive"},
+    "output_config": {"effort": "medium"},
+}
+
+
 class ClassificadorClaude:
     def __init__(
-        self, cliente: Any, modelo: str, max_tokens: int = 1024, negocio: str = NEGOCIO_PADRAO
+        self,
+        cliente: Any,
+        modelo: str,
+        max_tokens: int = 1024,
+        negocio: str = NEGOCIO_PADRAO,
+        raciocinio: dict[str, Any] | None = None,
     ) -> None:
         self._cliente = cliente
         self.modelo = modelo
         self._max_tokens = max_tokens
         self.prompt_sistema = montar_prompt_sistema(negocio)
+        # O atendimento passa RACIOCINIO_ATENDIMENTO. A rota /chamados não passa nada e
+        # continua com o pedido de sempre.
+        self._raciocinio = raciocinio or {}
 
     def classificar(self, texto: str, canal: str) -> ResultadoIA:
         try:
@@ -245,6 +263,7 @@ class ClassificadorClaude:
                 tools=[FERRAMENTA_TRIAGEM],
                 tool_choice={"type": "tool", "name": NOME_FERRAMENTA},
                 messages=[{"role": "user", "content": montar_mensagem(texto, canal)}],
+                **self._raciocinio,
             )
         except anthropic.APIError as erro:
             raise ErroClassificador(f"falha na API da Anthropic ({type(erro).__name__})") from erro
@@ -275,9 +294,12 @@ class ClassificadorClaude:
 
 
 def criar_classificador(
-    config: Configuracao, negocio: str = NEGOCIO_PADRAO
+    config: Configuracao, negocio: str = NEGOCIO_PADRAO, raciocinio: dict[str, Any] | None = None
 ) -> Classificador | None:
-    """Monta o classificador do provedor escolhido. Sem credencial, devolve None."""
+    """Monta o classificador do provedor escolhido. Sem credencial, devolve None.
+
+    `raciocinio` vale só para o Claude (o Gemini tem a configuração dele).
+    """
     if config.provedor_ia == "gemini":
         # Importado aqui para evitar ciclo: o módulo do Gemini usa as peças deste.
         from app.classificador_gemini import criar_classificador_gemini
@@ -287,4 +309,6 @@ def criar_classificador(
     if not chave:
         return None
     cliente = anthropic.Anthropic(api_key=chave, timeout=config.timeout_llm_s, max_retries=2)
-    return ClassificadorClaude(cliente, modelo=config.modelo_llm, negocio=negocio)
+    return ClassificadorClaude(
+        cliente, modelo=config.modelo_llm, negocio=negocio, raciocinio=raciocinio
+    )

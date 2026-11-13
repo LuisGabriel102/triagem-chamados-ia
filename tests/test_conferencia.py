@@ -172,6 +172,7 @@ def test_pedido_curto_estrito_sem_temperature_e_sem_raciocinio():
     assert pedido["model"] == "claude-haiku-5-5"
     assert "temperature" not in pedido and "top_p" not in pedido and "top_k" not in pedido
     assert pedido["thinking"] == {"type": "disabled"}
+    assert pedido["output_config"] == {"effort": "medium"}
     assert pedido["tool_choice"] == {"type": "tool", "name": NOME_FERRAMENTA}
     assert pedido["tools"] == [FERRAMENTA_CONFERENCIA]
     assert FERRAMENTA_CONFERENCIA["strict"] is True

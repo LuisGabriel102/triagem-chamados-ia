@@ -116,6 +116,9 @@ def test_pedido_a_ia_estrito_com_cache_e_sem_temperature():
     assert pedido["system"][0]["cache_control"] == {"type": "ephemeral"}
     assert pedido["system"][0]["text"] == PROMPT_AGENTE
     assert pedido["tool_choice"] == {"type": "any", "disable_parallel_tool_use": True}
+    # O raciocínio escrito no código, igual ao padrão que rodou na etapa 3.
+    assert pedido["thinking"] == {"type": "adaptive"}
+    assert pedido["output_config"] == {"effort": "medium"}
     assert [f["name"] for f in pedido["tools"]] == [
         "consultar_recebimentos",
         "status_maquininha",

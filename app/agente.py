@@ -23,7 +23,7 @@ import anthropic
 from pydantic import BaseModel, ValidationError, field_validator
 
 from app.base_conhecimento import Artigo
-from app.classificador import Uso, ler_uso_claude
+from app.classificador import RACIOCINIO_ATENDIMENTO, Uso, ler_uso_claude
 from app.datas import por_extenso, prazos_a_partir_de
 from app.ferramentas import (
     FERRAMENTAS_DE_DADOS,
@@ -271,6 +271,8 @@ class AgenteClaude:
                     tools=FERRAMENTAS_DO_AGENTE,
                     tool_choice=escolha,
                     messages=mensagens,
+                    # Escrito no código, igual ao padrão que rodou na etapa 3.
+                    **RACIOCINIO_ATENDIMENTO,
                 )
             except anthropic.APIError as erro:
                 raise ErroAgente(

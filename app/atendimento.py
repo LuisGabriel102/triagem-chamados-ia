@@ -41,7 +41,7 @@ from app.base_conhecimento import (
 )
 from app.busca import Busca, Modo, ResultadoBusca, criar_busca
 from app.busca_palavras import normalizar
-from app.classificador import Uso
+from app.classificador import RACIOCINIO_ATENDIMENTO, Uso
 from app.conferencia import ConferenteClaude, ErroConferencia
 from app.config import Configuracao
 from app.esquemas import Canal, Categoria, Origem, Prioridade
@@ -501,7 +501,9 @@ def criar_atendimento(config: Configuracao) -> ServicoAtendimento:
     A triagem daqui é outra, com a descrição da Tapiri (base/EMPRESA.md). A de /chamados
     continua com o negócio padrão.
     """
-    triagem = criar_servico(config, negocio=descricao_do_negocio())
+    triagem = criar_servico(
+        config, negocio=descricao_do_negocio(), raciocinio=RACIOCINIO_ATENDIMENTO
+    )
     artigos = carregar_artigos()
     dados = DadosLojistas()
     chave = config.anthropic_api_key.get_secret_value().strip() if config.anthropic_api_key else ""

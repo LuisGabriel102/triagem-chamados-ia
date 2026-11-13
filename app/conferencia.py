@@ -238,7 +238,10 @@ class ConferenteClaude:
             saida = self._cliente.messages.create(
                 model=self.modelo,
                 max_tokens=self._max_tokens,
+                # Sem raciocínio, escrito no código; o esforço é o padrão do Haiku 5.5, também
+                # escrito (o "disabled" só é aceito com esforço high ou menor).
                 thinking={"type": "disabled"},
+                output_config={"effort": "medium"},
                 system=[
                     {
                         "type": "text",

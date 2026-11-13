@@ -81,6 +81,8 @@ def test_avaliacao_roda_inteira_com_clientes_falsos(monkeypatch, tmp_path):
     assert pedido["model"] == "claude-sonnet-5-5"
     assert "temperature" not in pedido
     assert pedido["output_config"]["format"]["type"] == "json_schema"
+    assert pedido["output_config"]["effort"] == "medium"
+    assert pedido["thinking"] == {"type": "adaptive"}
 
 
 def test_mensagem_fixa_nao_vai_ao_juiz():

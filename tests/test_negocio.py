@@ -8,11 +8,13 @@ from app.classificador import (
     NEGOCIO_PADRAO,
     PROMPT_SISTEMA,
     PROMPT_SISTEMA_GEMINI,
+    RACIOCINIO_ATENDIMENTO,
     ClassificadorClaude,
     montar_prompt_sistema,
 )
 from app.classificador_gemini import ClassificadorGemini
 from app.config import Configuracao
+from app.servico import criar_servico
 from tests.falsos import ClienteFalso, ClienteGeminiFalso
 
 # A impressão digital dos prompts de antes do conserto (13/11/2026). Se mudar, a triagem de
@@ -74,3 +76,31 @@ def test_o_atendimento_tria_com_o_negocio_da_tapiri():
     prompt = atendimento._triagem._classificador.prompt_sistema
     assert "A Tapiri vende maquininhas" in prompt
     assert NEGOCIO_PADRAO not in prompt
+
+
+# --- O raciocínio escrito no código (etapa 3B, depois do congelamento) ---
+
+
+def test_a_triagem_do_atendimento_escreve_o_raciocinio_e_a_de_chamados_nao():
+    config = Configuracao(_env_file=None, anthropic_api_key="chave-falsa", gemini_api_key=None)
+    atendimento = criar_atendimento(config)
+    assert atendimento._triagem._classificador._raciocinio == RACIOCINIO_ATENDIMENTO
+    assert RACIOCINIO_ATENDIMENTO == {
+        "thinking": {"type": "adaptive"},
+        "output_config": {"effort": "medium"},
+    }
+    # A rota /chamados continua com o pedido de sempre.
+    assert criar_servico(config)._classificador._raciocinio == {}
+
+
+def test_o_pedido_da_triagem_leva_o_raciocinio_so_quando_pedido():
+    com = ClienteFalso()
+    ClassificadorClaude(com, "claude-haiku-5-5", raciocinio=RACIOCINIO_ATENDIMENTO).classificar(
+        "oi", "chat"
+    )
+    assert com.chamadas[0]["thinking"] == {"type": "adaptive"}
+    assert com.chamadas[0]["output_config"] == {"effort": "medium"}
+    assert "temperature" not in com.chamadas[0]
+    sem = ClienteFalso()
+    ClassificadorClaude(sem, "claude-haiku-5-5").classificar("oi", "chat")
+    assert "thinking" not in sem.chamadas[0] and "output_config" not in sem.chamadas[0]

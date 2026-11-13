@@ -4,6 +4,7 @@ import logging
 import re
 import time
 from dataclasses import dataclass
+from typing import Any
 
 from app.classificador import (
     NEGOCIO_PADRAO,
@@ -224,7 +225,9 @@ class ServicoTriagem:
         return motivos
 
 
-def criar_servico(config: Configuracao, negocio: str = NEGOCIO_PADRAO) -> ServicoTriagem:
+def criar_servico(
+    config: Configuracao, negocio: str = NEGOCIO_PADRAO, raciocinio: dict[str, Any] | None = None
+) -> ServicoTriagem:
     """Monta o serviço com a IA e o preço do provedor escolhido na configuração."""
     precos = precos_do_provedor(config)
     if config.provedor_ia == "gemini" and not precos.conhecido:
@@ -233,7 +236,7 @@ def criar_servico(config: Configuracao, negocio: str = NEGOCIO_PADRAO) -> Servic
             config.modelo_gemini,
         )
     return ServicoTriagem(
-        classificador=criar_classificador(config, negocio),
+        classificador=criar_classificador(config, negocio, raciocinio),
         limite_confianca=config.limite_confianca,
         preco_entrada=precos.entrada,
         preco_saida=precos.saida,
