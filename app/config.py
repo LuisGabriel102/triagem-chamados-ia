@@ -50,6 +50,11 @@ class Configuracao(BaseSettings):
     # Preço dos embeddings do Gemini (gemini-embedding-2, plano pago, conferido em 13/11/2026 em
     # aistudio.google.com/docs/pricing). No plano gratuito, sai de graça.
     preco_embedding_usd_mtok: float = Field(default=0.20, ge=0)
+    # Que busca o agente usa. Escolhida pela regra escrita antes da etapa 3 (fica a de mais
+    # "respondidas e certas" nas 60 perguntas novas; no empate, a híbrida): deu sentido 39/44
+    # contra híbrida 37/44 (avaliacao/resultados/busca_agente.md). Se o Google cair, a busca
+    # segue por palavras.
+    modo_busca_agente: Literal["sentido", "hibrida", "palavras"] = "sentido"
 
     database_url: str = "sqlite:///./triagem.db"
     # Chave que quem chama a API envia no cabeçalho X-API-Key. Vazia = API aberta (só local).

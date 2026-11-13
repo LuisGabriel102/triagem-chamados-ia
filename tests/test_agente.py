@@ -510,3 +510,23 @@ def test_email_da_empresa_na_resposta_nao_chama_pessoa():
     resultado = atender(servico)
     assert "ouvidoria@tapiri.example.com" in resultado.resposta
     assert not any("mascarada" in motivo for motivo in resultado.motivos_pessoa)
+
+
+# --- Etapa 3: a busca do agente é a escolhida pela regra (sentido) ---
+
+
+def test_o_agente_busca_por_sentido_e_cai_para_palavras_sem_o_google():
+    gerador = GeradorVetoresFalso()
+    indice = IndiceMemoria({a.id: gerador._vetor(f"{a.titulo} {a.texto}") for a in ARTIGOS})
+    busca = Busca(ARTIGOS, gerador, indice, limiar_bm25=1.0, limiar_similaridade=0.1)
+    resultado = atender(montar(busca=busca))
+    assert resultado.modo_busca == "sentido"
+    sem_google = atender(montar())  # a busca de montar() não tem gerador
+    assert sem_google.modo_busca == "palavras"
+    assert any("Busca por sentido desligada" in aviso for aviso in sem_google.avisos)
+
+
+def test_a_configuracao_escolhe_a_busca_por_sentido():
+    from app.config import Configuracao
+
+    assert Configuracao(_env_file=None).modo_busca_agente == "sentido"

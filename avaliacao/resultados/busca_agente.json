@@ -1,0 +1,2779 @@
+{
+  "quando": "13/11/2026 12:36 UTC",
+  "contexto": {
+    "artigos": 30,
+    "arquivo": "avaliacao/perguntas_agente.jsonl",
+    "modos": [
+      "sentido",
+      "hibrida"
+    ],
+    "ressalva": "As perguntas foram escritas por um agente separado (Claude), que só viu o base/EMPRESA.md e não viu os artigos. O gabarito foi montado depois, por quem escreveu a base.",
+    "limiar_bm25": 6.2882,
+    "origem_limiar_bm25": "base/limiares.json, calibrado em 2026-11-13",
+    "sentido": "pela chave do Google AI Studio, modelo gemini-embedding-2, 768 dimensões",
+    "limiar_similaridade": "0.7108 (base/limiares.json (gemini-embedding-2, 768 dimensões), calibrado em 2026-11-13)",
+    "chamadas_ao_google_com_perguntas": 60
+  },
+  "resultados": {
+    "sentido": {
+      "rodou": true,
+      "resumo": {
+        "perguntas": 60,
+        "com_resposta": 44,
+        "sem_resposta": 16,
+        "acerto_1": 41,
+        "acerto_3": 44,
+        "respondidas_certas": 39,
+        "com_resposta_em_nada_encontrado": 5,
+        "sem_resposta_em_nada_encontrado": 12,
+        "dados_pessoais": 8,
+        "dados_enviados": 0,
+        "dados_no_texto_mascarado": 0,
+        "quedas_para_palavras": 0
+      },
+      "linhas": [
+        {
+          "id": "a01",
+          "gabarito": "dinheiro-nao-caiu",
+          "aceitos": [
+            "dinheiro-nao-caiu",
+            "recebimentos-e-prazos"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "dinheiro-nao-caiu",
+            "recebimentos-e-prazos",
+            "conta-de-recebimento"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8024,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a02",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "maquininha-a-mais",
+            "aproximacao",
+            "abrir-cadastro"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.685,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a03",
+          "gabarito": "maquininha-nao-le-cartao",
+          "aceitos": [
+            "maquininha-nao-le-cartao"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "maquininha-nao-le-cartao",
+            "conexao",
+            "venda-recusada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8599,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a04",
+          "gabarito": "maquininha-perdida-ou-roubada",
+          "aceitos": [
+            "maquininha-perdida-ou-roubada"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "maquininha-perdida-ou-roubada",
+            "golpe-sms-link-falso",
+            "desistir-da-compra"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8117,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a05",
+          "gabarito": "reclamacao-e-protocolo",
+          "aceitos": [
+            "reclamacao-e-protocolo",
+            "ouvidoria"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "reclamacao-e-protocolo",
+            "ouvidoria",
+            "alterar-dados"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7412,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a06",
+          "gabarito": "taxas-e-mudanca-de-plano",
+          "aceitos": [
+            "taxas-e-mudanca-de-plano",
+            "pix-na-maquininha"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "taxas-e-mudanca-de-plano",
+            "pix-na-maquininha",
+            "extrato-e-taxas"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7254,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a07",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "acesso-ao-app",
+            "reclamacao-e-protocolo",
+            "horarios-e-canais"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6122,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a08",
+          "gabarito": "acesso-ao-app",
+          "aceitos": [
+            "acesso-ao-app"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "acesso-ao-app",
+            "nunca-pedimos-sua-senha",
+            "alterar-dados"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8181,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a09",
+          "gabarito": "conexao",
+          "aceitos": [
+            "conexao",
+            "acesso-ao-app"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "conexao",
+            "maquininha-nao-liga",
+            "acesso-ao-app"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6802,
+          "nada_encontrado": true,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a10",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "abrir-cadastro",
+            "antecipacao",
+            "maquininha-a-mais"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6566,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a11",
+          "gabarito": "extrato-e-taxas",
+          "aceitos": [
+            "extrato-e-taxas",
+            "maquininha-a-mais"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "extrato-e-taxas",
+            "taxas-e-mudanca-de-plano",
+            "contestacao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6916,
+          "nada_encontrado": true,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a12",
+          "gabarito": "antecipacao",
+          "aceitos": [
+            "antecipacao"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "antecipacao",
+            "recebimentos-e-prazos",
+            "dinheiro-nao-caiu"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.774,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a13",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "maquininha-a-mais",
+            "bobina",
+            "recebimentos-e-prazos"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6609,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a14",
+          "gabarito": "desistir-da-compra",
+          "aceitos": [
+            "desistir-da-compra"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "desistir-da-compra",
+            "cancelar-uma-venda",
+            "troca-e-garantia"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8411,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a15",
+          "gabarito": "maquininha-nao-liga",
+          "aceitos": [
+            "maquininha-nao-liga"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "maquininha-nao-le-cartao",
+            "maquininha-nao-liga",
+            "maquininha-perdida-ou-roubada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7231,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a16",
+          "gabarito": "maquininha-nao-liga",
+          "aceitos": [
+            "maquininha-nao-liga"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "maquininha-nao-liga",
+            "maquininha-nao-le-cartao",
+            "conexao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8013,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a17",
+          "gabarito": "contestacao",
+          "aceitos": [
+            "contestacao"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "contestacao",
+            "dinheiro-nao-caiu",
+            "estorno"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7904,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a18",
+          "gabarito": "recebimentos-e-prazos",
+          "aceitos": [
+            "recebimentos-e-prazos"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "recebimentos-e-prazos",
+            "dinheiro-nao-caiu",
+            "antecipacao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8332,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a19",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "conta-de-recebimento",
+            "extrato-e-taxas",
+            "taxas-e-mudanca-de-plano"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.729,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a20",
+          "gabarito": "maquininha-a-mais",
+          "aceitos": [
+            "maquininha-a-mais"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "maquininha-a-mais",
+            "abrir-cadastro",
+            "maquininha-perdida-ou-roubada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8329,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a21",
+          "gabarito": "venda-recusada",
+          "aceitos": [
+            "venda-recusada"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "venda-recusada",
+            "maquininha-nao-le-cartao",
+            "conexao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.82,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a22",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "recebimentos-e-prazos",
+            "horarios-e-canais",
+            "dinheiro-nao-caiu"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6341,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a23",
+          "gabarito": "extrato-e-taxas",
+          "aceitos": [
+            "extrato-e-taxas"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "extrato-e-taxas",
+            "dinheiro-nao-caiu",
+            "recebimentos-e-prazos"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.728,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a24",
+          "gabarito": "alterar-dados",
+          "aceitos": [
+            "alterar-dados"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "alterar-dados",
+            "maquininha-a-mais",
+            "conta-de-recebimento"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7825,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a25",
+          "gabarito": "maquininha-perdida-ou-roubada",
+          "aceitos": [
+            "maquininha-perdida-ou-roubada"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "maquininha-nao-le-cartao",
+            "venda-recusada",
+            "maquininha-perdida-ou-roubada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7419,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a26",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "maquininha-a-mais",
+            "bobina",
+            "abrir-cadastro"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7003,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a27",
+          "gabarito": "bobina",
+          "aceitos": [
+            "bobina"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "bobina",
+            "maquininha-nao-le-cartao",
+            "conexao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7702,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a28",
+          "gabarito": "golpe-sms-link-falso",
+          "aceitos": [
+            "golpe-sms-link-falso",
+            "horarios-e-canais"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "dinheiro-nao-caiu",
+            "golpe-sms-link-falso",
+            "maquininha-perdida-ou-roubada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6752,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": true,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a29",
+          "gabarito": "taxas-e-mudanca-de-plano",
+          "aceitos": [
+            "taxas-e-mudanca-de-plano"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "taxas-e-mudanca-de-plano",
+            "antecipacao",
+            "recebimentos-e-prazos"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7322,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a30",
+          "gabarito": "acesso-ao-app",
+          "aceitos": [
+            "acesso-ao-app"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "acesso-ao-app",
+            "nunca-pedimos-sua-senha",
+            "venda-recusada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8155,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a31",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "maquininha-perdida-ou-roubada",
+            "maquininha-a-mais",
+            "troca-e-garantia"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7095,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a32",
+          "gabarito": "cancelar-uma-venda",
+          "aceitos": [
+            "cancelar-uma-venda",
+            "estorno"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "estorno",
+            "cancelar-uma-venda",
+            "desistir-da-compra"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7923,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a33",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "taxas-e-mudanca-de-plano",
+            "encerrar-a-conta",
+            "extrato-e-taxas"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7345,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a34",
+          "gabarito": "taxas-e-mudanca-de-plano",
+          "aceitos": [
+            "taxas-e-mudanca-de-plano",
+            "parcelado"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "parcelado",
+            "taxas-e-mudanca-de-plano",
+            "extrato-e-taxas"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7374,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a35",
+          "gabarito": "encerrar-a-conta",
+          "aceitos": [
+            "encerrar-a-conta"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "encerrar-a-conta",
+            "desistir-da-compra",
+            "maquininha-perdida-ou-roubada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7894,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a36",
+          "gabarito": "pix-na-maquininha",
+          "aceitos": [
+            "pix-na-maquininha"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "pix-na-maquininha",
+            "dinheiro-nao-caiu",
+            "recebimentos-e-prazos"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7669,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a37",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "recebimentos-e-prazos",
+            "antecipacao",
+            "taxas-e-mudanca-de-plano"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6192,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a38",
+          "gabarito": "bobina",
+          "aceitos": [
+            "bobina"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "bobina",
+            "conexao",
+            "maquininha-nao-liga"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7976,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a39",
+          "gabarito": "abrir-cadastro",
+          "aceitos": [
+            "abrir-cadastro"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "abrir-cadastro",
+            "alterar-dados",
+            "acesso-ao-app"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7282,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a40",
+          "gabarito": "antecipacao",
+          "aceitos": [
+            "antecipacao"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "antecipacao",
+            "taxas-e-mudanca-de-plano",
+            "extrato-e-taxas"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7828,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a41",
+          "gabarito": "nunca-pedimos-sua-senha",
+          "aceitos": [
+            "nunca-pedimos-sua-senha",
+            "golpe-sms-link-falso"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "nunca-pedimos-sua-senha",
+            "golpe-sms-link-falso",
+            "contestacao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8195,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a42",
+          "gabarito": "aproximacao",
+          "aceitos": [
+            "aproximacao"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "aproximacao",
+            "maquininha-nao-le-cartao",
+            "conexao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7702,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a43",
+          "gabarito": "horarios-e-canais",
+          "aceitos": [
+            "horarios-e-canais"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "horarios-e-canais",
+            "recebimentos-e-prazos",
+            "ouvidoria"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7228,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a44",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "alterar-dados",
+            "abrir-cadastro",
+            "reclamacao-e-protocolo"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6261,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a45",
+          "gabarito": "dinheiro-nao-caiu",
+          "aceitos": [
+            "dinheiro-nao-caiu",
+            "recebimentos-e-prazos"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "dinheiro-nao-caiu",
+            "recebimentos-e-prazos",
+            "conta-de-recebimento"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7831,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a46",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "extrato-e-taxas",
+            "golpe-sms-link-falso",
+            "abrir-cadastro"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7417,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a47",
+          "gabarito": "troca-e-garantia",
+          "aceitos": [
+            "troca-e-garantia"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "troca-e-garantia",
+            "desistir-da-compra",
+            "maquininha-perdida-ou-roubada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7057,
+          "nada_encontrado": true,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a48",
+          "gabarito": "alterar-dados",
+          "aceitos": [
+            "alterar-dados"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "alterar-dados",
+            "conta-de-recebimento",
+            "acesso-ao-app"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7487,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a49",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "maquininha-a-mais",
+            "alterar-dados",
+            "parcelado"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6327,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a50",
+          "gabarito": "cancelar-uma-venda",
+          "aceitos": [
+            "cancelar-uma-venda"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "cancelar-uma-venda",
+            "estorno",
+            "dinheiro-nao-caiu"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7774,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a51",
+          "gabarito": "extrato-e-taxas",
+          "aceitos": [
+            "extrato-e-taxas",
+            "dinheiro-nao-caiu"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "extrato-e-taxas",
+            "dinheiro-nao-caiu",
+            "recebimentos-e-prazos"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7833,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a52",
+          "gabarito": "horarios-e-canais",
+          "aceitos": [
+            "horarios-e-canais",
+            "golpe-sms-link-falso",
+            "acesso-ao-app"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "acesso-ao-app",
+            "nunca-pedimos-sua-senha",
+            "golpe-sms-link-falso"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7395,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a53",
+          "gabarito": "parcelado",
+          "aceitos": [
+            "parcelado"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "parcelado",
+            "taxas-e-mudanca-de-plano",
+            "estorno"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7674,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a54",
+          "gabarito": "taxas-e-mudanca-de-plano",
+          "aceitos": [
+            "taxas-e-mudanca-de-plano"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "taxas-e-mudanca-de-plano",
+            "recebimentos-e-prazos",
+            "parcelado"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7169,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a55",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "alterar-dados",
+            "conta-de-recebimento",
+            "acesso-ao-app"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6733,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a56",
+          "gabarito": "troca-e-garantia",
+          "aceitos": [
+            "troca-e-garantia"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "troca-e-garantia",
+            "desistir-da-compra",
+            "maquininha-nao-liga"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7054,
+          "nada_encontrado": true,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a57",
+          "gabarito": "conexao",
+          "aceitos": [
+            "conexao"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "conexao",
+            "maquininha-nao-le-cartao",
+            "troca-e-garantia"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8048,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a58",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "taxas-e-mudanca-de-plano",
+            "conta-de-recebimento",
+            "alterar-dados"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6327,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a59",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "encerrar-a-conta",
+            "taxas-e-mudanca-de-plano",
+            "conta-de-recebimento"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.776,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a60",
+          "gabarito": "pix-na-maquininha",
+          "aceitos": [
+            "pix-na-maquininha"
+          ],
+          "modo_que_rodou": "sentido",
+          "candidatos": [
+            "pix-na-maquininha",
+            "aproximacao",
+            "maquininha-a-mais"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7918,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        }
+      ]
+    },
+    "hibrida": {
+      "rodou": true,
+      "resumo": {
+        "perguntas": 60,
+        "com_resposta": 44,
+        "sem_resposta": 16,
+        "acerto_1": 37,
+        "acerto_3": 41,
+        "respondidas_certas": 37,
+        "com_resposta_em_nada_encontrado": 5,
+        "sem_resposta_em_nada_encontrado": 12,
+        "dados_pessoais": 8,
+        "dados_enviados": 0,
+        "dados_no_texto_mascarado": 0,
+        "quedas_para_palavras": 0
+      },
+      "linhas": [
+        {
+          "id": "a01",
+          "gabarito": "dinheiro-nao-caiu",
+          "aceitos": [
+            "dinheiro-nao-caiu",
+            "recebimentos-e-prazos"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "dinheiro-nao-caiu",
+            "cancelar-uma-venda",
+            "estorno"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8024,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a02",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "maquininha-a-mais",
+            "maquininha-nao-liga",
+            "maquininha-nao-le-cartao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.685,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a03",
+          "gabarito": "maquininha-nao-le-cartao",
+          "aceitos": [
+            "maquininha-nao-le-cartao"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "maquininha-nao-le-cartao",
+            "venda-recusada",
+            "aproximacao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8599,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a04",
+          "gabarito": "maquininha-perdida-ou-roubada",
+          "aceitos": [
+            "maquininha-perdida-ou-roubada"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "maquininha-perdida-ou-roubada",
+            "conexao",
+            "troca-e-garantia"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8117,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a05",
+          "gabarito": "reclamacao-e-protocolo",
+          "aceitos": [
+            "reclamacao-e-protocolo",
+            "ouvidoria"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "reclamacao-e-protocolo",
+            "ouvidoria",
+            "maquininha-nao-le-cartao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7412,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a06",
+          "gabarito": "taxas-e-mudanca-de-plano",
+          "aceitos": [
+            "taxas-e-mudanca-de-plano",
+            "pix-na-maquininha"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "taxas-e-mudanca-de-plano",
+            "pix-na-maquininha",
+            "extrato-e-taxas"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7254,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a07",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "ouvidoria",
+            "reclamacao-e-protocolo",
+            "acesso-ao-app"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6122,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a08",
+          "gabarito": "acesso-ao-app",
+          "aceitos": [
+            "acesso-ao-app"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "acesso-ao-app",
+            "nunca-pedimos-sua-senha",
+            "alterar-dados"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8181,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a09",
+          "gabarito": "conexao",
+          "aceitos": [
+            "conexao",
+            "acesso-ao-app"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "troca-e-garantia",
+            "acesso-ao-app",
+            "conexao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6802,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": true,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a10",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "abrir-cadastro",
+            "alterar-dados",
+            "nunca-pedimos-sua-senha"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6566,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a11",
+          "gabarito": "extrato-e-taxas",
+          "aceitos": [
+            "extrato-e-taxas",
+            "maquininha-a-mais"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "extrato-e-taxas",
+            "maquininha-a-mais",
+            "parcelado"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6916,
+          "nada_encontrado": true,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a12",
+          "gabarito": "antecipacao",
+          "aceitos": [
+            "antecipacao"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "antecipacao",
+            "parcelado",
+            "recebimentos-e-prazos"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.774,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a13",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "aproximacao",
+            "venda-recusada",
+            "maquininha-a-mais"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6609,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a14",
+          "gabarito": "desistir-da-compra",
+          "aceitos": [
+            "desistir-da-compra"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "cancelar-uma-venda",
+            "desistir-da-compra",
+            "estorno"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8411,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a15",
+          "gabarito": "maquininha-nao-liga",
+          "aceitos": [
+            "maquininha-nao-liga"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "maquininha-perdida-ou-roubada",
+            "horarios-e-canais",
+            "maquininha-nao-le-cartao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7231,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a16",
+          "gabarito": "maquininha-nao-liga",
+          "aceitos": [
+            "maquininha-nao-liga"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "maquininha-nao-liga",
+            "troca-e-garantia",
+            "maquininha-nao-le-cartao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8013,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a17",
+          "gabarito": "contestacao",
+          "aceitos": [
+            "contestacao"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "contestacao",
+            "dinheiro-nao-caiu",
+            "estorno"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7904,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a18",
+          "gabarito": "recebimentos-e-prazos",
+          "aceitos": [
+            "recebimentos-e-prazos"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "recebimentos-e-prazos",
+            "dinheiro-nao-caiu",
+            "antecipacao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8332,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a19",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "antecipacao",
+            "taxas-e-mudanca-de-plano",
+            "conta-de-recebimento"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.729,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a20",
+          "gabarito": "maquininha-a-mais",
+          "aceitos": [
+            "maquininha-a-mais"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "maquininha-a-mais",
+            "abrir-cadastro",
+            "bobina"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8329,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a21",
+          "gabarito": "venda-recusada",
+          "aceitos": [
+            "venda-recusada"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "venda-recusada",
+            "maquininha-nao-le-cartao",
+            "cancelar-uma-venda"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.82,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a22",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "horarios-e-canais",
+            "ouvidoria",
+            "recebimentos-e-prazos"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6341,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a23",
+          "gabarito": "extrato-e-taxas",
+          "aceitos": [
+            "extrato-e-taxas"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "extrato-e-taxas",
+            "antecipacao",
+            "dinheiro-nao-caiu"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.728,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a24",
+          "gabarito": "alterar-dados",
+          "aceitos": [
+            "alterar-dados"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "alterar-dados",
+            "abrir-cadastro",
+            "maquininha-perdida-ou-roubada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7825,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a25",
+          "gabarito": "maquininha-perdida-ou-roubada",
+          "aceitos": [
+            "maquininha-perdida-ou-roubada"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "conexao",
+            "maquininha-nao-le-cartao",
+            "maquininha-nao-liga"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7419,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a26",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "maquininha-a-mais",
+            "abrir-cadastro",
+            "recebimentos-e-prazos"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7003,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a27",
+          "gabarito": "bobina",
+          "aceitos": [
+            "bobina"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "bobina",
+            "cancelar-uma-venda",
+            "troca-e-garantia"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7702,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a28",
+          "gabarito": "golpe-sms-link-falso",
+          "aceitos": [
+            "golpe-sms-link-falso",
+            "horarios-e-canais"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "dinheiro-nao-caiu",
+            "conta-de-recebimento",
+            "encerrar-a-conta"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6752,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a29",
+          "gabarito": "taxas-e-mudanca-de-plano",
+          "aceitos": [
+            "taxas-e-mudanca-de-plano"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "taxas-e-mudanca-de-plano",
+            "antecipacao",
+            "recebimentos-e-prazos"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7322,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a30",
+          "gabarito": "acesso-ao-app",
+          "aceitos": [
+            "acesso-ao-app"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "acesso-ao-app",
+            "golpe-sms-link-falso",
+            "venda-recusada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8155,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a31",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "troca-e-garantia",
+            "maquininha-a-mais",
+            "maquininha-perdida-ou-roubada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7095,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a32",
+          "gabarito": "cancelar-uma-venda",
+          "aceitos": [
+            "cancelar-uma-venda",
+            "estorno"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "estorno",
+            "cancelar-uma-venda",
+            "contestacao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7923,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a33",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "taxas-e-mudanca-de-plano",
+            "nunca-pedimos-sua-senha",
+            "encerrar-a-conta"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7345,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a34",
+          "gabarito": "taxas-e-mudanca-de-plano",
+          "aceitos": [
+            "taxas-e-mudanca-de-plano",
+            "parcelado"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "parcelado",
+            "taxas-e-mudanca-de-plano",
+            "antecipacao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7374,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a35",
+          "gabarito": "encerrar-a-conta",
+          "aceitos": [
+            "encerrar-a-conta"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "encerrar-a-conta",
+            "desistir-da-compra",
+            "maquininha-perdida-ou-roubada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7894,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a36",
+          "gabarito": "pix-na-maquininha",
+          "aceitos": [
+            "pix-na-maquininha"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "pix-na-maquininha",
+            "dinheiro-nao-caiu",
+            "estorno"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7669,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a37",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "antecipacao",
+            "taxas-e-mudanca-de-plano",
+            "recebimentos-e-prazos"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6192,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a38",
+          "gabarito": "bobina",
+          "aceitos": [
+            "bobina"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "bobina",
+            "conexao",
+            "maquininha-a-mais"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7976,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a39",
+          "gabarito": "abrir-cadastro",
+          "aceitos": [
+            "abrir-cadastro"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "abrir-cadastro",
+            "alterar-dados",
+            "acesso-ao-app"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7282,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a40",
+          "gabarito": "antecipacao",
+          "aceitos": [
+            "antecipacao"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "antecipacao",
+            "parcelado",
+            "taxas-e-mudanca-de-plano"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7828,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a41",
+          "gabarito": "nunca-pedimos-sua-senha",
+          "aceitos": [
+            "nunca-pedimos-sua-senha",
+            "golpe-sms-link-falso"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "nunca-pedimos-sua-senha",
+            "maquininha-perdida-ou-roubada",
+            "contestacao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8195,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a42",
+          "gabarito": "aproximacao",
+          "aceitos": [
+            "aproximacao"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "aproximacao",
+            "maquininha-perdida-ou-roubada",
+            "maquininha-nao-le-cartao"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7702,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a43",
+          "gabarito": "horarios-e-canais",
+          "aceitos": [
+            "horarios-e-canais"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "horarios-e-canais",
+            "recebimentos-e-prazos",
+            "dinheiro-nao-caiu"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7228,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a44",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "alterar-dados",
+            "abrir-cadastro",
+            "reclamacao-e-protocolo"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6261,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a45",
+          "gabarito": "dinheiro-nao-caiu",
+          "aceitos": [
+            "dinheiro-nao-caiu",
+            "recebimentos-e-prazos"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "recebimentos-e-prazos",
+            "estorno",
+            "dinheiro-nao-caiu"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7831,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a46",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "abrir-cadastro",
+            "extrato-e-taxas",
+            "ouvidoria"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7417,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a47",
+          "gabarito": "troca-e-garantia",
+          "aceitos": [
+            "troca-e-garantia"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "troca-e-garantia",
+            "conexao",
+            "desistir-da-compra"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7057,
+          "nada_encontrado": true,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a48",
+          "gabarito": "alterar-dados",
+          "aceitos": [
+            "alterar-dados"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "alterar-dados",
+            "acesso-ao-app",
+            "conta-de-recebimento"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7487,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a49",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "alterar-dados",
+            "maquininha-a-mais",
+            "abrir-cadastro"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6327,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a50",
+          "gabarito": "cancelar-uma-venda",
+          "aceitos": [
+            "cancelar-uma-venda"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "antecipacao",
+            "dinheiro-nao-caiu",
+            "cancelar-uma-venda"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7774,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a51",
+          "gabarito": "extrato-e-taxas",
+          "aceitos": [
+            "extrato-e-taxas",
+            "dinheiro-nao-caiu"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "extrato-e-taxas",
+            "dinheiro-nao-caiu",
+            "cancelar-uma-venda"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7833,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a52",
+          "gabarito": "horarios-e-canais",
+          "aceitos": [
+            "horarios-e-canais",
+            "golpe-sms-link-falso",
+            "acesso-ao-app"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "nunca-pedimos-sua-senha",
+            "acesso-ao-app",
+            "golpe-sms-link-falso"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7395,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 1,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a53",
+          "gabarito": "parcelado",
+          "aceitos": [
+            "parcelado"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "parcelado",
+            "estorno",
+            "taxas-e-mudanca-de-plano"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7674,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a54",
+          "gabarito": "taxas-e-mudanca-de-plano",
+          "aceitos": [
+            "taxas-e-mudanca-de-plano"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "taxas-e-mudanca-de-plano",
+            "recebimentos-e-prazos",
+            "extrato-e-taxas"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7169,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a55",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "alterar-dados",
+            "maquininha-perdida-ou-roubada",
+            "acesso-ao-app"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6733,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a56",
+          "gabarito": "troca-e-garantia",
+          "aceitos": [
+            "troca-e-garantia"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "troca-e-garantia",
+            "maquininha-nao-liga",
+            "desistir-da-compra"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7054,
+          "nada_encontrado": true,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a57",
+          "gabarito": "conexao",
+          "aceitos": [
+            "conexao"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "conexao",
+            "maquininha-nao-le-cartao",
+            "venda-recusada"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.8048,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a58",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "alterar-dados",
+            "golpe-sms-link-falso",
+            "taxas-e-mudanca-de-plano"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.6327,
+          "nada_encontrado": true,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a59",
+          "gabarito": null,
+          "aceitos": [],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "conta-de-recebimento",
+            "extrato-e-taxas",
+            "encerrar-a-conta"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.776,
+          "nada_encontrado": false,
+          "acerto_1": false,
+          "acerto_3": false,
+          "respondida_certa": false,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        },
+        {
+          "id": "a60",
+          "gabarito": "pix-na-maquininha",
+          "aceitos": [
+            "pix-na-maquininha"
+          ],
+          "modo_que_rodou": "hibrida",
+          "candidatos": [
+            "pix-na-maquininha",
+            "aproximacao",
+            "maquininha-a-mais"
+          ],
+          "criterio": "similaridade",
+          "melhor_nota": 0.7918,
+          "nada_encontrado": false,
+          "acerto_1": true,
+          "acerto_3": true,
+          "respondida_certa": true,
+          "dados_pessoais": 0,
+          "dados_enviados": 0,
+          "dados_no_texto_mascarado": 0,
+          "avisos": []
+        }
+      ]
+    }
+  }
+}

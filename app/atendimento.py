@@ -35,7 +35,7 @@ from app.base_conhecimento import (
     carregar_artigos,
     descricao_do_negocio,
 )
-from app.busca import Busca, ResultadoBusca, criar_busca
+from app.busca import Busca, Modo, ResultadoBusca, criar_busca
 from app.busca_palavras import normalizar
 from app.classificador import Uso
 from app.config import Configuracao
@@ -205,6 +205,7 @@ class ServicoAtendimento:
         preco_saida: float = 0.50,
         preco_embedding: float = 0.20,
         contatos_permitidos: frozenset[str] = frozenset(),
+        modo_busca: Modo = "sentido",
     ) -> None:
         self._triagem = triagem
         self._busca = busca
@@ -215,6 +216,7 @@ class ServicoAtendimento:
         self._preco_saida = preco_saida
         self._preco_embedding = preco_embedding
         self._contatos_permitidos = contatos_permitidos
+        self.modo_busca = modo_busca
 
     @property
     def ia_configurada(self) -> bool:
@@ -237,7 +239,7 @@ class ServicoAtendimento:
     def _buscar(self, texto: str) -> tuple[ResultadoBusca, int]:
         inicio = time.perf_counter()
         try:
-            resultado = self._busca.buscar(texto)
+            resultado = self._busca.buscar(texto, self.modo_busca)
         except Exception as erro:
             log.exception("A busca quebrou; seguindo sem artigo")
             resultado = _busca_vazia(texto, f"A busca falhou ({type(erro).__name__}).")
@@ -407,4 +409,5 @@ def criar_atendimento(config: Configuracao) -> ServicoAtendimento:
         preco_saida=config.preco_agente_saida_usd_mtok,
         preco_embedding=config.preco_embedding_usd_mtok,
         contatos_permitidos=contatos_da_empresa(carregar_artigos()),
+        modo_busca=config.modo_busca_agente,
     )
