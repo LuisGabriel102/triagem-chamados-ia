@@ -2,6 +2,7 @@
 titulo: A Tapiri nunca pede a sua senha
 categoria: outros
 primeiro_passo: Não passe a sua senha nem o código de verificação para ninguém. Se já passou, troque a senha do app na hora.
+gatilhos: senha, codigo, ligou, ligaram, ligacao, golpe, fraude
 ---
 
 Ninguém da Tapiri vai pedir, por telefone, chat, e-mail ou mensagem:

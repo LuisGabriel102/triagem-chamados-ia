@@ -44,6 +44,10 @@ class Artigo:
     # Só nos temas de segurança (roubo, golpe, senha, link falso): o passo que vai
     # sempre na resposta, mesmo quando o caso segue para uma pessoa.
     primeiro_passo: str | None = None
+    # O começo das palavras que mostram que a pergunta é desse tema de segurança (sem
+    # acento). O primeiro passo só entra se a pergunta tiver uma delas: "minha maquininha
+    # está bloqueada?" cita o artigo de maquininha roubada, mas não é roubo.
+    gatilhos: tuple[str, ...] = ()
 
     @property
     def quando_chamar_pessoa(self) -> str:
@@ -104,6 +108,7 @@ def ler_artigo(caminho: Path) -> Artigo:
         categoria=categoria,
         texto=texto,
         primeiro_passo=cabecalho.get("primeiro_passo") or None,
+        gatilhos=tuple(g.strip() for g in cabecalho.get("gatilhos", "").split(",") if g.strip()),
     )
 
 

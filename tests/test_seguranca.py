@@ -10,7 +10,12 @@ import anthropic
 import httpx
 
 from app.agente import AgenteClaude
-from app.atendimento import RESPOSTA_ESPERA, RESPOSTA_SEGURANCA, ServicoAtendimento
+from app.atendimento import (
+    RESPOSTA_ESPERA,
+    RESPOSTA_SEGURANCA,
+    ServicoAtendimento,
+    e_tema_do_artigo,
+)
 from app.base_conhecimento import carregar_artigos
 from app.busca import Busca
 from app.classificador import ClassificadorClaude
@@ -148,6 +153,34 @@ def test_primeiro_passo_vai_mesmo_quando_a_ia_falha():
     resultado = montar(agente).atender(B14, Canal.CHAT, "loja-002")
     assert resultado.origem_resposta == "plano_b"
     assert resultado.resposta.startswith(ROUBADA.primeiro_passo)
+
+
+def test_pergunta_que_nao_e_de_seguranca_nao_recebe_o_primeiro_passo():
+    """Defeito achado na rodada 1 da avaliação (a25): a maquininha bloqueada pelo próprio
+    lojista não é roubo, mesmo citando o artigo de maquininha roubada."""
+    resposta = resposta_agente(
+        resposta="A maquininha Entregas está bloqueada desde ontem.",
+        artigos_usados=["maquininha-perdida-ou-roubada"],
+    )
+    pergunta = "minha maquininha ta bloqueada? aparece um cadeado na tela"
+    resultado = montar(ClienteAgenteFalso(("resposta", resposta))).atender(
+        pergunta, Canal.CHAT, "loja-002"
+    )
+    assert resultado.resposta == "A maquininha Entregas está bloqueada desde ontem."
+    assert ROUBADA.primeiro_passo not in resultado.resposta
+
+
+def test_gatilhos_do_tema_de_seguranca():
+    assert e_tema_do_artigo(B14, ROUBADA)
+    assert e_tema_do_artigo("furtaram a maquina da loja", ROUBADA)
+    assert e_tema_do_artigo("perdi a maquineta na feira", ROUBADA)
+    assert not e_tema_do_artigo("minha maquininha ta bloqueada?", ROUBADA)
+    golpe = POR_ID["golpe-sms-link-falso"]
+    assert e_tema_do_artigo("recebi um SMS com link, é golpe?", golpe)
+    senha = POR_ID["nunca-pedimos-sua-senha"]
+    assert e_tema_do_artigo("um cara ligou pedindo o código", senha)
+    for artigo in ARTIGOS:
+        assert bool(artigo.primeiro_passo) == bool(artigo.gatilhos), artigo.id
 
 
 def test_quem_tenta_enganar_nao_recebe_primeiro_passo():

@@ -129,11 +129,27 @@ def mascarar_resposta(texto: str, permitidos: frozenset[str]) -> ResultadoMascar
     return ResultadoMascaramento(texto=final, encontrados=resultado.encontrados)
 
 
-def artigo_de_seguranca(busca: ResultadoBusca, citados: Sequence[Artigo]) -> Artigo | None:
-    """O artigo de segurança do caso: o que a IA citou ou o mais parecido da busca."""
+def e_tema_do_artigo(pergunta: str, artigo: Artigo) -> bool:
+    """A pergunta é do tema de segurança do artigo? (alguma palavra começa com um gatilho)"""
+    palavras = normalizar(pergunta).split()
+    return any(p.strip(".,!?;:()\"'").startswith(g) for p in palavras for g in artigo.gatilhos)
+
+
+def artigo_de_seguranca(
+    busca: ResultadoBusca, citados: Sequence[Artigo], pergunta: str
+) -> Artigo | None:
+    """O artigo de segurança do caso: o que a IA citou ou o mais parecido da busca, desde
+    que a pergunta seja mesmo desse tema (roubo, golpe, senha, link falso)."""
     achados = {achado.artigo.id: achado.artigo for achado in busca.achados}
     candidatos = [*citados, achados.get(busca.mais_parecido or "")]
-    return next((a for a in candidatos if a is not None and a.primeiro_passo), None)
+    return next(
+        (
+            a
+            for a in candidatos
+            if a is not None and a.primeiro_passo and e_tema_do_artigo(pergunta, a)
+        ),
+        None,
+    )
 
 
 def com_primeiro_passo(resposta: str, artigo: Artigo) -> str:
@@ -332,7 +348,7 @@ class ServicoAtendimento:
         # Temas de segurança (roubo, golpe, senha, link falso): o primeiro passo do artigo
         # vai SEMPRE na resposta, mesmo quando chama uma pessoa ou a IA falha. Não vale
         # para quem tenta enganar a IA nem quando a busca não achou nada.
-        seguranca = None if tentativa else artigo_de_seguranca(busca, fontes)
+        seguranca = None if tentativa else artigo_de_seguranca(busca, fontes, texto)
         if seguranca is not None:
             resposta = com_primeiro_passo(resposta, seguranca)
             if seguranca not in fontes:
