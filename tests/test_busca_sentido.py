@@ -180,7 +180,7 @@ def test_cache_tira_artigo_apagado(tmp_path):
     dados = json.loads(caminho.read_text("utf-8"))
     assert list(dados["artigos"]) == ["prazos"]
     assert dados["modelo"] == "modelo-falso"
-    assert dados["dimensoes"] == 64
+    assert dados["dimensoes"] == 1024
 
 
 def test_cache_guarda_o_que_ja_foi_feito_quando_o_google_cai(tmp_path):
@@ -205,15 +205,15 @@ def test_indice_ausente_ou_velho_da_erro_claro(tmp_path):
     caminho = tmp_path / "indice.json"
     artigos = [_artigo("prazos")]
     with pytest.raises(ErroSentido, match="não existe"):
-        carregar_indice_memoria(artigos, "modelo-falso", 64, caminho)
+        carregar_indice_memoria(artigos, "modelo-falso", 1024, caminho)
 
     atualizar_indice(artigos, GeradorVetoresFalso(), caminho)
-    indice = carregar_indice_memoria(artigos, "modelo-falso", 64, caminho)
-    assert indice.buscar([1.0] * 64)[0][0] == "prazos"
+    indice = carregar_indice_memoria(artigos, "modelo-falso", 1024, caminho)
+    assert indice.buscar([1.0] * 1024)[0][0] == "prazos"
 
     mudado = [replace(artigos[0], texto="Outro texto.")]
     with pytest.raises(ErroSentido, match="desatualizado em 1"):
-        carregar_indice_memoria(mudado, "modelo-falso", 64, caminho)
+        carregar_indice_memoria(mudado, "modelo-falso", 1024, caminho)
     with pytest.raises(ErroSentido, match="desatualizado"):
         carregar_indice_memoria(artigos, "gemini-embedding-2", 768, caminho)
 

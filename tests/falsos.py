@@ -150,7 +150,7 @@ class GeradorVetoresFalso:
     """
 
     def __init__(
-        self, modelo: str = "modelo-falso", dimensoes: int = 64, erro: Exception | None = None
+        self, modelo: str = "modelo-falso", dimensoes: int = 1024, erro: Exception | None = None
     ) -> None:
         self.modelo = modelo
         self.dimensoes = dimensoes

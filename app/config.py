@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -34,6 +34,12 @@ class Configuracao(BaseSettings):
     gemini_api_key: SecretStr | None = None
     modelo_embedding: str = "gemini-embedding-2"
     dimensoes_embedding: int = Field(default=768, ge=128, le=3072)
+    # Abaixo do limiar, a busca devolve "nada encontrado" e o agente chama uma pessoa.
+    # Com a busca por sentido, vale o da similaridade; sem ela, o do BM25. Os dois saem
+    # das perguntas de calibração (python -m avaliacao.avaliar_busca --calibrar).
+    limiar_bm25: float = Field(default=0.0, ge=0)
+    # Vazio até ser calibrado com a busca por sentido rodando (precisa do acesso ao Google).
+    limiar_similaridade: float | None = Field(default=None, ge=-1, le=1)
 
     database_url: str = "sqlite:///./triagem.db"
     # Chave que quem chama a API envia no cabeçalho X-API-Key. Vazia = API aberta (só local).
@@ -48,3 +54,9 @@ class Configuracao(BaseSettings):
     # Endereço público da página (ex.: https://triagem.up.railway.app). Serve para a
     # prévia do link no LinkedIn. Vazio = sem prévia.
     url_publica: str = ""
+
+    @field_validator("limiar_similaridade", mode="before")
+    @classmethod
+    def _vazio_e_sem_limiar(cls, valor: object) -> object:
+        """LIMIAR_SIMILARIDADE= (vazio) no .env quer dizer "ainda não calibrado"."""
+        return None if isinstance(valor, str) and not valor.strip() else valor
