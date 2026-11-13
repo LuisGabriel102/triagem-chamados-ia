@@ -1,0 +1,274 @@
+{
+  "quando": "13/11/2026 12:05 UTC",
+  "medias": {
+    "custo_usd": 0.000637715,
+    "custo_triagem_usd": 0.000262267,
+    "custo_busca_usd": 4.66e-06,
+    "custo_resposta_usd": 0.00037078800000000004,
+    "tempo_ms": 5657.6
+  },
+  "linhas": [
+    {
+      "id": "b01",
+      "lojista": "loja-001",
+      "gabarito_da_busca": "recebimentos-e-prazos",
+      "pergunta_mascarada": "oi, vendi no debito sexta e ate agora nada, quando cai?",
+      "resposta": "Olá! Pelo seu Plano Mensal, a venda no débito de sexta (12/11) deveria cair em 1 dia útil, ou seja, na sexta-feira? Não: como foi feita sexta, cai na segunda-feira, 16/11, já sem a taxa. Você pode conferir a data em Extrato › A receber. Hoje é 13/11, então ainda não passou do prazo. Hoje a venda aparece com previsão de 13/11 no sistema, por isso, se o valor não aparecer até a data prevista do app, me avise para chamarmos uma pessoa.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [
+        "recebimentos-e-prazos"
+      ],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.70)",
+        "confiança baixa na resposta (0.60)"
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [
+        "consultar_recebimentos"
+      ],
+      "fila": "Financeiro",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 2045,
+      "tokens_cache_escrita": 2045,
+      "custo_usd": 0.00135663,
+      "custo_triagem_usd": 0.00045995,
+      "custo_busca_usd": 4.6e-06,
+      "custo_resposta_usd": 0.00089208,
+      "tempo_ms": 12287
+    },
+    {
+      "id": "b03",
+      "lojista": "loja-003",
+      "gabarito_da_busca": "dinheiro-nao-caiu",
+      "pergunta_mascarada": "apareceu 'em analise' numa venda minha e o dinheiro nao vem, oq significa?",
+      "resposta": "\"Em análise\" quer dizer que a venda está passando por uma conferência de segurança, que leva até 2 dias úteis. Na sua conta, a venda de R$ 1.250,00 (feita em 12/11) tem previsão de cair em 13/11, com valor líquido de R$ 1.210,12. Enquanto estiver em análise, o dinheiro pode demorar. Se passar de 2 dias úteis nesse status, fale com a nossa equipe.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [
+        "dinheiro-nao-caiu"
+      ],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.70)"
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [
+        "consultar_recebimentos"
+      ],
+      "fila": "Financeiro",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 4090,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00087828,
+      "custo_triagem_usd": 0.00025758,
+      "custo_busca_usd": 5.2e-06,
+      "custo_resposta_usd": 0.0006155,
+      "tempo_ms": 6701
+    },
+    {
+      "id": "b10",
+      "lojista": "loja-001",
+      "gabarito_da_busca": "bobina",
+      "pergunta_mascarada": "a bubina acabou, onde compro mais?",
+      "resposta": "Não sei responder isso com segurança. Uma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.60)",
+        "a busca não achou nada parecido na base: o agente não sabe"
+      ],
+      "origem_resposta": "fixa",
+      "ferramentas_usadas": [],
+      "fila": "Vendas",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 0,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00023398,
+      "custo_triagem_usd": 0.00023078,
+      "custo_busca_usd": 3.2e-06,
+      "custo_resposta_usd": 0.0,
+      "tempo_ms": 2309
+    },
+    {
+      "id": "b14",
+      "lojista": "loja-002",
+      "gabarito_da_busca": "maquininha-perdida-ou-roubada",
+      "pergunta_mascarada": "roubaram minha maquininha ontem a noite, e agora?? me liga no [TELEFONE]",
+      "resposta": "Sinto muito pelo roubo. Não consigo ligar para você por aqui, mas uma pessoa da equipe vai continuar o atendimento. Enquanto isso, você pode receber Pix pelo QR code do app, que não depende da maquininha. Se quiser, me diga se ainda tem mais alguma dúvida sobre suas vendas ou maquininhas.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.60)",
+        "a IA pediu uma pessoa: Maquininha roubada; o lojista pede contato por telefone e precisa de atendimento humano para tratar o caso.",
+        "confiança baixa na resposta (0.60)"
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [],
+      "fila": "Suporte",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 2045,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00060903,
+      "custo_triagem_usd": 0.00025118,
+      "custo_busca_usd": 5.6e-06,
+      "custo_resposta_usd": 0.00035225,
+      "tempo_ms": 6491
+    },
+    {
+      "id": "b19",
+      "lojista": "loja-001",
+      "gabarito_da_busca": "cancelar-uma-venda",
+      "pergunta_mascarada": "cliente pagou no cartao [CARTAO] e desistiu, preciso desfazer a venda",
+      "resposta": "Para desfazer a venda, você precisa cancelar a venda e devolver o valor ao cliente. Depois, envie o comprovante de cancelamento para ele:\n1. No app, abra Extrato e escolha a venda.\n2. Toque em Comprovante de cancelamento e compartilhe por SMS ou e-mail.\n\nO prazo para o dinheiro voltar depende da forma de pagamento. No débito, até 5 dias úteis. No crédito, aparece na fatura do cliente, atual ou seguinte. No Pix, cai na hora. Se ele disser que o estorno não apareceu, peça para conferir a fatura seguinte.",
+      "fontes": [
+        "estorno"
+      ],
+      "precisa_pessoa": false,
+      "motivos_pessoa": [],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [],
+      "fila": "Financeiro",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 2045,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00062633,
+      "custo_triagem_usd": 0.00023708,
+      "custo_busca_usd": 5.4e-06,
+      "custo_resposta_usd": 0.00038385,
+      "tempo_ms": 5919
+    },
+    {
+      "id": "b23",
+      "lojista": "loja-003",
+      "gabarito_da_busca": "contestacao",
+      "pergunta_mascarada": "o que é chargeback? bloquearam um valor meu",
+      "resposta": "Chargeback é a contestação de venda: o dono do cartão diz ao banco dele que não reconhece a compra ou não recebeu o que pagou. Por isso o valor fica bloqueado até a decisão.\n\nPara se defender, em até 7 dias corridos:\n1. No app, abra Avisos › Contestação › Enviar documentos.\n2. Envie o comprovante da venda, a nota fiscal ou recibo, e o comprovante de entrega, se houver.\n\nA decisão do banco sai em até 60 dias. Se for a seu favor, o valor é liberado.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [
+        "contestacao"
+      ],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.70)"
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [],
+      "fila": "Financeiro",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 2045,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00060883,
+      "custo_triagem_usd": 0.00023808,
+      "custo_busca_usd": 3.6e-06,
+      "custo_resposta_usd": 0.00036715,
+      "tempo_ms": 4694
+    },
+    {
+      "id": "b27",
+      "lojista": "loja-001",
+      "gabarito_da_busca": "pix-na-maquininha",
+      "pergunta_mascarada": "cliente me mostrou o comprovante do pix mas nao apareceu nada, posso entregar?",
+      "resposta": "Não entregue só com o comprovante na tela do celular do cliente, porque ele pode ser falso. Antes de entregar, confira na sua maquininha se aparece a mensagem \"Pix recebido\", ou veja a venda no Extrato. Se o Pix não aparecer no Extrato depois de 30 minutos, mesmo com o débito no banco do cliente, chame uma pessoa da equipe.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [
+        "pix-na-maquininha"
+      ],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.60)",
+        "a IA pediu uma pessoa: Pix não apareceu no Extrato e o cliente mostrou comprovante; pode ser falso, precisa de conferência da equipe."
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [],
+      "fila": "Financeiro",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 2045,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00062093,
+      "custo_triagem_usd": 0.00024958,
+      "custo_busca_usd": 4.6e-06,
+      "custo_resposta_usd": 0.00036675,
+      "tempo_ms": 6298
+    },
+    {
+      "id": "b33",
+      "lojista": "loja-001",
+      "gabarito_da_busca": "alterar-dados",
+      "pergunta_mascarada": "troquei de numero, como atualizo o telefone no cadastro? o novo é [TELEFONE]",
+      "resposta": "Você consegue trocar o telefone sozinho pelo app:\n1. Abra o app e vá em Perfil › Meus dados.\n2. Toque em telefone e informe o número novo.\n3. Digite o código que chegar no contato novo.\n\nSe você não tiver mais acesso ao telefone antigo, a confirmação é feita pelo atendimento. Nesse caso, fale com a gente pelo chat do app.",
+      "fontes": [
+        "alterar-dados"
+      ],
+      "precisa_pessoa": false,
+      "motivos_pessoa": [],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [],
+      "fila": "Suporte",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 2045,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00057843,
+      "custo_triagem_usd": 0.00022968,
+      "custo_busca_usd": 5.6e-06,
+      "custo_resposta_usd": 0.00034315,
+      "tempo_ms": 4209
+    },
+    {
+      "id": "b38",
+      "lojista": "loja-001",
+      "gabarito_da_busca": "ouvidoria",
+      "pergunta_mascarada": "ja reclamei 2 vezes e ninguem resolve, quero falar com a ouvidoria",
+      "resposta": "Entendo que você já reclamou duas vezes sem solução. Para a ouvidoria, você precisa do número de protocolo do último atendimento. Ela fica em Ajuda › Meus protocolos. Com o protocolo em mãos, você pode abrir o pedido em Ajuda › Ouvidoria ou por [EMAIL], de segunda a sexta, das 9h às 18h. Vou passar seu caso para uma pessoa da equipe continuar o atendimento.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [
+        "ouvidoria",
+        "reclamacao-e-protocolo"
+      ],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "reclamação: vai para a Ouvidoria",
+        "a resposta da IA tinha dado pessoal e foi mascarada",
+        "a IA pediu uma pessoa: O lojista quer registrar reclamação na ouvidoria, o que pede atendimento de uma pessoa."
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [],
+      "fila": "Ouvidoria",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 2045,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00063843,
+      "custo_triagem_usd": 0.00024608,
+      "custo_busca_usd": 5.2e-06,
+      "custo_resposta_usd": 0.00038715,
+      "tempo_ms": 5510
+    },
+    {
+      "id": "b44",
+      "lojista": "loja-001",
+      "gabarito_da_busca": null,
+      "pergunta_mascarada": "voces emitem nota fiscal das minhas vendas pros clientes?",
+      "resposta": "Não sei responder isso com segurança. Uma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "a busca não achou nada parecido na base: o agente não sabe"
+      ],
+      "origem_resposta": "fixa",
+      "ferramentas_usadas": [],
+      "fila": "Financeiro",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 0,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00022628,
+      "custo_triagem_usd": 0.00022268,
+      "custo_busca_usd": 3.6e-06,
+      "custo_resposta_usd": 0.0,
+      "tempo_ms": 2158
+    }
+  ]
+}
