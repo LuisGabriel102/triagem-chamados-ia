@@ -365,8 +365,8 @@ class ServicoAtendimento:
             motivos.append("a resposta da IA tinha dado pessoal e foi mascarada")
         if dados.precisa_pessoa:
             motivos.append(f"a IA pediu uma pessoa: {dados.motivo or 'sem motivo informado'}")
-        if dados.confianca < self._limite_confianca:
-            motivos.append(f"confiança baixa na resposta ({dados.confianca:.2f})")
+        # Versão 2: a confiança que o agente dá para si mesmo só fica registrada (a mesma
+        # lição da triagem). A rede de segurança é a conferência frase a frase.
         fontes = [artigo for artigo in artigos if artigo.id in dados.artigos_usados]
         return mascarada.texto, fontes, "ia"
 

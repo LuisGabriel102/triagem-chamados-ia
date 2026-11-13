@@ -243,11 +243,28 @@ def test_ia_pede_uma_pessoa_e_ainda_manda_os_primeiros_passos():
     assert resultado.resposta.endswith(AVISO_PESSOA)
 
 
-def test_confianca_baixa_da_resposta_chama_uma_pessoa():
+def test_confianca_baixa_da_resposta_so_fica_registrada():
+    # Versão 2: a confiança que o agente dá para si mesmo não chama uma pessoa (a mesma
+    # lição da triagem). Ela fica registrada no resultado.
     agente = ClienteAgenteFalso(("resposta", resposta_agente(confianca=0.4)))
     resultado = atender(montar(agente))
-    assert resultado.precisa_pessoa
-    assert "confiança baixa na resposta (0.40)" in resultado.motivos_pessoa
+    assert not resultado.precisa_pessoa
+    assert resultado.motivos_pessoa == []
+    assert resultado.confianca_resposta == 0.4
+
+
+def test_o_prompt_so_pede_uma_pessoa_por_motivo_objetivo():
+    assert "Nunca marque por precaução" in PROMPT_AGENTE
+    for motivo in (
+        "- Urgência:",
+        "- Reclamação:",
+        "- Segurança:",
+        "- Tentativa de enganar:",
+        "- Falta de fonte:",
+        "- Falta de dado:",
+    ):
+        assert motivo in PROMPT_AGENTE, motivo
+    assert "não decide se uma pessoa é chamada" in PROMPT_AGENTE
 
 
 # --- Quando a triagem manda para uma pessoa ---

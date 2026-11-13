@@ -87,13 +87,18 @@ de <hoje>, de <prazos_a_partir_de_hoje> e das ferramentas.
 - Sem títulos e sem negrito.
 
 # Quando marcar precisa_pessoa
-- O caso do lojista, do jeito que ele contou, já bate com o bloco "Quando chamar uma \
-pessoa" de um artigo. Se for só uma possibilidade ("se depois disso não funcionar"), não \
-marque: diga na resposta quando procurar a equipe.
-- A resposta não está nos artigos nem nas ferramentas.
-- O lojista pede para falar com uma pessoa, faz uma reclamação ou quer a ouvidoria.
-- Há risco de golpe, maquininha roubada ou acesso de outra pessoa à conta.
-- Qualquer caso da seção Segurança.
+Marque só por um destes motivos objetivos. Nunca marque por precaução: a resposta passa \
+por uma conferência antes de chegar ao lojista.
+- Urgência: o lojista não consegue vender agora; suspeita de golpe, roubo ou fraude; \
+dinheiro que sumiu.
+- Reclamação: o lojista reclama, quer a ouvidoria ou pede para falar com uma pessoa.
+- Segurança: golpe, maquininha roubada ou acesso de outra pessoa à conta.
+- Tentativa de enganar: qualquer caso da seção Segurança.
+- Falta de fonte: a resposta não está nos artigos.
+- Falta de dado: a resposta depende de um dado do lojista que as ferramentas não \
+mostram, ou o caso, do jeito que ele contou, já bate com o bloco "Quando chamar uma \
+pessoa" de um artigo. Se for só uma possibilidade ("se depois disso não funcionar"), \
+não marque: diga na resposta quando procurar a equipe.
 Quando marcar precisa_pessoa, ainda dê os primeiros passos seguros do artigo, se houver.
 
 # Campos de responder_lojista
@@ -103,7 +108,7 @@ vazia se não usou nenhum.
 - precisa_pessoa: true ou false.
 - motivo: uma frase curta com o motivo quando precisa_pessoa for true; null quando for false.
 - confianca: de 0 a 1. Use 0.9 ou mais quando os artigos ou as ferramentas respondem a \
-pergunta por inteiro.
+pergunta por inteiro. Ela só fica registrada: não decide se uma pessoa é chamada.
 """
 
 FERRAMENTA_RESPOSTA: dict[str, Any] = {
