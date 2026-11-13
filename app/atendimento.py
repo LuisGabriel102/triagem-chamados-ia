@@ -239,6 +239,10 @@ class ResultadoAtendimento:
     # A confiança que o agente deu para a própria resposta. Só fica registrada: desde a
     # versão 2, ela não chama uma pessoa.
     confianca_resposta: float | None = None
+    # Para medir a conferência: a resposta da IA antes dela e os cortes que não
+    # valeram (a conferência não apontou o trecho sem apoio na própria frase).
+    resposta_antes_da_conferencia: str | None = None
+    cortes_sem_trecho: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -256,6 +260,7 @@ class _Conferencia:
     uso_refeita: Uso = field(default_factory=Uso)
     tempo_conferencia_ms: int = 0
     tempo_refeita_ms: int = 0
+    cortes_sem_trecho: list[str] = field(default_factory=list)
 
 
 def somar_uso(a: Uso, b: Uso) -> Uso:
@@ -397,6 +402,7 @@ class ServicoAtendimento:
             saida.tempo_conferencia_ms = int((time.perf_counter() - comeco) * 1000)
             return saida
         saida.uso_conferencia = primeira.uso
+        saida.cortes_sem_trecho = list(primeira.cortes_sem_trecho)
         saida.removidas = primeira.removidas
         saida.tempo_conferencia_ms = int((time.perf_counter() - comeco) * 1000)
         if not primeira.removidas:
@@ -440,6 +446,7 @@ class ServicoAtendimento:
         saida.uso_conferencia = somar_uso(saida.uso_conferencia, segunda.uso)
         saida.tempo_conferencia_ms += int((time.perf_counter() - comeco) * 1000)
         saida.removidas_refeita = segunda.removidas
+        saida.cortes_sem_trecho += segunda.cortes_sem_trecho
         if segunda.removidas:
             motivos.append(
                 f"conferência frase a frase: a resposta refeita ainda tinha "
@@ -547,6 +554,7 @@ class ServicoAtendimento:
         # uma pessoa.
         conferida = not motivos and origem == "ia" and self._conferente is not None
         conf = _Conferencia(resposta, fontes, origem)
+        resposta_antes = resposta
         if conferida:
             conf = self._conferir_e_refazer(
                 texto, canal, artigos, lojista_id, resposta, fontes, consultas, motivos
@@ -614,6 +622,8 @@ class ServicoAtendimento:
             custo_refeita_usd=custo_refeita,
             tempo_refeita_ms=conf.tempo_refeita_ms,
             confianca_resposta=confianca,
+            resposta_antes_da_conferencia=resposta_antes if conferida else None,
+            cortes_sem_trecho=conf.cortes_sem_trecho,
         )
 
 

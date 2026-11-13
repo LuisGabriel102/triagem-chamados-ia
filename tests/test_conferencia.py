@@ -19,6 +19,7 @@ from app.conferencia import (
     ErroConferencia,
     dividir_em_frases,
     remontar,
+    trecho_esta_na_frase,
 )
 from app.esquemas import Canal
 from app.ferramentas import DadosLojistas
@@ -256,3 +257,24 @@ def test_texto_da_resposta_nao_fecha_a_marcacao_de_frases():
     atender(montar(conferencia, agente_que_responde(resposta)))
     pedido = conferencia.chamadas[0]["messages"][0]["content"]
     assert pedido.count("</frases>") == 1
+
+
+def test_corte_sem_o_trecho_exato_na_frase_nao_vale():
+    # Protege contra número trocado e corte vago: para cortar, a conferência tem de copiar
+    # da frase as palavras com o fato sem apoio.
+    conferencia = ClienteConferenciaFalso("transferir o saldo", sem_trecho=True)
+    resultado = atender(montar(conferencia, agente_que_responde(RESPOSTA_COM_INVENCAO)))
+    assert not resultado.refeita
+    assert resultado.frases_removidas == []
+    assert resultado.resposta == RESPOSTA_COM_INVENCAO
+    conferente = ConferenteClaude(conferencia, "claude-haiku-5-5")
+    feita = conferente.conferir("p", RESPOSTA_COM_INVENCAO, [], {}, date(2026, 11, 13))
+    assert feita.cortes_sem_trecho == ["Dá para transferir o saldo para outra conta."]
+
+
+def test_trecho_esta_na_frase_sem_ligar_para_acento_e_maiuscula():
+    assert trecho_esta_na_frase("Dá para TRANSFERIR", "Sim, da para transferir o saldo.")
+    assert trecho_esta_na_frase("R$ 45,35", "Cai R$ 45,35 hoje.")
+    assert not trecho_esta_na_frase("chat do app", "Você tem 7 dias corridos.")
+    assert not trecho_esta_na_frase(None, "Qualquer frase.")
+    assert not trecho_esta_na_frase(" . ", "Qualquer frase.")

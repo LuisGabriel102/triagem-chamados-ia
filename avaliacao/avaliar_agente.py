@@ -290,6 +290,8 @@ def rodar_pergunta(
         "custo_refeita_usd": resultado.custo_refeita_usd,
         "tempo_refeita_ms": resultado.tempo_refeita_ms,
         "confianca_resposta": resultado.confianca_resposta,
+        "resposta_antes_da_conferencia": resultado.resposta_antes_da_conferencia,
+        "cortes_sem_trecho": resultado.cortes_sem_trecho,
         # Quantos blocos de raciocínio e quantos tokens de saída voltaram em cada parte.
         "blocos_de_raciocinio": {
             g.papel: g.blocos_de_raciocinio - antes_raciocinio[g.papel] for g in gravadores_ia
@@ -597,6 +599,7 @@ def resumir(linhas: list[dict[str, Any]]) -> dict[str, Any]:
         ),
         # Versão 2: quando a conferência tira frase, o agente refaz a resposta uma vez.
         "refeitas": sum(bool(x.get("refeita")) for x in conferidas),
+        "cortes_sem_trecho": sum(len(x.get("cortes_sem_trecho") or []) for x in conferidas),
         "refeita_ainda_sem_apoio": sum(bool(x.get("frases_removidas_refeita")) for x in conferidas),
         "frases_removidas_refeita": sum(
             len(x.get("frases_removidas_refeita") or []) for x in conferidas

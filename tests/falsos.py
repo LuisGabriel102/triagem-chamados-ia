@@ -258,6 +258,7 @@ class ClienteConferenciaFalso:
         erro: Exception | None = None,
         stop_reason: str = "tool_use",
         faltando: tuple[int, ...] = (),
+        sem_trecho: bool = False,
     ) -> None:
         self.chamadas: list[dict[str, Any]] = []
         self.messages = self
@@ -265,6 +266,7 @@ class ClienteConferenciaFalso:
         self._erro = erro
         self._stop_reason = stop_reason
         self._faltando = faltando
+        self._sem_trecho = sem_trecho
 
     def create(self, **kwargs: Any) -> SimpleNamespace:
         self.chamadas.append(copy.deepcopy(kwargs))
@@ -277,8 +279,15 @@ class ClienteConferenciaFalso:
             numero, _, frase = linha.partition(": ")
             if int(numero) in self._faltando:
                 continue
-            apoiada = not any(trecho in frase for trecho in self._sem_apoio)
-            marcacoes.append({"numero": int(numero), "apoiada": apoiada})
+            achado = next((trecho for trecho in self._sem_apoio if trecho in frase), None)
+            # Com sem_trecho, imita o corte que não aponta as palavras da frase.
+            marcacoes.append(
+                {
+                    "numero": int(numero),
+                    "apoiada": achado is None,
+                    "trecho_sem_apoio": None if self._sem_trecho else achado,
+                }
+            )
         return SimpleNamespace(
             content=[
                 SimpleNamespace(
