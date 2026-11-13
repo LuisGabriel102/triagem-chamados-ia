@@ -231,17 +231,39 @@ def test_confianca_baixa_da_resposta_chama_uma_pessoa():
 def test_triagem_urgente_vai_para_uma_pessoa_com_a_resposta_da_ia():
     resultado = atender(montar(cliente_triagem=triagem_ok(prioridade="urgente")))
     assert resultado.precisa_pessoa
-    assert any("prioridade urgente" in m for m in resultado.motivos_pessoa)
+    assert resultado.motivos_pessoa == ["triagem: urgente"]
     assert resultado.origem_resposta == "ia"
-    assert resultado.resposta.endswith(AVISO_PESSOA)
 
 
-def test_triagem_com_confianca_baixa_ou_outros_vai_para_uma_pessoa():
+def test_palavras_chave_de_urgencia_chamam_uma_pessoa_mesmo_sem_a_ia_confirmar():
+    # A segunda opinião da triagem também segura quem manda a IA baixar a prioridade.
+    resultado = atender(montar(), "URGENTE: a maquininha parou e tenho fila de clientes, socorro")
+    assert resultado.precisa_pessoa
+    assert "triagem: as palavras-chave indicam urgência" in resultado.motivos_pessoa
+
+
+def test_confianca_baixa_ou_outros_da_triagem_nao_chamam_uma_pessoa():
+    # Decisão da etapa 3B: a triagem decide só a fila e a urgência.
     baixa = atender(montar(cliente_triagem=triagem_ok(confianca=0.3)))
-    assert any("confiança baixa (0.30)" in m for m in baixa.motivos_pessoa)
+    assert not baixa.precisa_pessoa
+    assert baixa.motivos_pessoa == []
     outros = atender(montar(cliente_triagem=triagem_ok(categoria="outros")))
-    assert any("'outros'" in m for m in outros.motivos_pessoa)
+    assert not outros.precisa_pessoa
     assert outros.fila == "Triagem humana"
+
+
+def test_triagem_que_cai_nas_regras_so_avisa():
+    erro = anthropic.APIConnectionError(request=REQUISICAO)
+    resultado = atender(montar(cliente_triagem=ClienteFalso(erro=erro)))
+    assert not resultado.precisa_pessoa
+    assert "a triagem usou as regras" in resultado.avisos
+
+
+def test_a_rota_antiga_da_triagem_continua_pedindo_revisao_por_confianca_baixa():
+    servico = ServicoTriagem(ClassificadorClaude(triagem_ok(confianca=0.3), "claude-haiku-5-5"))
+    resultado = servico.triar(BOBINA, Canal.CHAT)
+    assert resultado.revisao_humana
+    assert any("confiança baixa (0.30)" in m for m in resultado.motivos_revisao)
 
 
 def test_reclamacao_vai_para_a_ouvidoria():

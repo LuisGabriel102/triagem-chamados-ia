@@ -11,11 +11,13 @@
 5. O plano B: se a IA falhar, a resposta é o trecho do artigo achado, com "uma pessoa vai
    confirmar". Sem artigo, vai para uma pessoa. O atendimento nunca para.
 
-Vai para uma pessoa quando: a triagem marcou revisão humana (urgente, confiança baixa,
-"outros"); a busca deu "nada encontrado"; é reclamação para a Ouvidoria; alguém tenta
-mandar na IA ou pedir dado de outra loja; a IA pede uma pessoa ou falha. Mesmo assim, a
-resposta leva os primeiros passos seguros do artigo, se houver, e avisa que uma pessoa
-vai continuar.
+A triagem serve só para a fila e a urgência. A confiança dela e a categoria "outros" não
+decidem se o agente chama uma pessoa (a rota /chamados continua igual).
+
+Vai para uma pessoa quando: a triagem marcou urgente (pela IA ou pelas palavras-chave); é
+reclamação para a Ouvidoria; alguém tenta mandar na IA ou pedir dado de outra loja; a busca
+deu "nada encontrado"; não há fonte; a IA pede uma pessoa ou falha. Mesmo assim, a resposta
+leva os primeiros passos seguros do artigo, se houver, e avisa que uma pessoa vai continuar.
 """
 
 import logging
@@ -39,9 +41,10 @@ from app.busca import Busca, Modo, ResultadoBusca, criar_busca
 from app.busca_palavras import normalizar
 from app.classificador import Uso
 from app.config import Configuracao
-from app.esquemas import Canal, Categoria, Prioridade
+from app.esquemas import Canal, Categoria, Origem, Prioridade
 from app.ferramentas import DadosLojistas, LojistaDesconhecido
 from app.mascaramento import ResultadoMascaramento, mascarar
+from app.regras import classificar_por_regras
 from app.servico import ResultadoTriagem, ServicoTriagem, calcular_custo, criar_servico
 
 log = logging.getLogger(__name__)
@@ -86,6 +89,16 @@ def detectar_tentativa(texto: str) -> str | None:
         return "tentativa de mandar na IA"
     if _OUTRA_LOJA.search(simples) and _DADO_PEDIDO.search(simples):
         return "pedido de dado de outra loja"
+    return None
+
+
+def motivo_de_urgencia(triagem: ResultadoTriagem, texto: str) -> str | None:
+    """A urgência que chama uma pessoa: a prioridade da triagem ou, como segunda opinião,
+    as palavras-chave (que também seguram quem manda a IA baixar a prioridade)."""
+    if triagem.triagem.prioridade is Prioridade.URGENTE:
+        return "triagem: urgente"
+    if classificar_por_regras(texto).prioridade is Prioridade.URGENTE:
+        return "triagem: as palavras-chave indicam urgência"
     return None
 
 
@@ -305,7 +318,12 @@ class ServicoAtendimento:
             triagem = futuro_triagem.result()
             busca, tempo_busca_ms = futuro_busca.result()
 
-        motivos: list[str] = [f"triagem: {motivo}" for motivo in triagem.motivos_revisao]
+        # A triagem decide só a fila e a urgência. A confiança e o "outros" não chamam pessoa.
+        motivos: list[str] = []
+        urgencia = motivo_de_urgencia(triagem, texto)
+        if urgencia:
+            motivos.append(urgencia)
+        avisos_triagem = [] if triagem.origem is Origem.IA else ["a triagem usou as regras"]
         if triagem.triagem.categoria is Categoria.RECLAMACAO:
             motivos.append("reclamação: vai para a Ouvidoria")
         artigos = [achado.artigo for achado in busca.achados]
@@ -387,7 +405,7 @@ class ServicoAtendimento:
             categoria=triagem.triagem.categoria,
             prioridade=triagem.triagem.prioridade,
             ferramentas_usadas=list(usadas),
-            avisos=list(busca.avisos),
+            avisos=[*busca.avisos, *avisos_triagem],
             modo_busca=busca.modo,
             modelo_resposta=modelo,
             uso_resposta=uso_resposta,
