@@ -197,6 +197,7 @@ def para_atendimento_demo(resultado: ResultadoAtendimento) -> AtendimentoDemo:
         frases_removidas=[*resultado.frases_removidas, *resultado.frases_removidas_refeita],
         refeita=resultado.refeita,
         modo_busca=resultado.modo_busca,
+        ferramentas_usadas=resultado.ferramentas_usadas,
         avisos=resultado.avisos,
         modelo=resultado.modelo_resposta,
         custo=CustoAtendimentoDemo(

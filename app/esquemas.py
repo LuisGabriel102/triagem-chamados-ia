@@ -340,6 +340,8 @@ class AtendimentoDemo(BaseModel):
     frases_removidas: list[str]
     refeita: bool
     modo_busca: str
+    # As consultas aos dados da loja da sessão que o agente fez (recebimentos, maquininhas).
+    ferramentas_usadas: list[str]
     avisos: list[str]
     modelo: str | None
     custo: CustoAtendimentoDemo

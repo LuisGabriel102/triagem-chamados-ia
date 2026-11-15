@@ -25,6 +25,10 @@
     sentimento: { positivo: "Positivo", neutro: "Neutro", negativo: "Negativo" },
     dado: { CPF: "CPF", CNPJ: "CNPJ", CARTAO: "cartão", EMAIL: "e-mail", TELEFONE: "telefone" },
     busca: { sentido: "Por sentido", hibrida: "Híbrida", palavras: "Por palavras" },
+    ferramenta: {
+      consultar_recebimentos: "os recebimentos",
+      status_maquininha: "as maquininhas",
+    },
   };
 
   const MARCADOR = /(\[(?:CPF|CNPJ|CARTAO|EMAIL|TELEFONE)\])/;
@@ -428,6 +432,15 @@
 
     ficha.querySelector(".texto-lido").append(textoComTarjas(dados.texto_mascarado));
     preencher(".escondidos", listaDeEscondidos(dados.dados_pessoais_encontrados));
+    const consultas = [...new Set(dados.ferramentas_usadas || [])].map(
+      (nome) => NOMES.ferramenta[nome] || nome
+    );
+    preencher(
+      ".consultas",
+      consultas.length
+        ? `Consultou os dados da loja da sessão: ${consultas.join(" e ")}.`
+        : "Não consultou os dados da loja."
+    );
     const avisos = ficha.querySelector(".avisos");
     avisos.textContent = dados.avisos.length ? `Avisos: ${dados.avisos.join(" ")}` : "";
     avisos.hidden = !dados.avisos.length;

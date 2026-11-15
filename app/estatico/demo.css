@@ -592,11 +592,13 @@ h3 {
 }
 
 .sem-fonte,
+.consultas,
 .avisos {
   margin: 0;
   color: var(--tinta-suave);
 }
 
+.consultas,
 .avisos {
   margin-top: 0.4rem;
   font-size: 0.9rem;

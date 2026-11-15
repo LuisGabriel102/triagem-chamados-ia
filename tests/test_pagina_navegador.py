@@ -355,3 +355,15 @@ def test_no_github_pages_a_triagem_gravada_segue_igual(navegador, tmp_path):
             pagina.close()
     finally:
         http.shutdown()
+
+
+def test_mostra_a_consulta_aos_dados_da_loja(navegador, servidor):
+    url, app = servidor
+    app.state.atendimento = _atendimento(
+        ClienteAgenteFalso(("consulta", "consultar_recebimentos"), ("resposta", resposta_agente()))
+    )
+    pagina = _abrir(navegador, url, 390)
+    _perguntar(pagina, "Quando cai minha venda")
+    consultas = pagina.locator("#resultado-atendimento .consultas").inner_text()
+    assert consultas == "Consultou os dados da loja da sessão: os recebimentos."
+    pagina.close()

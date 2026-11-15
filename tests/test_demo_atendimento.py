@@ -29,6 +29,7 @@ from tests.falsos import (
     ClienteEmbeddingFalso,
     ClienteFalso,
     entrada_valida,
+    resposta_agente,
 )
 
 ARTIGOS = carregar_artigos()
@@ -126,9 +127,12 @@ def test_chamou_uma_pessoa_mostra_a_fila_e_o_motivo(abrir):
 
 
 def test_o_lojista_vem_da_sessao(abrir):
-    agente = ClienteAgenteFalso(("consulta", "consultar_recebimentos"))
+    agente = ClienteAgenteFalso(
+        ("consulta", "consultar_recebimentos"), ("resposta", resposta_agente())
+    )
     cliente = abrir(_atendimento(agente))
-    _enviar(cliente, "Quando cai a venda de ontem?", lojista="loja-002")
+    corpo = _enviar(cliente, "Quando cai a venda de ontem?", lojista="loja-002").json()
+    assert corpo["ferramentas_usadas"] == ["consultar_recebimentos"]
     lido = agente.todo_o_texto_enviado()
     # A IA recebeu as vendas da loja da sessão, e de nenhuma outra.
     assert "v-2001" in lido
