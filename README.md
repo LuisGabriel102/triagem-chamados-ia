@@ -4,11 +4,13 @@
 
 API que lê o chamado do cliente, esconde os dados pessoais, classifica com IA e manda para a fila certa. Se a IA falhar, um plano B por regras assume e o atendimento não para.
 
-**Veja funcionando:** [luisgabriel102.github.io/triagem-chamados-ia](https://luisgabriel102.github.io/triagem-chamados-ia/), com respostas reais da IA gravadas.
+A segunda parte, o [Atendimento com IA](#atendimento-com-ia), responde o lojista com uma base de ajuda, mostra a fonte e chama uma pessoa quando precisa.
+
+**Veja funcionando:** [luisgabriel102.github.io/triagem-chamados-ia](https://luisgabriel102.github.io/triagem-chamados-ia/), com respostas reais da IA gravadas para a triagem. O atendimento roda na página ao vivo, servida pela API.
 
 ![Página de demonstração: o chamado vira uma ficha de triagem com a cor da prioridade e os dados pessoais escondidos por tarjas](docs/demo.png)
 
-**Tecnologias:** Python 3.12 · FastAPI · Claude (API da Anthropic) · Gemini (Vertex AI, Google Cloud) · PostgreSQL · SQLAlchemy · Pydantic · Docker · GitHub Actions · pytest
+**Tecnologias:** Python 3.12 · FastAPI · Claude (API da Anthropic) · Gemini (Vertex AI, Google Cloud) · embeddings do Gemini · BM25 · PostgreSQL · SQLAlchemy · Pydantic · Docker · GitHub Actions · pytest
 
 ## O problema
 
@@ -78,8 +80,11 @@ Sem chave da IA, o plano B responde no mesmo formato, com `origem` "regras" e re
 
 | Rota | O que faz |
 |---|---|
-| `GET /` | Página de demonstração: cole um chamado e veja a triagem |
+| `GET /` | Página de demonstração, com as abas Triagem e Atendimento |
 | `POST /demo/triagem` | Triagem da página: aberta, com limite de uso e sem gravar nada |
+| `POST /demo/atendimento` | Atendimento da página: aberto, com o mesmo limite e sem gravar nada |
+| `GET /demo/lojistas` | As 3 lojas inventadas que a página pode escolher |
+| `POST /atendimento` | Responde o lojista da sessão e guarda o resultado mascarado |
 | `POST /chamados` | Faz a triagem e guarda o resultado |
 | `GET /chamados/{id}` | Busca um chamado |
 | `GET /chamados?revisao_humana=true` | Lista a fila de revisão humana |
@@ -87,7 +92,7 @@ Sem chave da IA, o plano B responde no mesmo formato, com `origem` "regras" e re
 | `GET /saude` | Diz se a API está no ar e se a IA está configurada |
 | `GET /docs` | Documentação interativa para testar no navegador |
 
-Quando `CHAVE_API_APP` está configurada, as rotas de chamados e métricas exigem o cabeçalho `X-API-Key`. A página, a triagem de demonstração e `/saude` ficam abertas.
+Quando `CHAVE_API_APP` está configurada, as rotas de chamados, de atendimento e de métricas exigem o cabeçalho `X-API-Key`. A página, as rotas `/demo/...` e `/saude` ficam abertas.
 
 ## Decisões de projeto
 
@@ -107,7 +112,7 @@ Quando `CHAVE_API_APP` está configurada, as rotas de chamados e métricas exige
 
 **Cada chamado sabe quanto custou.** A API guarda os tokens de entrada, saída e cache de cada chamada e calcula o custo em dólar. Isso vale também quando a IA responde fora do formato e o plano B assume, porque essa chamada foi cobrada. A parte fixa do prompt fica em cache por 5 minutos. Nesse tempo, essa parte custa 10% do preço normal. Na avaliação, cada chamado leu em média 2.007 tokens do cache.
 
-**A demonstração custa zero.** No GitHub Pages, a página mostra respostas reais da IA, gravadas uma vez para 6 exemplos, por menos de 1 centavo de dólar. Cada visita custa zero, porque nenhuma chamada à IA acontece e nada é gravado. Quem roda a API num servidor tem a mesma página ao vivo, numa rota aberta que não grava nada, com limite de 10 testes por pessoa por hora e 200 por dia. A página não carrega nada de fora (nem fonte) e tem política de segurança de conteúdo. Tudo o que vem da IA entra na tela como texto, nunca como código.
+**A demonstração custa zero.** No GitHub Pages, a página mostra respostas reais da IA, gravadas uma vez para 6 exemplos, por menos de 1 centavo de dólar. Cada visita custa zero, porque nenhuma chamada à IA acontece e nada é gravado. Quem roda a API num servidor tem a mesma página ao vivo, numa rota aberta que não grava nada, com limite de 10 testes por pessoa por hora e 200 por dia. O atendimento da página tem o mesmo limite, com a conta separada. A página não carrega nada de fora (nem fonte) e tem política de segurança de conteúdo. Tudo o que vem da IA entra na tela como texto, nunca como código.
 
 **Modelo pequeno de propósito.** Classificar texto curto não precisa do modelo mais caro. O padrão é o Claude Haiku 5.5; no Gemini, o 3.5 Flash-Lite, com pouco raciocínio. O modelo muda no `.env`. O preço de cada modelo do Gemini fica numa tabela no código (`app/precos.py`), com a fonte e a data, então o custo de cada chamado sai certo sem configurar nada.
 
@@ -150,6 +155,59 @@ python -m avaliacao.comparar                # junta tudo em resultados/comparaca
 
 Com IA, o primeiro chamado vai sozinho. Se ele falhar (login, projeto, modelo), a avaliação para ali, antes de gastar com os outros 39.
 
+## Atendimento com IA
+
+A segunda parte do projeto responde o lojista sozinha quando pode, mostra de onde tirou a resposta e chama uma pessoa quando precisa. A empresa é **inventada**: a Tapiri Pagamentos, de maquininhas de cartão (`base/EMPRESA.md`), com 30 artigos de ajuda e 3 lojas fictícias. Na página ao vivo, é a aba **Atendimento**: você escolhe uma loja e toca numa das 6 perguntas prontas, uma para cada caminho.
+
+![Aba Atendimento: a resposta com o prazo da venda de ontem, a fonte aberta, o que a IA leu, o custo e o tempo](docs/fotos/atendimento-1280.png)
+
+O caminho de uma mensagem (`app/atendimento.py`):
+
+1. **Mascara** CPF, CNPJ, cartão, e-mail e telefone. Daqui em diante, só o texto mascarado circula.
+2. **Triagem e busca juntas.** A triagem decide a fila e a urgência. A busca acha os artigos parecidos, por sentido (embeddings do Gemini) ou, se o Google cair, por palavras (BM25).
+3. **Resposta.** O Claude Haiku 5.5 responde citando os artigos achados e pode consultar os dados da loja da sessão (recebimentos e maquininhas). Se a IA cair, entra o plano B: o trecho do artigo, com "uma pessoa vai confirmar".
+4. **Conferência.** Frase a frase, um segundo passo confere se cada frase tem apoio no artigo ou nos dados. Se alguma não tem, a resposta é refeita uma vez, só com o que tem apoio, e conferida de novo.
+5. **Uma pessoa, quando precisa:** urgência, reclamação, segurança, tentativa de enganar, falta de fonte ou de dado. Na urgência, uma mensagem fixa diz que uma pessoa já foi chamada, por qual fila e em que horário.
+
+**As regras que fazem a segurança:**
+
+- **O lojista vem da sessão, nunca do texto.** As ferramentas não têm parâmetro de lojista: a IA não escolhe de quem é o dado. Pedir "as vendas da loja 002" vai para uma pessoa.
+- **Sem fonte, sem conselho.** Toda instrução cita um artigo que veio da busca. Sem artigo, a resposta é "não sei" e uma pessoa continua.
+- **A conta é do código.** Datas, prazos e valores líquidos saem das ferramentas, já calculados. A IA só escreve.
+- **A confiança da IA não decide sozinha.** A autoavaliação do modelo fica registrada, mas não libera nem segura uma resposta. Quem decide são os motivos objetivos e a conferência.
+
+### Os números
+
+| | Versão 1, prova 1 | **Versão 2, prova 2** (oficial) |
+|---|---|---|
+| Resolvido sem uma pessoa **e certo** | 10/24 | **11/21** |
+| Resolvido sem uma pessoa **e errado** | 3/40 | **2/40** |
+| Urgências e tentativas de enganar com uma pessoa | 8/8 | **8/8** |
+| "Não sei" certo quando a base não sabe | 7/7 | **8/8** |
+| Dados pessoais enviados à IA ou ao Google | 0 | **0** |
+
+Cada prova tem 40 mensagens e rodou 3 vezes; a tabela mostra a mediana. Na prova 2, o "e certo" deu 11 nas 3 rodadas, e o "e errado" ficou entre 1 e 2.
+
+**Como ler estes números.** As duas provas são diferentes, então a comparação é só uma indicação. As perguntas foram escritas por um agente separado (Claude), que só viu a descrição da empresa, sem ver os artigos. O gabarito foi montado depois, por quem escreveu a base. A resposta certa é julgada por um modelo (Claude Sonnet 5.5), não por uma pessoa. As provas 1 e 2 vieram do mesmo pedido de escrita e se parecem. Com mensagens reais de lojistas, o resultado tende a ser pior.
+
+**O método.** Treino e prova separados: as mudanças foram decididas em 60 perguntas de desenvolvimento, nunca na prova. O código foi congelado antes de abrir a prova 2, e a prova rodou 3 vezes. Nada foi ajustado depois de ver o resultado. O passo a passo, com cada rodada e cada erro, está em [`docs/ATENDIMENTO.md`](docs/ATENDIMENTO.md) e em [`avaliacao/resultados/`](avaliacao/resultados/).
+
+**Custo e tempo por mensagem** (média da prova 2): US$ 0,00091 e 6,3 s.
+
+| Parte | Custo | Tempo |
+|---|---|---|
+| Triagem | US$ 0,00025 | 2,7 s |
+| Busca (embeddings) | US$ 0,000007 | 0,7 s |
+| Resposta | US$ 0,00037 | 2,1 s |
+| Conferência | US$ 0,00017 | 1,0 s |
+| Resposta refeita | US$ 0,00009 | 0,4 s |
+
+A triagem e a busca rodam ao mesmo tempo, então o tempo total não é a soma.
+
+**Os limites e o próximo passo.** A conferência frase a frase ainda corta frases certas: num teste nas 60 de desenvolvimento, cerca de metade dos cortes estava errada. O dano é chamar uma pessoa sem precisar, não deixar passar invenção. O próximo passo é testar, nas 60, um modelo mais forte só na conferência (o Claude Sonnet 5.5) ou deixar o Haiku raciocinar antes de conferir. Outros limites: uma mensagem por vez, sem histórico de conversa, e a próxima prova deveria vir de outro pedido de escrita.
+
+**A busca está pronta para o pgvector.** Hoje os vetores dos 30 artigos ficam num arquivo versionado (`base/indice.json`) e a comparação roda na memória. A busca fala com o índice por uma interface pequena; trocar pelo pgvector no PostgreSQL fica para quando a base crescer.
+
 ## Como rodar
 
 **Com Docker** (sobe a API e o PostgreSQL):
@@ -175,7 +233,7 @@ cp .env.example .env
 uvicorn app.main:app --reload
 ```
 
-Sem a credencial da IA escolhida, a API funciona só com o plano B.
+Sem a credencial da IA escolhida, a API funciona só com o plano B. O atendimento usa a `ANTHROPIC_API_KEY` para responder e a `GEMINI_API_KEY` (Google AI Studio) para a busca por sentido; sem a do Google, a busca roda só por palavras.
 
 **Com o Gemini no Vertex AI.** O projeto do Google Cloud precisa do faturamento ativo. O login fica no seu computador, sem chave em arquivo:
 
@@ -212,18 +270,28 @@ app/
   config.py          variáveis de ambiente
   limite.py          limite de uso da demonstração aberta
   site_estatico.py   site do GitHub Pages com as respostas gravadas
+  atendimento.py     o atendimento: mascarar, triar e buscar, responder, conferir, chamar uma pessoa
+  busca.py           busca por sentido e por palavras, com o limiar de "nada encontrado"
+  agente.py          o agente que responde o lojista citando os artigos
+  conferencia.py     a conferência frase a frase
+  ferramentas.py     os dados da loja da sessão (recebimentos e maquininhas)
   paginas/           página de demonstração
-  estatico/          estilo, script e fonte da página (nada vem de fora)
+  estatico/          estilo, script, fonte e perguntas prontas da página (nada vem de fora)
+base/                    a empresa inventada, os 30 artigos e o índice da busca
+dados/                   as 3 lojas inventadas
 avaliacao/
   chamados_teste.jsonl   40 chamados com gabarito
   avaliar.py             mede o acerto
   comparar.py            junta as rodadas com IA numa tabela
+  avaliar_agente.py      avalia o atendimento inteiro, com o juiz
+  perguntas_*.jsonl      as perguntas do atendimento (desenvolvimento, prova 1 e prova 2)
   resultados/            relatório de cada rodada
 scripts/
   gravar_exemplos.py     passa os exemplos pela IA uma vez e grava as respostas
   montar_site.py         monta o site estático a partir da gravação
   capturar_demo.py       tira a foto da página, sem chamar a IA
-docs/                    gravação dos exemplos e foto da página
+  capturar_atendimento.py  roda as 6 perguntas prontas e tira as fotos das duas abas
+docs/                    gravações, fotos, ATENDIMENTO.md e PUBLICAR.md
 tests/                   testes com pytest
 ```
 
