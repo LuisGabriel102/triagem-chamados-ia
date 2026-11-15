@@ -125,6 +125,14 @@ class DadosLojistas:
     def existe(self, lojista_id: str) -> bool:
         return lojista_id in self._lojistas
 
+    def vitrine(self) -> list[dict[str, str]]:
+        """As lojas para a página de demonstração escolher: só o id, o nome e o plano.
+        Documento, conta, e-mail e telefone nunca saem daqui."""
+        return [
+            {"id": id_, "nome": dados["nome_fantasia"], "plano": dados["plano"]}
+            for id_, dados in self._lojistas.items()
+        ]
+
     def _lojista(self, lojista_id: str) -> dict[str, Any]:
         try:
             return self._lojistas[lojista_id]

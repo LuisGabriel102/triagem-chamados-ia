@@ -286,3 +286,61 @@ class AtendimentoSaida(BaseModel):
     frases_removidas: list[str] = []
     custo: CustoAtendimento
     tempo: TempoAtendimento
+
+
+# --- Atendimento na página de demonstração (etapa 4): aberto, com limite e sem gravar ---
+
+
+class AtendimentoDemoEntrada(BaseModel):
+    """Mensagem enviada pela página. A sessão é simulada: quem visita escolhe uma das lojas
+    inventadas. O lojista vem da sessão, nunca do texto da mensagem."""
+
+    mensagem: TextoDemo
+    canal: Canal = Canal.CHAT
+    sessao: SessaoLojista
+
+
+class LojistaDemo(BaseModel):
+    """Uma das lojas inventadas que quem visita a página pode ser."""
+
+    id: str
+    nome: str
+    plano: str
+
+
+class FonteDemo(BaseModel):
+    """O artigo citado, com o texto, para a página abrir na hora."""
+
+    id: str
+    titulo: str
+    texto: str
+
+
+class CustoAtendimentoDemo(CustoAtendimento):
+    refeita_usd: float = 0.0
+
+
+class TempoAtendimentoDemo(TempoAtendimento):
+    refeita_ms: int = 0
+
+
+class AtendimentoDemo(BaseModel):
+    """Resultado mostrado na página. Nada disso é gravado."""
+
+    resposta: str
+    fontes: list[FonteDemo]
+    fila: str
+    precisa_pessoa: bool
+    motivos_pessoa: list[str]
+    origem_resposta: str
+    categoria: Categoria
+    prioridade: Prioridade
+    texto_mascarado: str
+    dados_pessoais_encontrados: dict[str, int]
+    frases_removidas: list[str]
+    refeita: bool
+    modo_busca: str
+    avisos: list[str]
+    modelo: str | None
+    custo: CustoAtendimentoDemo
+    tempo: TempoAtendimentoDemo

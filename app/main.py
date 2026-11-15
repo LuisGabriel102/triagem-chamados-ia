@@ -19,18 +19,24 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app import banco
-from app.atendimento import ServicoAtendimento, criar_atendimento
+from app.atendimento import ResultadoAtendimento, ServicoAtendimento, criar_atendimento
 from app.config import Configuracao
 from app.esquemas import (
+    AtendimentoDemo,
+    AtendimentoDemoEntrada,
     AtendimentoEntrada,
     AtendimentoSaida,
     ChamadoDemo,
     ChamadoEntrada,
     ChamadoSaida,
     CustoAtendimento,
+    CustoAtendimentoDemo,
+    FonteDemo,
     FonteSaida,
+    LojistaDemo,
     Metricas,
     TempoAtendimento,
+    TempoAtendimentoDemo,
     TriagemDemo,
 )
 from app.ferramentas import LojistaDesconhecido
@@ -132,19 +138,99 @@ def inicio(request: Request) -> Response:
     return HTMLResponse(montar_pagina(config.url_publica), headers=CABECALHOS_DA_PAGINA)
 
 
+def _demo_ligada(request: Request) -> None:
+    if not request.app.state.config.demo_ativa:
+        raise HTTPException(status_code=404, detail="A demonstração está desligada.")
+
+
+def _conferir_limite(request: Request, limite: LimiteDeUso) -> None:
+    """Limite por endereço (por hora) e da demonstração inteira (por dia)."""
+    pessoa = request.client.host if request.client else "desconhecido"
+    bloqueio = limite.verificar(pessoa)
+    if bloqueio:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=bloqueio)
+
+
+def _atendimento_no_ar(request: Request) -> ServicoAtendimento:
+    atendimento: ServicoAtendimento | None = request.app.state.atendimento
+    if atendimento is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="O atendimento não está disponível neste servidor.",
+        )
+    return atendimento
+
+
 @rotas_abertas.post(
     "/demo/triagem",
     response_model=TriagemDemo,
     summary="Triagem de demonstração: aberta, não grava nada e tem limite de uso",
 )
 def triagem_demo(entrada: ChamadoDemo, request: Request, servico: Servico) -> TriagemDemo:
-    if not request.app.state.config.demo_ativa:
-        raise HTTPException(status_code=404, detail="A demonstração está desligada.")
-    pessoa = request.client.host if request.client else "desconhecido"
-    bloqueio = request.app.state.limite_demo.verificar(pessoa)
-    if bloqueio:
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=bloqueio)
+    _demo_ligada(request)
+    _conferir_limite(request, request.app.state.limite_demo)
     return para_demo(servico.triar(entrada.texto, entrada.canal))
+
+
+@rotas_abertas.get(
+    "/demo/lojistas",
+    response_model=list[LojistaDemo],
+    summary="As lojas inventadas que a página de demonstração pode escolher",
+)
+def lojistas_demo(request: Request) -> list[LojistaDemo]:
+    _demo_ligada(request)
+    return [LojistaDemo(**loja) for loja in _atendimento_no_ar(request).lojistas()]
+
+
+def para_atendimento_demo(resultado: ResultadoAtendimento) -> AtendimentoDemo:
+    return AtendimentoDemo(
+        resposta=resultado.resposta,
+        fontes=[FonteDemo(id=a.id, titulo=a.titulo, texto=a.texto) for a in resultado.fontes],
+        fila=resultado.fila,
+        precisa_pessoa=resultado.precisa_pessoa,
+        motivos_pessoa=resultado.motivos_pessoa,
+        origem_resposta=resultado.origem_resposta,
+        categoria=resultado.categoria,
+        prioridade=resultado.prioridade,
+        texto_mascarado=resultado.texto_mascarado,
+        dados_pessoais_encontrados=resultado.dados_pessoais_encontrados,
+        frases_removidas=[*resultado.frases_removidas, *resultado.frases_removidas_refeita],
+        refeita=resultado.refeita,
+        modo_busca=resultado.modo_busca,
+        avisos=resultado.avisos,
+        modelo=resultado.modelo_resposta,
+        custo=CustoAtendimentoDemo(
+            total_usd=resultado.custo_usd,
+            triagem_usd=resultado.custo_triagem_usd,
+            busca_usd=resultado.custo_busca_usd,
+            resposta_usd=resultado.custo_resposta_usd,
+            conferencia_usd=resultado.custo_conferencia_usd,
+            refeita_usd=resultado.custo_refeita_usd,
+        ),
+        tempo=TempoAtendimentoDemo(
+            total_ms=resultado.tempo_ms,
+            triagem_ms=resultado.tempo_triagem_ms,
+            busca_ms=resultado.tempo_busca_ms,
+            resposta_ms=resultado.tempo_resposta_ms,
+            conferencia_ms=resultado.tempo_conferencia_ms,
+            refeita_ms=resultado.tempo_refeita_ms,
+        ),
+    )
+
+
+@rotas_abertas.post(
+    "/demo/atendimento",
+    response_model=AtendimentoDemo,
+    summary="Atendimento de demonstração: aberto, não grava nada e tem limite de uso",
+)
+def atendimento_demo(entrada: AtendimentoDemoEntrada, request: Request) -> AtendimentoDemo:
+    _demo_ligada(request)
+    atendimento = _atendimento_no_ar(request)
+    if not atendimento.existe_lojista(entrada.sessao.lojista_id):
+        raise HTTPException(status_code=404, detail="Lojista da sessão não encontrado.")
+    _conferir_limite(request, request.app.state.limite_atendimento_demo)
+    resultado = atendimento.atender(entrada.mensagem, entrada.canal, entrada.sessao.lojista_id)
+    return para_atendimento_demo(resultado)
 
 
 @rotas_abertas.get("/saude", summary="Diz se a API está no ar e se a IA está configurada")
@@ -226,12 +312,7 @@ def para_atendimento_saida(registro: banco.AtendimentoRegistro) -> AtendimentoSa
     "quando precisa",
 )
 def atender(entrada: AtendimentoEntrada, request: Request, sessao: Sessao) -> AtendimentoSaida:
-    atendimento: ServicoAtendimento | None = request.app.state.atendimento
-    if atendimento is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="O atendimento não está disponível neste servidor.",
-        )
+    atendimento = _atendimento_no_ar(request)
     try:
         resultado = atendimento.atender(entrada.mensagem, entrada.canal, entrada.sessao.lojista_id)
     except LojistaDesconhecido as erro:
@@ -268,6 +349,11 @@ def criar_app(
         app.state.servico = servico or criar_servico(cfg)
         app.state.fabrica_sessao = sessionmaker(mot, expire_on_commit=False)
         app.state.limite_demo = LimiteDeUso(cfg.demo_limite_por_hora, cfg.demo_limite_por_dia)
+        # O atendimento da página tem o mesmo limite, com a conta separada: quem testou a
+        # triagem ainda pode testar o atendimento.
+        app.state.limite_atendimento_demo = LimiteDeUso(
+            cfg.demo_limite_por_hora, cfg.demo_limite_por_dia
+        )
         app.state.atendimento = atendimento
         if atendimento is None:
             # Sem a base ou os dados (por exemplo, numa imagem antiga), a triagem segue no ar

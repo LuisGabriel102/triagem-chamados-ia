@@ -325,6 +325,10 @@ class ServicoAtendimento:
     def existe_lojista(self, lojista_id: str) -> bool:
         return self._dados.existe(lojista_id)
 
+    def lojistas(self) -> list[dict[str, str]]:
+        """As lojas inventadas, para a página de demonstração (sem dado pessoal)."""
+        return self._dados.vitrine()
+
     def _triar(self, texto: str, canal: Canal) -> ResultadoTriagem:
         try:
             return self._triagem.triar(texto, canal)
