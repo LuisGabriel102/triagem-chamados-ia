@@ -166,13 +166,13 @@ O caminho de uma mensagem (`app/atendimento.py`):
 1. **Mascara** CPF, CNPJ, cartão, e-mail e telefone. Daqui em diante, só o texto mascarado circula.
 2. **Triagem e busca juntas.** A triagem decide a fila e a urgência. A busca acha os artigos parecidos, por sentido (embeddings do Gemini) ou, se o Google cair, por palavras (BM25).
 3. **Resposta.** O Claude Haiku 5.5 responde citando os artigos achados e pode consultar os dados da loja da sessão (recebimentos e maquininhas). Se a IA cair, entra o plano B: o trecho do artigo, com "uma pessoa vai confirmar".
-4. **Conferência.** Frase a frase, um segundo passo confere se cada frase tem apoio no artigo ou nos dados. Se alguma não tem, a resposta é refeita uma vez, só com o que tem apoio, e conferida de novo.
+4. **Conferência.** Frase a frase, um segundo passo confere se cada frase tem apoio no artigo ou nos dados. Se alguma não tem, a resposta é refeita uma vez, só com o que tem apoio, e conferida de novo. Se falhar de novo, uma pessoa continua.
 5. **Uma pessoa, quando precisa:** urgência, reclamação, segurança, tentativa de enganar, falta de fonte ou de dado. Na urgência, uma mensagem fixa diz que uma pessoa já foi chamada, por qual fila e em que horário.
 
 **As regras que fazem a segurança:**
 
 - **O lojista vem da sessão, nunca do texto.** As ferramentas não têm parâmetro de lojista: a IA não escolhe de quem é o dado. Pedir "as vendas da loja 002" vai para uma pessoa.
-- **Sem fonte, sem conselho.** Toda instrução cita um artigo que veio da busca. Sem artigo, a resposta é "não sei" e uma pessoa continua.
+- **Sem fonte, sem conselho.** Toda instrução cita um artigo que veio da busca. Sem artigo, a resposta é "não sei" e uma pessoa continua; numa urgência, vai a mensagem fixa de urgência.
 - **A conta é do código.** Datas, prazos e valores líquidos saem das ferramentas, já calculados. A IA só escreve.
 - **A confiança da IA não decide sozinha.** A autoavaliação do modelo fica registrada, mas não libera nem segura uma resposta. Quem decide são os motivos objetivos e a conferência.
 
@@ -184,7 +184,7 @@ O caminho de uma mensagem (`app/atendimento.py`):
 | Resolvido sem uma pessoa **e errado** | 3/40 | **2/40** |
 | Urgências e tentativas de enganar com uma pessoa | 8/8 | **8/8** |
 | "Não sei" certo quando a base não sabe | 7/7 | **8/8** |
-| Dados pessoais enviados à IA ou ao Google | 0 | **0** |
+| Dados pessoais de teste enviados à IA ou ao Google (CPF, CNPJ, cartão, e-mail e telefone) | 0 de 6 | **0 de 6** |
 
 Cada prova tem 40 mensagens e rodou 3 vezes; a tabela mostra a mediana. Na prova 2, o "e certo" deu 11 nas 3 rodadas, e o "e errado" ficou entre 1 e 2.
 
@@ -204,7 +204,7 @@ Cada prova tem 40 mensagens e rodou 3 vezes; a tabela mostra a mediana. Na prova
 
 A triagem e a busca rodam ao mesmo tempo, então o tempo total não é a soma.
 
-**Os limites e o próximo passo.** A conferência frase a frase ainda corta frases certas: num teste nas 60 de desenvolvimento, cerca de metade dos cortes estava errada. O dano é chamar uma pessoa sem precisar, não deixar passar invenção. O próximo passo é testar, nas 60, um modelo mais forte só na conferência (o Claude Sonnet 5.5) ou deixar o Haiku raciocinar antes de conferir. Outros limites: uma mensagem por vez, sem histórico de conversa, e a próxima prova deveria vir de outro pedido de escrita.
+**Os limites e o próximo passo.** A conferência frase a frase ainda corta frases certas. Rodada sozinha sobre 53 respostas guardadas das 60 de desenvolvimento, ela cortou 22 frases: de 10 a 13 eram certas, 6 eram cortes certos e 3 ficaram em dúvida. As frases inventadas que ela deixou passar não foram contadas uma a uma. Pelo juiz, nas 60 com o código final, 1 resposta saiu sem uma pessoa com invenção: a promessa de "conferir de novo", que não está nas fontes. Então a conferência não segura toda invenção. O próximo passo é testar, nas 60, um modelo mais forte só na conferência (o Claude Sonnet 5.5) ou deixar o Haiku raciocinar antes de conferir. Outros limites: uma mensagem por vez, sem histórico de conversa, e a próxima prova deveria vir de outro pedido de escrita. O mascaramento não detecta nome, endereço nem RG.
 
 **A busca está pronta para o pgvector.** Hoje os vetores dos 30 artigos ficam num arquivo versionado (`base/indice.json`) e a comparação roda na memória. A busca fala com o índice por uma interface pequena; trocar pelo pgvector no PostgreSQL fica para quando a base crescer.
 
