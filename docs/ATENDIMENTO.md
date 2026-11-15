@@ -14,10 +14,11 @@ com maquininha de cartão, numa empresa **inventada**: a Tapiri Pagamentos
 | 3. A avaliação completa | 4 consertos da fumaça; 60 perguntas novas e independentes; a escolha da busca; o agente inteiro com um juiz | **Pronta.** Duas rodadas (a 2ª depois de consertar um defeito achado na 1ª). |
 | 3B. Resolvido sem pessoa, com segurança | A triagem só para a fila e a urgência; conferência frase a frase; mensagem fixa de urgência; o número "resolvido sem uma pessoa E certo"; um conjunto de prova novo | **Pronta e medida.** A prova rodou 3 vezes e as 60 uma vez, com IA de verdade. Resolvido sem uma pessoa E certo: 10/24 na prova (mediana), 19/35 nas 60 (etapa 3: 12/35). |
 | 3C. A versão 2, medida numa prova nova | A conferência refaz a resposta; a confiança do agente só registrada; o que é urgente na Tapiri; a rubrica do juiz conhece a mensagem fixa; a prova 2 | **Pronta e medida.** Prova 2 (3 rodadas): resolvido sem uma pessoa E certo 11/21; e errado 2/40. |
-| 4. A página e a publicação | Conversa no celular e no computador; pgvector no banco | Não começou. Lembrete: o Dockerfile de hoje copia só `app/`; `base/` e `dados/` vão precisar entrar na imagem. Até lá, a API sobe sem o atendimento e a rota responde 503. |
+| 4. A página, o README e a preparação para publicar | Aba Atendimento na página, rota aberta `/demo/atendimento`, testes no navegador, README, `docs/PUBLICAR.md` | **Pronta, sem publicar.** As 6 perguntas prontas rodaram uma vez com IA de verdade (US$ 0,00497). O Dockerfile agora leva `base/` e `dados/`. O pgvector fica para quando a base crescer. |
 | 5. Opcional | O Gemini no Vertex AI comparado com o Claude | Não começou |
 
-Nada desta frente foi publicado. O trabalho está na branch `atendimento`, só no computador.
+Nada desta frente foi publicado. O trabalho está na branch `atendimento`, só no computador. O
+passo a passo para publicar está em `docs/PUBLICAR.md`.
 
 ## Resultado em uma tabela (pronta para o README)
 
@@ -511,6 +512,65 @@ prova 2 e US$ 0,05 de testes da conferência isolada.
 3. **As provas se parecem:** a próxima prova deveria vir de outro pedido (por exemplo, com
    assuntos sorteados) para ser mais independente.
 
+### As decisões sobre a 3C (15/11/2026)
+
+- **Os números oficiais** são os da versão 2, na prova 2: resolvido sem uma pessoa E certo 11/21;
+  sem uma pessoa e errado 2/40; urgências e tentativas 8/8; 0 dado pessoal. Ao lado, a versão 1
+  na prova 1 (10/24; 3/40), com a ressalva de que são provas diferentes.
+- **A conferência fica como está.** Mudar agora pediria uma prova 3, e a prioridade foi a página.
+- **O próximo passo** é a conferência, decidido nas 60 e medido numa prova nova: (a) o Claude
+  Sonnet 5.5 só na conferência, a cerca de 20 vezes o custo dela; ou (b) o Haiku chamando a
+  ferramenta sem forçar, para poder raciocinar antes de conferir (com a ferramenta forçada, o
+  Haiku 5.5 pula o raciocínio).
+
+## Etapa 4: a página, o README e a preparação para publicar
+
+**A página** (`app/paginas/demo.html`, `app/estatico/demo.js`, JavaScript simples, sem
+framework) ganhou duas abas. A **Triagem** segue como antes, com as mensagens prontas. O
+**Atendimento** é novo: quem visita escolhe uma das 3 lojas inventadas ("Você é a loja"),
+escreve ou toca numa das 6 perguntas prontas e vê a resposta, as fontes (o título abre o texto
+do artigo), a fila e o motivo quando chama uma pessoa, o que a IA leu (com tarjas nos dados
+pessoais), se consultou os dados da loja, a busca usada, o custo e o tempo. No topo, o aviso
+"Empresa e dados inventados. Não escreva dados reais." Tudo o que vem da API entra na tela como
+texto, nunca como HTML. As abas seguem o padrão de acessibilidade: setas, Home e End trocam de
+aba; Tab entra no painel. No GitHub Pages (respostas gravadas), a aba Atendimento explica que
+ele roda só ao vivo.
+
+**As rotas:** `POST /demo/atendimento` é aberta, não grava nada e tem o mesmo limite da
+`/demo/triagem` (por endereço, por hora, e da demonstração inteira, por dia), com a conta
+separada. `GET /demo/lojistas` devolve só o id, o nome e o plano das lojas. A sessão é simulada:
+a loja vem do campo `sessao`, nunca do texto. A rota `POST /atendimento` continua com
+`X-API-Key`.
+
+**As 6 perguntas prontas** (`app/estatico/perguntas_atendimento.json`), uma por caminho. Rodaram
+uma vez com IA de verdade, pela página, na loja 001 (`docs/atendimento_gravado.json`); não é
+rodada de avaliação. Todas mostraram o caminho esperado, sem trocar nenhuma:
+
+| Pergunta pronta | Caminho | O que saiu |
+|---|---|---|
+| Onde compro bobina | resolvida com fonte | Sem pessoa; fonte "Bobina, como trocar e onde comprar o papel" |
+| Quando cai minha venda | usa os dados da loja | Sem pessoa; consultou os recebimentos; R$ 45,35 líquidos na segunda, 16/11 |
+| Maquininha parada | urgente | Uma pessoa, fila Suporte, mensagem fixa de urgência e os passos do artigo |
+| Tentativa de enganar | tentativa de enganar | Resposta fixa, sem IA; motivo "tentativa de mandar na IA" |
+| Fora da ajuda | não sei | "Não sei responder isso com segurança"; a busca não achou nada |
+| Com dado pessoal | dado pessoal de teste | O CPF e o e-mail com tarja; sem pessoa; fonte "Alterar os dados do cadastro" |
+
+Custo das 6: US$ 0,00497.
+
+**Os testes no navegador** (`tests/test_pagina_navegador.py`, Playwright, com clientes falsos):
+em 390 px e 1280 px, nas duas abas, nada passa da largura da tela; o contraste de cada texto
+visível fica acima do mínimo AA (menor razão medida: 5,16, nos temas claro e escuro); o teclado
+troca de aba e abre a fonte; o Google fora do ar faz a busca seguir por palavras e a página
+responder; a IA fora do ar mostra o plano B; o limite de uso aparece como erro; e o site do
+GitHub Pages continua mostrando a triagem gravada. Sem o Playwright instalado (como no CI), esses
+testes são pulados.
+
+**A imagem Docker** copiava só `app/`: no servidor com Docker, o atendimento não subia e a rota
+respondia 503. Agora ela leva `base/` e `dados/`, e o CI sobe a imagem e confere
+`/demo/lojistas` e `/demo/atendimento` (no plano B, sem chave).
+
+**O passo a passo da publicação** está em `docs/PUBLICAR.md`.
+
 ## Como rodar
 
 ```bash
@@ -531,6 +591,11 @@ python -m avaliacao.avaliar_agente --nome desenvolvimento_3b \
 python -m avaliacao.avaliar_agente --perguntas avaliacao/perguntas_prova2.jsonl \
     --nome prova2 --titulo "Prova 2 (etapa 3C, versão 2)" --repeticoes 3
 python -m avaliacao.avaliar_agente --rejulgar avaliacao/resultados/desenvolvimento_3b.json
+# Etapa 4: os testes no navegador e as fotos (pip install -e ".[captura]")
+python -m playwright install chromium
+pytest tests/test_pagina_navegador.py
+python scripts/capturar_atendimento.py --ao-vivo   # as 6 perguntas prontas, com IA (centavos)
+python scripts/capturar_atendimento.py             # as fotos, sem chamar a IA
 ```
 
 ## As chaves
