@@ -14,16 +14,20 @@ tem que continuar igual a antes.
 
 ## 1. Antes do push
 
-1. Decidir o plano do Google (a `GEMINI_API_KEY` dos embeddings). No plano gratuito, o Google
-   usa o que é enviado para melhorar os produtos e pessoas podem ler. No pago, não. Aqui só vão
-   artigos inventados e perguntas já mascaradas, mas quem visita a página pode escrever qualquer
-   coisa. O resumo dos termos está no fim deste arquivo.
-2. Conferir, no painel do Render, como o serviço roda:
-   - **Docker** (usa o `Dockerfile`): desde a etapa 4, a imagem leva `base/` e `dados/`. Antes,
-     o atendimento não subia na imagem.
-   - **Python** (comando de build e de início no painel): nada a mudar, o repositório inteiro vai.
-   - Se houver um **disco** montado em `/app/dados`, ele esconde o `dados/lojistas.json` da
-     imagem e o atendimento responde 503 (a triagem segue). Nesse caso, avise antes de publicar.
+1. **O plano do Google (decidido em 15/11/2026): o faturamento será ativado antes de publicar.**
+   Confira no Google AI Studio que o projeto da `GEMINI_API_KEY` está ligado a uma conta de
+   faturamento ativa. No plano gratuito, o Google usaria o que é enviado para melhorar os
+   produtos, e pessoas poderiam ler; no pago, não. Quem visita a página pode escrever qualquer
+   coisa, mesmo com o texto já mascarado. O resumo dos termos está no fim deste arquivo.
+2. **Como o serviço roda (conferido em 15/11/2026): Docker, no plano Free do Render, sem
+   disco.**
+   - Desde a etapa 4, a imagem leva `base/` e `dados/`. Antes, o atendimento não subia na
+     imagem e a rota respondia 503.
+   - Sem disco, nada esconde o `dados/lojistas.json` da imagem: o atendimento sobe.
+   - O sistema de arquivos é temporário: o SQLite da imagem (`/app/dados/triagem.db`) se apaga
+     a cada publicação ou reinício. Já era assim antes. As rotas da página não gravam nada, então
+     a demonstração não perde nada.
+   - No plano Free, o serviço dorme sem visitas; a primeira visita depois disso demora mais.
 3. Rodar os testes e o ruff: `pytest` e `ruff check .` e `ruff format --check .`.
 
 ## 2. As variáveis no painel do Render
