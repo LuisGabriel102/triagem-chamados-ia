@@ -221,3 +221,27 @@ def test_ia_fora_do_ar_entra_o_plano_b(abrir):
     assert corpo["precisa_pessoa"] is True
     assert "a triagem usou as regras" in corpo["avisos"]
     assert corpo["fontes"][0]["id"] == "bobina"
+
+
+def test_sem_chave_nenhuma_o_atendimento_sobe_no_plano_b(motor):
+    # Como na imagem Docker do CI: sem a chave da Anthropic e sem a do Google.
+    config = Configuracao(
+        _env_file=None, anthropic_api_key=None, gemini_api_key=None, google_cloud_project=""
+    )
+    with TestClient(criar_app(config=config, servico=ServicoTriagem(), motor=motor)) as cliente:
+        assert cliente.get("/demo/lojistas").status_code == 200
+        corpo = _enviar(cliente, "A bobina acabou, onde compro?").json()
+    assert corpo["origem_resposta"] == "plano_b"
+    assert corpo["modo_busca"] == "palavras"
+    assert corpo["fontes"][0]["id"] == "bobina"
+
+
+def test_a_imagem_docker_leva_a_base_e_as_lojas():
+    from pathlib import Path
+
+    raiz = Path(__file__).resolve().parent.parent
+    dockerfile = (raiz / "Dockerfile").read_text("utf-8")
+    assert "COPY base ./base" in dockerfile
+    assert "COPY dados ./dados" in dockerfile
+    ignorados = (raiz / ".dockerignore").read_text("utf-8").split()
+    assert "base" not in ignorados and "dados" not in ignorados

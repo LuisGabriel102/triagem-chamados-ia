@@ -14,10 +14,13 @@ RUN python -c "import tomllib; print('\n'.join(tomllib.load(open('pyproject.toml
     && rm /tmp/dependencias.txt
 
 COPY app ./app
+# O atendimento: a base de ajuda (artigos, índice da busca e limiares) e as lojas inventadas.
+COPY base ./base
+COPY dados ./dados
 
-# Roda sem permissão de administrador. A pasta "dados" guarda o SQLite quando não há PostgreSQL.
+# Roda sem permissão de administrador. A pasta "dados" também guarda o SQLite quando não há
+# PostgreSQL.
 RUN useradd --create-home --uid 10001 triagem \
-    && mkdir /app/dados \
     && chown triagem /app/dados
 USER triagem
 

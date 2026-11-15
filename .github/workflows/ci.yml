@@ -48,3 +48,15 @@ jobs:
       - uses: actions/checkout@v7
       - name: Montar a imagem
         run: docker build -t triagem-chamados-ia .
+      - name: Subir a imagem e conferir a triagem e o atendimento
+        # Sem chave nenhuma: a triagem fica no plano B e a busca, por palavras. Basta para
+        # ver que a imagem leva a base de ajuda e as lojas inventadas.
+        run: |
+          docker run -d --name api -p 8000:8000 triagem-chamados-ia
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8000/saude && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8000/demo/lojistas | grep -q loja-001
+          curl -fsS -X POST http://127.0.0.1:8000/demo/atendimento \
+            -H "Content-Type: application/json" \
+            -d '{"mensagem": "A bobina acabou, onde compro?", "sessao": {"lojista_id": "loja-001"}}' \
+            | grep -q '"origem_resposta":"plano_b"'
+          docker rm -f api
