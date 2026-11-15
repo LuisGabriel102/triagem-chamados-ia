@@ -14,18 +14,25 @@
 <script src="/estatico/demo.js" defer></script>
 </head>
 <body data-modo="ao-vivo">
+<p class="aviso-topo">Empresa e dados inventados. Não escreva dados reais.</p>
 <header class="topo">
-  <h1>Triagem de chamados com IA</h1>
-  <p class="lead">Cole a mensagem de um cliente. A API esconde os dados pessoais, classifica com IA e diz para qual fila o chamado vai.</p>
+  <h1>Triagem e atendimento com IA</h1>
+  <p class="lead">Duas partes do mesmo projeto. A triagem lê o chamado, esconde os dados pessoais e escolhe a fila. O atendimento responde o lojista com a base de ajuda e chama uma pessoa quando precisa.</p>
   <p class="links">
     <a href="https://github.com/LuisGabriel102/triagem-chamados-ia">Ver o código no GitHub</a>
     <a href="/docs">Documentação da API</a>
   </p>
+  <div class="abas" role="tablist" aria-label="Partes da demonstração">
+    <button type="button" role="tab" id="aba-triagem" aria-controls="painel-triagem" aria-selected="true">Triagem</button>
+    <button type="button" role="tab" id="aba-atendimento" aria-controls="painel-atendimento" aria-selected="false" tabindex="-1">Atendimento</button>
+  </div>
 </header>
 
-<main class="grade">
+<main>
+<div class="grade" id="painel-triagem" role="tabpanel" aria-labelledby="aba-triagem">
   <section class="entrada" aria-labelledby="titulo-chamado">
     <h2 id="titulo-chamado">Chamado</h2>
+    <p class="intro">Cole a mensagem de um cliente. A API esconde os dados pessoais, classifica com IA e diz para qual fila o chamado vai.</p>
     <fieldset class="exemplos">
       <legend>Experimente um exemplo</legend>
       <div class="lista-exemplos" id="exemplos"></div>
@@ -54,6 +61,39 @@
       <p class="vazio">O resultado aparece aqui. Escreva uma mensagem ou escolha um exemplo.</p>
     </div>
   </section>
+</div>
+
+<div class="grade" id="painel-atendimento" role="tabpanel" aria-labelledby="aba-atendimento" hidden>
+  <section class="entrada" aria-labelledby="titulo-mensagem">
+    <h2 id="titulo-mensagem">Mensagem do lojista</h2>
+    <p class="intro">A Tapiri Pagamentos é uma empresa inventada de maquininhas de cartão. O agente responde com os 30 artigos da ajuda e consulta só os dados da loja da sessão.</p>
+    <div id="ao-vivo-atendimento">
+      <label for="loja">Você é a loja</label>
+      <select id="loja" name="loja"></select>
+      <fieldset class="exemplos">
+        <legend>Toque numa pergunta pronta</legend>
+        <div class="lista-exemplos" id="perguntas"></div>
+      </fieldset>
+      <form id="formulario-atendimento" novalidate>
+        <label for="mensagem">Mensagem</label>
+        <textarea id="mensagem" name="mensagem" rows="5" maxlength="1000" placeholder="Ex.: A bobina acabou, onde compro mais?"></textarea>
+        <div class="acoes">
+          <span id="contador-atendimento" class="contador">0 de 1.000 caracteres</span>
+          <button type="submit" id="botao-atendimento" class="botao-principal">Enviar mensagem</button>
+        </div>
+        <p id="erro-atendimento" class="erro" role="alert" hidden></p>
+      </form>
+    </div>
+    <p id="so-ao-vivo" class="vazio" hidden>O atendimento roda só ao vivo, no servidor da API. Esta página mostra a triagem com respostas gravadas.</p>
+  </section>
+
+  <section class="saida" aria-labelledby="titulo-resposta">
+    <h2 id="titulo-resposta">Resposta</h2>
+    <div id="resultado-atendimento" data-estado="vazio" aria-live="polite">
+      <p class="vazio">A resposta aparece aqui. Escolha uma pergunta pronta ou escreva a sua.</p>
+    </div>
+  </section>
+</div>
 </main>
 
 <footer class="pe">
@@ -91,6 +131,42 @@
     </div>
     <dl class="ficha-base">
       <div><dt>Quem classificou</dt><dd class="origem"></dd></div>
+      <div><dt>Custo</dt><dd class="custo"></dd></div>
+      <div><dt>Tempo</dt><dd class="tempo"></dd></div>
+    </dl>
+  </article>
+</template>
+
+<template id="modelo-atendimento">
+  <article class="ficha">
+    <div class="faixa">
+      <p class="faixa-prioridade"></p>
+      <p class="faixa-fila"><span class="faixa-rotulo"></span> <strong class="fila"></strong></p>
+    </div>
+    <div class="ficha-corpo">
+      <h3>Resposta ao lojista</h3>
+      <blockquote class="resposta resposta-atendimento"></blockquote>
+      <h3 class="titulo-fontes">Fontes</h3>
+      <ul class="fontes"></ul>
+      <div class="bloco-pessoa">
+        <h3>Por que chamou uma pessoa</h3>
+        <ul class="motivos motivos-pessoa"></ul>
+      </div>
+      <div class="bloco-removidas">
+        <h3>Frases que a conferência tirou</h3>
+        <ul class="motivos removidas"></ul>
+      </div>
+    </div>
+    <div class="picote" aria-hidden="true"></div>
+    <div class="ficha-corpo">
+      <h3>O que a IA leu</h3>
+      <p class="texto-lido"></p>
+      <p class="escondidos"></p>
+      <p class="avisos"></p>
+    </div>
+    <dl class="ficha-base ficha-base-quatro">
+      <div><dt>Quem respondeu</dt><dd class="origem"></dd></div>
+      <div><dt>Busca</dt><dd class="busca"></dd></div>
       <div><dt>Custo</dt><dd class="custo"></dd></div>
       <div><dt>Tempo</dt><dd class="tempo"></dd></div>
     </dl>

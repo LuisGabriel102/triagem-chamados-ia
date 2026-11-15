@@ -98,6 +98,17 @@ textarea[readonly] {
   white-space: nowrap;
 }
 
+/* Aviso no topo: a empresa e os dados são inventados. */
+
+.aviso-topo {
+  margin: 0;
+  padding: 0.55rem 1rem;
+  background: var(--tinta);
+  color: var(--fundo);
+  font-weight: 700;
+  text-align: center;
+}
+
 /* Cabeçalho */
 
 .topo,
@@ -135,6 +146,43 @@ h1 {
   flex-wrap: wrap;
   gap: 0.5rem 1.5rem;
   margin: 1rem 0 0;
+}
+
+/* Abas: Triagem e Atendimento */
+
+.abas {
+  display: flex;
+  gap: 0.25rem;
+  margin: 1.75rem 0 0;
+  border-bottom: 1.5px solid var(--linha);
+}
+
+[role="tab"] {
+  min-height: 2.75rem;
+  margin-bottom: -1.5px;
+  padding: 0.45rem 1.1rem;
+  border: 0;
+  border-bottom: 4px solid transparent;
+  background: none;
+  color: var(--tinta-suave);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+[role="tab"]:hover {
+  color: var(--tinta);
+}
+
+[role="tab"][aria-selected="true"] {
+  border-bottom-color: var(--tinta);
+  color: var(--tinta);
+  font-weight: 700;
+}
+
+.intro {
+  margin: -0.4rem 0 1.25rem;
+  max-width: 34rem;
+  color: var(--tinta-suave);
 }
 
 /* Grade principal */
@@ -245,7 +293,8 @@ textarea {
   color: var(--tinta-suave);
 }
 
-#botao {
+#botao,
+.botao-principal {
   min-height: 3rem;
   padding: 0 1.5rem;
   border: 0;
@@ -256,7 +305,8 @@ textarea {
   cursor: pointer;
 }
 
-#botao:disabled {
+#botao:disabled,
+.botao-principal:disabled {
   opacity: 0.65;
   cursor: progress;
 }
@@ -469,8 +519,96 @@ h3 {
   border-top: 1px solid var(--linha);
 }
 
+.ficha-base-quatro {
+  grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+}
+
+/* Atendimento: a resposta, as fontes que abrem e os motivos */
+
+.resposta-atendimento {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.fontes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fontes li + li {
+  margin-top: 0.35rem;
+}
+
+.fontes summary {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.fontes summary::-webkit-details-marker {
+  display: none;
+}
+
+.fontes summary::before {
+  content: "+";
+  flex: none;
+  width: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.fontes details[open] summary::before {
+  content: "−";
+}
+
+.artigo {
+  padding: 0.6rem 0.9rem 0.2rem;
+  max-width: 62ch;
+  overflow-wrap: anywhere;
+}
+
+.artigo p,
+.artigo ul,
+.artigo ol {
+  margin: 0 0 0.6rem;
+}
+
+.artigo ul,
+.artigo ol {
+  padding-left: 1.3rem;
+}
+
+.artigo h4 {
+  margin: 0.9rem 0 0.3rem;
+  font-size: 0.95rem;
+}
+
+.sem-fonte,
+.avisos {
+  margin: 0;
+  color: var(--tinta-suave);
+}
+
+.avisos {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.texto-lido {
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 30rem) {
-  .ficha-base {
+  .ficha-base,
+  .ficha-base-quatro {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -479,7 +617,8 @@ h3 {
     align-items: stretch;
   }
 
-  #botao {
+  #botao,
+  .botao-principal {
     width: 100%;
   }
 }

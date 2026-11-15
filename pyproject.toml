@@ -30,7 +30,7 @@ captura = ["playwright>=1.45"]
 packages = ["app"]
 
 [tool.setuptools.package-data]
-app = ["paginas/*.html", "estatico/*.css", "estatico/*.js", "estatico/*.png", "estatico/fontes/*"]
+app = ["paginas/*.html", "estatico/*.css", "estatico/*.js", "estatico/*.json", "estatico/*.png", "estatico/fontes/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
