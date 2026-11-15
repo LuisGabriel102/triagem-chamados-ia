@@ -440,8 +440,12 @@ rodadas, e cortou 22 frases. Classificadas à mão: 10 a 13 eram certas (várias
 ou dos dados), 6 eram cortes certos e 3 ficaram em dúvida. A regra do trecho protege contra número
 trocado, mas não contra o julgamento errado: o modelo aponta a frase inteira como trecho. Com o
 raciocínio ligado, o resultado foi o mesmo, porque o Claude Haiku 5.5 pula o raciocínio quando a
-ferramenta é forçada. O efeito do corte errado é limitado: o pior caso é chamar uma pessoa sem
-precisar (3 vezes nas 60 finais), não deixar passar invenção.
+ferramenta é forçada. O corte errado faz chamar uma pessoa sem precisar (3 vezes nas 60 finais).
+As frases inventadas que a conferência deixou passar não foram contadas uma a uma. Pelo juiz,
+nas 60 com o código final, 1 resposta saiu sem uma pessoa com invenção (a50): passou pela
+conferência e terminou com a promessa de "conferir de novo", que não está nas fontes. Então a
+conferência não segura toda invenção. (Correção de 15/11/2026: antes, este parágrafo dizia que
+o pior caso do corte errado era "não deixar passar invenção", o que a a50 desmente.)
 
 ### A prova 2
 
