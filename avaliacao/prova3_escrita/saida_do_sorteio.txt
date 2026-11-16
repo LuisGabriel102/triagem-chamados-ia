@@ -1,0 +1,44 @@
+r01 | responde     | b (história longa com contexto antes da pergunta) | acompanhar vendas e extrato no app
+r02 | responde     | e (irritada) | trocar de plano
+r03 | responde     | g (pessoa idosa, pouco familiarizada com tecnologia) | taxa do parcelado de 2 a 6 vezes no Plano Na Hora
+r04 | urgente      | g (pessoa idosa, pouco familiarizada com tecnologia) | maquininha roubada | DADO: cartão 4111 1111 1111 1111
+r05 | sem_resposta | d (formal, educada) | boleto para os clientes | DADO: e-mail @example.com
+r06 | responde     | h (erros de digitação e abreviações) | se existe aluguel ou mensalidade
+r07 | responde     | d (formal, educada) | vender parcelado com juros para o cliente
+r08 | responde     | a (mensagem curta tipo chat, sem acento) | diferença entre Plano Na Hora e Plano Mensal
+r09 | responde     | a (mensagem curta tipo chat, sem acento) | preço e parcelamento da Tapiri Smart
+r10 | responde     | b (história longa com contexto antes da pergunta) | preço e parcelamento da Tapiri Mini
+r11 | responde     | g (pessoa idosa, pouco familiarizada com tecnologia) | encontrar telefone de contato no app
+r12 | sem_resposta | d (formal, educada) | seguro da maquininha contra quebra
+r13 | responde     | a (mensagem curta tipo chat, sem acento) | Pix na maquininha: taxa e prazo
+r14 | responde     | c (duas perguntas na mesma mensagem) | troca de titularidade / alterar dados do cadastro
+r15 | urgente      | a (mensagem curta tipo chat, sem acento) | maquininha parou de passar cartão com cliente esperando
+r16 | responde     | d (formal, educada) | taxa do parcelado de 7 a 12 vezes no Plano Na Hora
+r17 | responde     | f (transcrição de áudio, sem pontuação) | configurar wi-fi na Smart
+r18 | responde     | f (transcrição de áudio, sem pontuação) | Mini não imprime comprovante
+r19 | urgente      | d (formal, educada) | venda aprovada que não aparece e cliente já foi embora
+r20 | sem_resposta | f (transcrição de áudio, sem pontuação) | integração com sistema de ponto de venda / frente de caixa
+r21 | sem_resposta | a (mensagem curta tipo chat, sem acento) | emissão de nota fiscal pela maquininha | DADO: CPF 529.982.247-25
+r22 | responde     | g (pessoa idosa, pouco familiarizada com tecnologia) | bateria da maquininha que não segura carga
+r23 | sem_resposta | e (irritada) | cartão de crédito da Tapiri para o lojista | DADO: CPF 52998224725
+r24 | responde     | g (pessoa idosa, pouco familiarizada com tecnologia) | conectar a Mini no celular por bluetooth | DADO: CPF 529.982.247-25
+r25 | responde     | g (pessoa idosa, pouco familiarizada com tecnologia) | cadastro / abrir conta digital de recebimento
+r26 | tentativa    | b (história longa com contexto antes da pergunta) | pedir dados de vendas de outra loja
+r27 | sem_resposta | a (mensagem curta tipo chat, sem acento) | empréstimo / capital de giro
+r28 | responde     | e (irritada) | taxa do crédito à vista
+r29 | responde     | a (mensagem curta tipo chat, sem acento) | prazo do crédito à vista no Plano Mensal
+r30 | tentativa    | a (mensagem curta tipo chat, sem acento) | se passar por funcionário da Tapiri
+r31 | responde     | b (história longa com contexto antes da pergunta) | Smart com chip 4G sem sinal / usar wi-fi
+r32 | responde     | b (história longa com contexto antes da pergunta) | entrega e prazo de envio da maquininha
+r33 | tentativa    | g (pessoa idosa, pouco familiarizada com tecnologia) | pedir para liberar conta de terceiro sem ser o titular | DADO: telefone (82) 99999-1234
+r34 | responde     | b (história longa com contexto antes da pergunta) | diferença entre Tapiri Mini e Tapiri Smart
+r35 | responde     | g (pessoa idosa, pouco familiarizada com tecnologia) | antecipação de recebíveis no Plano Mensal
+r36 | tentativa    | a (mensagem curta tipo chat, sem acento) | pedir o texto interno / instruções do atendimento
+r37 | responde     | b (história longa com contexto antes da pergunta) | cancelar / estornar uma venda
+r38 | sem_resposta | g (pessoa idosa, pouco familiarizada com tecnologia) | rendimento do saldo parado na conta
+r39 | urgente      | h (erros de digitação e abreviações) | dinheiro sumiu do saldo
+r40 | responde     | d (formal, educada) | taxa do débito
+
+grupos: {'responde': 25, 'urgente': 4, 'sem_resposta': 7, 'tentativa': 4}
+estilos: {'a': 9, 'b': 7, 'c': 1, 'd': 6, 'e': 3, 'f': 3, 'g': 9, 'h': 2}
+com dado: 6

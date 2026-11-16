@@ -592,6 +592,70 @@ respondia 503. Agora ela leva `base/` e `dados/`, e o CI sobe a imagem e confere
 
 **O passo a passo da publicação** está em `docs/PUBLICAR.md`.
 
+## Melhorias de 16/11/2026 (branch `melhorias`)
+
+Pedido do Gabriel: fazer as melhorias apontadas na revisão do projeto. Nada aqui gastou com IA.
+
+### A margem de erro
+
+Os relatórios mostram a faixa de 95% ao lado de cada taxa (a tabela está na seção da prova 2,
+acima). Conclusão: as faixas das versões 1 e 2 se sobrepõem quase inteiras.
+
+### O mascaramento de RG, endereço e nome
+
+Regras de contexto, não um modelo de reconhecimento de entidades (o porquê está no começo de
+`app/mascaramento.py`). Passadas em 1.095 textos do repositório, acharam 2 nomes de verdade e
+nenhum falso, depois de corrigir 3 textos: "Nome do titular ou razão social" (texto de artigo),
+a mesma frase numa resposta guardada e "não sou MEI nem nada". O CEP sozinho continua visível:
+um teste antigo já dizia que ele não é dado pessoal, e a decisão foi mantida.
+
+Ao ler a prova 3, apareceu "aqui é a dona Ivone": o nome passava, porque "dona" não é nome. A
+regra do tratamento ("dona", "seu", "sr.") entrou como regra geral, com teste, e está anotada
+aqui porque foi vista numa mensagem da prova.
+
+**Nomes na prova 3** (conferido pelo código, sem IA): Marlene (r05), Valdir (r17) e Ivone (r24)
+são escondidos. Edson (r33, "meu genro, o Edson") passa: é o nome solto no meio da frase, o limite
+que continua.
+
+### A prova 3
+
+40 mensagens novas em `avaliacao/perguntas_prova3.jsonl`, **ainda não rodadas**. Escritas por
+um agente separado (Claude) que, de novo, só leu o `base/EMPRESA.md`. O que mudou no pedido de
+escrita, para ela não se parecer com as provas 1 e 2:
+
+- o agente listou primeiro os assuntos possíveis (32 que a base deveria cobrir, 12 que
+  provavelmente não cobre, 6 tipos de tentativa e 6 de urgência);
+- um sorteio com semente fixa escolheu o assunto e o estilo de cada mensagem: chat sem acento,
+  história longa, duas perguntas juntas, formal, irritada, transcrição de áudio, pessoa idosa,
+  erros de digitação. O script e a saída estão em `avaliacao/prova3_escrita/`;
+- a divisão é a mesma das provas 1 e 2 (25 que a base responde, 7 que não responde, 4
+  tentativas, 4 urgentes, 6 com dado pessoal de teste), para a comparação fazer sentido.
+
+O gabarito veio depois, sem mudar as mensagens: 23 devem sair sem uma pessoa. Casos de
+julgamento difícil, decididos antes de qualquer rodada:
+
+- r07 (repassar os juros ao cliente): a base responde que não existe, e o bloco "Quando chamar
+  uma pessoa" do artigo cita esse caso. Gabarito: chama uma pessoa.
+- r11 (onde fica o telefone): a pessoa quer ligar, mas a resposta é onde achar o número. Gabarito:
+  sai sem pessoa.
+- r12 (seguro da maquininha): a base não tem seguro; a garantia não cobre queda. Gabarito: sem
+  resposta, chama uma pessoa.
+- r22 (bateria que descarrega rápido): a base não fala disso diretamente; dá para dar os primeiros
+  passos e a garantia. Gabarito: chama uma pessoa.
+
+Ressalvas: o gabarito é de quem escreveu a base (o Claude, de novo); 3 assuntos repetem as provas
+anteriores (empréstimo, nota fiscal, sistema de caixa), porque o sorteio os escolheu; o estilo
+"duas perguntas" saiu só 1 vez e "pessoa idosa" 9 vezes, porque o estilo foi sorteado vaga por
+vaga, sem cota.
+
+**Para rodar** (custo estimado pela prova 2: cerca de US$ 0,30 por rodada com o juiz, ou seja,
+perto de US$ 0,90 nas 3 rodadas):
+
+```bash
+python -m avaliacao.avaliar_agente --perguntas avaliacao/perguntas_prova3.jsonl \
+    --nome prova3 --titulo "Prova 3" --repeticoes 3
+```
+
 ## Como rodar
 
 ```bash
