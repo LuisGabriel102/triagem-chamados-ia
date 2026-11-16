@@ -60,6 +60,8 @@ def test_endereco_esconde_a_casa_e_deixa_o_cep():
         ("Oi, aqui é o Carlos da oficina", "Oi, aqui é o [NOME] da oficina"),
         ("sou a Marlene Duarte, do ateliê", "sou a [NOME], do ateliê"),
         ("Atenciosamente, Marlene Duarte.", "Atenciosamente, [NOME]."),
+        ("Bom dia, aqui é a dona Ivone, da banca", "Bom dia, aqui é a dona [NOME], da banca"),
+        ("sou o seu Valdir da oficina", "sou o seu [NOME] da oficina"),
         ("nome do titular: Ana Lima", "nome do titular: [NOME]"),
         ("Nome completo é Ana Maria dos Santos", "Nome completo é [NOME]"),
     ],

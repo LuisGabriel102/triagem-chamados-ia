@@ -134,6 +134,12 @@ _NAO_E_NOME = {
     "microempreendedor", "microempreendedora", "aposentado", "aposentada",
 }  # fmt: skip
 _MAXIMO_DE_PALAVRAS_NO_NOME = 6
+# Tratamento antes do nome. Visto na prova 3 ("aqui é a dona Ivone"), mas é o jeito comum de
+# se apresentar; a regra vale para todo texto, não para aquela pergunta.
+_TRATAMENTO = re.compile(
+    r"(?:dona|seu|sr\.?|sra\.?|senhor|senhora|dr\.?|dra\.?)[ \t]+(?=[A-ZÀ-Ö])",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -284,9 +290,16 @@ def _trocar_nomes(texto: str, marcar: Callable[[str], str]) -> str:
         (_GATILHO_NOME_MAIUSCULA, True),
     ):
         for gatilho in padrao.finditer(texto):
-            fim = _fim_do_nome(texto, gatilho.end(), exige_maiuscula)
+            inicio = gatilho.end()
+            # "aqui é a dona Ivone", "sou o seu Valdir": o tratamento fica, o nome sai.
+            # Sem nome com maiúscula depois ("sou a dona da loja"), não há nome.
+            tratamento = _TRATAMENTO.match(texto, inicio)
+            if tratamento:
+                inicio = tratamento.end()
+                exige_maiuscula = True
+            fim = _fim_do_nome(texto, inicio, exige_maiuscula)
             if fim is not None:
-                trechos.append((gatilho.end(), fim))
+                trechos.append((inicio, fim))
     # Dois gatilhos podem apontar o mesmo nome ("meu nome é" e "é"): troca cada trecho uma vez,
     # de trás para a frente, para as posições não mudarem.
     usados: list[tuple[int, int]] = []
