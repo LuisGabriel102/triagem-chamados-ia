@@ -648,7 +648,7 @@ anteriores (empréstimo, nota fiscal, sistema de caixa), porque o sorteio os esc
 "duas perguntas" saiu só 1 vez e "pessoa idosa" 9 vezes, porque o estilo foi sorteado vaga por
 vaga, sem cota.
 
-### A conferência por citação (pronta, ainda não medida)
+### A conferência por citação (medida: ficou pior, desligada)
 
 O problema: a conferência frase a frase pede a um modelo que julgue cada frase, e ela errou
 cerca de metade dos cortes. A alternativa troca o julgamento por uma prova que o código confere
@@ -691,6 +691,30 @@ A comparação é com `avaliacao/resultados/dev_v2_mudanca3.md` (frase a frase: 
 errado 2/60; 10 chamadas sem precisar). Regra decidida antes de rodar: a citação vira padrão se
 não piorar o "e errado" e melhorar o "E certo" ou as chamadas sem precisar. Depois, a prova 3
 mede a escolhida.
+
+**O resultado (16/11/2026, `avaliacao/resultados/dev_citacoes.md`): a citação ficou pior e não
+virou padrão.**
+
+| Nas 60 | Frase a frase (padrão) | Citação |
+|---|---|---|
+| Resolvido sem uma pessoa E certo | **23/35** | 17/35 |
+| Resolvido sem uma pessoa e errado | **2/60** | 5/60 |
+| Chamou uma pessoa sem precisar | **10** | 13 |
+| Custo / tempo da conferência (com a refeita), por mensagem | US$ 0,00025 / 1,5 s | US$ 0,00035 / 2,4 s |
+
+Por quê, lendo as 5 que saíram erradas: ao reescrever com citações, o modelo passa a copiar
+pedaços da fonte em vez de responder. Ele larga a parte da pergunta que a fonte não cobre (a24
+perdeu a segunda pergunta), quebra listas e referências ("Ele mostra quanto cai", sem dizer que
+é o simulador, na a29), não diz qual opção compensa (a06) e chega a colar frases soltas do bloco
+"Quando chamar uma pessoa" como se fossem afirmação ("A venda tem mais de 90 dias.", na a32;
+"Nenhum cartão passa por aproximação, mas o chip funciona", na a42). Nenhuma das 5 tinha saído
+errada sem pessoa com a frase a frase. A citação prova de onde veio cada trecho, mas não prova
+que a resposta responde à pergunta.
+
+O código fica no repositório, desligado, com o teste e este registro. O caminho que sobra para a
+conferência é o anotado na 3C: um modelo mais forte só nela, ou o Haiku raciocinando antes de
+julgar. Custo desta medida: US$ 0,47 (o atendimento, US$ 0,06; o juiz, US$ 0,41), mais menos de
+1 centavo das sondas.
 
 ### A conversa com histórico
 

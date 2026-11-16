@@ -57,8 +57,9 @@ class Configuracao(BaseSettings):
     modo_busca_agente: Literal["sentido", "hibrida", "palavras"] = "sentido"
     # Como a resposta é conferida antes de sair sem uma pessoa. "frases": um modelo julga cada
     # frase (app/conferencia.py), a que foi medida nas provas. "citacoes": o modelo reescreve
-    # citando as fontes e o código tira o que não tem prova (app/conferencia_citacoes.py),
-    # ainda não medida. O padrão só muda depois da medida nas 60.
+    # citando as fontes e o código tira o que não tem prova (app/conferencia_citacoes.py).
+    # Medida nas 60 em 16/11/2026, a citação ficou pior (E certo 17/35 contra 23/35; e errado
+    # 5/60 contra 2/60) e não virou padrão.
     modo_conferencia: Literal["frases", "citacoes"] = "frases"
 
     database_url: str = "sqlite:///./triagem.db"

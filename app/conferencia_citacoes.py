@@ -1,5 +1,10 @@
 """A conferência por citação (16/11/2026): a outra forma de segurar invenção.
 
+RESULTADO: medida nas 60, ficou pior que a frase a frase (E certo 17/35 contra 23/35; e errado
+5/60 contra 2/60) e está DESLIGADA. Ao reescrever com citações, o modelo copia pedaços da fonte
+em vez de responder. O registro completo está em docs/ATENDIMENTO.md; o código fica para quem
+quiser repetir a medida.
+
 O problema que ela ataca: a conferência frase a frase (app/conferencia.py) pede a um modelo
 que JULGUE se cada frase tem apoio. Medida nas 60, ela errou cerca de metade dos cortes: tirou
 frase certa e deixou passar a promessa inventada da a50. Um juiz pequeno julgando outro modelo
