@@ -74,6 +74,14 @@
         <legend>Toque numa pergunta pronta</legend>
         <div class="lista-exemplos" id="perguntas"></div>
       </fieldset>
+      <section id="conversa" class="conversa" aria-labelledby="titulo-conversa" hidden>
+        <div class="conversa-topo">
+          <h3 id="titulo-conversa">Conversa até aqui</h3>
+          <button type="button" id="nova-conversa" class="botao-secundario">Nova conversa</button>
+        </div>
+        <ol id="turnos" class="turnos"></ol>
+        <p class="dica">Continue escrevendo abaixo, por exemplo: "e no crédito?". A IA lê as últimas mensagens só para entender a pergunta; a resposta sai dos artigos e dos dados da loja.</p>
+      </section>
       <form id="formulario-atendimento" novalidate>
         <label for="mensagem">Mensagem</label>
         <textarea id="mensagem" name="mensagem" rows="5" maxlength="1000" placeholder="Ex.: A bobina acabou, onde compro mais?"></textarea>

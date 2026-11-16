@@ -3,9 +3,9 @@
 import re
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Annotated
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, StringConstraints, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 TAMANHO_MAXIMO_TEXTO = 4000
 _CONTROLE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -221,8 +221,28 @@ class SessaoLojista(BaseModel):
     lojista_id: IdLojista
 
 
+# Conversa com histórico (16/11/2026): até 6 turnos anteriores (3 idas e voltas). Quem guarda
+# é quem chama (a página guarda no navegador); o servidor não grava conversa. Por isso o
+# histórico é tratado como dado não confiável: passa pelo mascaramento e pela detecção de
+# tentativa, e o agente é avisado de que ele não é fonte.
+MAXIMO_DE_TURNOS = 6
+TAMANHO_MAXIMO_TURNO = 2000
+
+TextoTurno = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=TAMANHO_MAXIMO_TURNO),
+]
+
+
+class TurnoConversa(BaseModel):
+    """Uma mensagem anterior da conversa: do lojista ou do atendimento."""
+
+    papel: Literal["lojista", "atendimento"]
+    texto: TextoTurno
+
+
 class AtendimentoEntrada(BaseModel):
-    """Uma mensagem do lojista. Uma por vez: conversa com histórico fica para depois."""
+    """Uma mensagem do lojista, com o histórico da conversa (opcional, até 6 turnos)."""
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -239,6 +259,7 @@ class AtendimentoEntrada(BaseModel):
     mensagem: TextoChamado
     canal: Canal = Canal.CHAT
     sessao: SessaoLojista
+    historico: list[TurnoConversa] = Field(default_factory=list, max_length=MAXIMO_DE_TURNOS)
 
 
 class FonteSaida(BaseModel):
@@ -298,6 +319,7 @@ class AtendimentoDemoEntrada(BaseModel):
     mensagem: TextoDemo
     canal: Canal = Canal.CHAT
     sessao: SessaoLojista
+    historico: list[TurnoConversa] = Field(default_factory=list, max_length=MAXIMO_DE_TURNOS)
 
 
 class LojistaDemo(BaseModel):

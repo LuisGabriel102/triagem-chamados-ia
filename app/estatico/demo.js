@@ -350,6 +350,43 @@
 
   const ORIGEM = { ia: null, plano_b: "Plano B: trecho do artigo", fixa: "Resposta fixa, sem IA" };
 
+  // A conversa fica só neste navegador: o servidor não grava nada. Vão as últimas 6
+  // mensagens (3 idas e voltas), o máximo que a API aceita, cada uma com até 2.000 letras.
+  const MAXIMO_DE_TURNOS = 6;
+  const TAMANHO_DO_TURNO = 2000;
+  const caixaConversa = document.getElementById("conversa");
+  const listaTurnos = document.getElementById("turnos");
+  let conversa = [];
+
+  function mostrarConversa() {
+    listaTurnos.replaceChildren();
+    for (const turno of conversa) {
+      const item = document.createElement("li");
+      item.dataset.papel = turno.papel;
+      const quem = document.createElement("span");
+      quem.className = "quem";
+      quem.textContent = turno.papel === "lojista" ? "Você" : "Tapiri";
+      item.append(quem, turno.texto);
+      listaTurnos.append(item);
+    }
+    caixaConversa.hidden = conversa.length === 0;
+    listaTurnos.scrollTop = listaTurnos.scrollHeight;
+  }
+
+  function novaConversa() {
+    conversa = [];
+    mostrarConversa();
+  }
+
+  function guardarTurnos(mensagem, resposta) {
+    conversa = [
+      ...conversa,
+      { papel: "lojista", texto: mensagem.slice(0, TAMANHO_DO_TURNO) },
+      { papel: "atendimento", texto: resposta.slice(0, TAMANHO_DO_TURNO) },
+    ].slice(-MAXIMO_DE_TURNOS);
+    mostrarConversa();
+  }
+
   // O texto do artigo vem em Markdown simples: parágrafos, "## título" e listas com
   // "- " ou "1. ". Vira elementos da página, sempre por textContent.
   function artigoEmElementos(texto) {
@@ -503,6 +540,7 @@
           mensagem,
           canal: "chat",
           sessao: { lojista_id: campoLoja.value },
+          historico: conversa,
         }),
       });
       const corpo = await resposta.json().catch(() => ({}));
@@ -512,6 +550,10 @@
         return;
       }
       mostrarAtendimento(corpo);
+      // A mensagem entra na conversa, e o campo fica livre para a próxima.
+      guardarTurnos(mensagem, corpo.resposta);
+      campoMensagem.value = "";
+      contarAtendimento();
     } catch {
       atendimentoVazio();
       erroAtendimento.mostrar("O atendimento não respondeu. Confira a conexão e tente de novo.");
@@ -527,6 +569,12 @@
       evento.preventDefault();
       atender();
     });
+    document.getElementById("nova-conversa").addEventListener("click", () => {
+      novaConversa();
+      campoMensagem.focus();
+    });
+    // Outra loja é outra sessão: a conversa começa do zero.
+    campoLoja.addEventListener("change", novaConversa);
     contarAtendimento();
     try {
       for (const loja of await carregarJson("/demo/lojistas")) {
@@ -544,6 +592,8 @@
         botaoPergunta.type = "button";
         botaoPergunta.textContent = pergunta.nome;
         botaoPergunta.addEventListener("click", () => {
+          // Uma pergunta pronta começa uma conversa nova.
+          novaConversa();
           campoMensagem.value = pergunta.texto.slice(0, LIMITE);
           contarAtendimento();
           atender();

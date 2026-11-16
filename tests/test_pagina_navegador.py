@@ -367,3 +367,53 @@ def test_mostra_a_consulta_aos_dados_da_loja(navegador, servidor):
     consultas = pagina.locator("#resultado-atendimento .consultas").inner_text()
     assert consultas == "Consultou os dados da loja da sessão: os recebimentos."
     pagina.close()
+
+
+@pytest.mark.parametrize("largura", LARGURAS)
+def test_conversa_manda_o_historico_e_cabe_na_tela(navegador, servidor, largura):
+    url, app = servidor
+    app.state.atendimento = _atendimento()
+    pagina = _abrir(navegador, url, largura)
+    enviados = []
+    pagina.on(
+        "request",
+        lambda pedido: (
+            enviados.append(pedido.post_data_json)
+            if pedido.url.endswith("/demo/atendimento")
+            else None
+        ),
+    )
+    _perguntar(pagina, "Onde compro bobina")
+    # A primeira mensagem vai sem histórico; depois dela, a conversa aparece.
+    assert enviados[0]["historico"] == []
+    assert pagina.locator("#conversa").is_visible()
+    assert pagina.locator("#turnos li").count() == 2
+    assert pagina.locator("#mensagem").input_value() == ""
+
+    pagina.fill("#mensagem", "e onde eu acho isso?")
+    pagina.click("#botao-atendimento")
+    # (wait_for_function não roda: a política de segurança da página bloqueia eval.)
+    pagina.wait_for_selector("#turnos li:nth-child(4)")
+    historico = enviados[1]["historico"]
+    assert [t["papel"] for t in historico] == ["lojista", "atendimento"]
+    assert historico[0]["texto"].startswith("A bobina acabou")
+    _sem_vazamento(pagina)
+    _contraste_ok(pagina, 25)
+
+    # "Nova conversa" limpa; a próxima mensagem vai sem histórico.
+    pagina.click("#nova-conversa")
+    assert pagina.locator("#conversa").is_hidden()
+    pagina.close()
+
+
+def test_trocar_de_loja_comeca_outra_conversa(navegador, servidor):
+    url, app = servidor
+    app.state.atendimento = _atendimento()
+    pagina = _abrir(navegador, url, 1280)
+    _perguntar(pagina, "Onde compro bobina")
+    assert pagina.locator("#turnos li").count() == 2
+    outra = pagina.locator("#loja option").nth(1).get_attribute("value")
+    pagina.select_option("#loja", outra)
+    assert pagina.locator("#conversa").is_hidden()
+    assert pagina.locator("#turnos li").count() == 0
+    pagina.close()

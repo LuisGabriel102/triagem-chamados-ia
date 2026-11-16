@@ -138,6 +138,11 @@ def inicio(request: Request) -> Response:
     return HTMLResponse(montar_pagina(config.url_publica), headers=CABECALHOS_DA_PAGINA)
 
 
+def _turnos(entrada: AtendimentoEntrada | AtendimentoDemoEntrada) -> list[tuple[str, str]]:
+    """O histórico da conversa como (papel, texto), do mais antigo ao mais novo."""
+    return [(turno.papel, turno.texto) for turno in entrada.historico]
+
+
 def _demo_ligada(request: Request) -> None:
     if not request.app.state.config.demo_ativa:
         raise HTTPException(status_code=404, detail="A demonstração está desligada.")
@@ -230,7 +235,9 @@ def atendimento_demo(entrada: AtendimentoDemoEntrada, request: Request) -> Atend
     if not atendimento.existe_lojista(entrada.sessao.lojista_id):
         raise HTTPException(status_code=404, detail="Lojista da sessão não encontrado.")
     _conferir_limite(request, request.app.state.limite_atendimento_demo)
-    resultado = atendimento.atender(entrada.mensagem, entrada.canal, entrada.sessao.lojista_id)
+    resultado = atendimento.atender(
+        entrada.mensagem, entrada.canal, entrada.sessao.lojista_id, _turnos(entrada)
+    )
     return para_atendimento_demo(resultado)
 
 
@@ -315,7 +322,9 @@ def para_atendimento_saida(registro: banco.AtendimentoRegistro) -> AtendimentoSa
 def atender(entrada: AtendimentoEntrada, request: Request, sessao: Sessao) -> AtendimentoSaida:
     atendimento = _atendimento_no_ar(request)
     try:
-        resultado = atendimento.atender(entrada.mensagem, entrada.canal, entrada.sessao.lojista_id)
+        resultado = atendimento.atender(
+            entrada.mensagem, entrada.canal, entrada.sessao.lojista_id, _turnos(entrada)
+        )
     except LojistaDesconhecido as erro:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Lojista da sessão não encontrado."

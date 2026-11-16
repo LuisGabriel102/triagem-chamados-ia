@@ -385,6 +385,7 @@ class ServicoAtendimento:
         fontes: list[Artigo],
         consultas: dict[str, Any],
         motivos: list[str],
+        historico: Sequence[tuple[str, str]] = (),
     ) -> _Conferencia:
         """Confere a resposta frase a frase. Se alguma frase não tem apoio, o agente refaz a
         resposta uma vez, só com o que tem apoio, e a conferência confere de novo. Se ainda
@@ -420,7 +421,13 @@ class ServicoAtendimento:
         comeco = time.perf_counter()
         try:
             refeita = self._agente.responder(
-                texto, canal.value, artigos, lojista_id, hoje, sem_apoio=primeira.removidas
+                texto,
+                canal.value,
+                artigos,
+                lojista_id,
+                hoje,
+                sem_apoio=primeira.removidas,
+                historico=historico,
             )
         except Exception as erro:
             log.warning("O agente falhou ao refazer a resposta: %s", erro)
@@ -494,24 +501,49 @@ class ServicoAtendimento:
             saida.resposta, saida.fontes, saida.origem = RESPOSTA_ESPERA, [], "fixa"
         return saida
 
-    def atender(self, mensagem: str, canal: Canal, lojista_id: str) -> ResultadoAtendimento:
+    def atender(
+        self,
+        mensagem: str,
+        canal: Canal,
+        lojista_id: str,
+        historico: Sequence[tuple[str, str]] = (),
+    ) -> ResultadoAtendimento:
+        """Atende uma mensagem. `historico`: os turnos anteriores da conversa, (papel, texto),
+        do mais antigo ao mais novo; papel é "lojista" ou "atendimento". Sem histórico, o
+        caminho é exatamente o de uma mensagem sozinha."""
         if not self._dados.existe(lojista_id):
             raise LojistaDesconhecido(lojista_id)
         inicio = time.perf_counter()
         mascarado = mascarar(mensagem)
         texto = mascarado.texto
-        tentativa = detectar_tentativa(texto)
+        encontrados = dict(mascarado.encontrados)
+        # O histórico vem de quem chama (na página, do navegador): passa pelo mesmo
+        # mascaramento, e qualquer turno, inclusive um "do atendimento" forjado, pode ser
+        # uma tentativa de enganar.
+        historico_mascarado: list[tuple[str, str]] = []
+        for papel, turno in historico:
+            turno_mascarado = mascarar(turno)
+            historico_mascarado.append((papel, turno_mascarado.texto))
+            for marcador, quantos in turno_mascarado.encontrados.items():
+                encontrados[marcador] = encontrados.get(marcador, 0) + quantos
+        tentativa = detectar_tentativa(texto) or next(
+            (t for _, turno in historico_mascarado if (t := detectar_tentativa(turno))), None
+        )
+        # Para a triagem e a busca, "e no crédito?" sozinho não diz nada: vai junto a última
+        # mensagem do lojista. Sem histórico, é só a mensagem, como sempre foi.
+        anterior = next((t for p, t in reversed(historico_mascarado) if p == "lojista"), None)
+        texto_contexto = f"{anterior}\n{texto}" if anterior else texto
 
         # Triagem e busca ao mesmo tempo: as duas esperam a rede.
         with ThreadPoolExecutor(max_workers=2) as executor:
-            futuro_triagem = executor.submit(self._triar, texto, canal)
-            futuro_busca = executor.submit(self._buscar, texto)
+            futuro_triagem = executor.submit(self._triar, texto_contexto, canal)
+            futuro_busca = executor.submit(self._buscar, texto_contexto)
             triagem = futuro_triagem.result()
             busca, tempo_busca_ms = futuro_busca.result()
 
         # A triagem decide só a fila e a urgência. A confiança e o "outros" não chamam pessoa.
         motivos: list[str] = []
-        urgencia = motivo_de_urgencia(triagem, texto)
+        urgencia = motivo_de_urgencia(triagem, texto_contexto)
         if urgencia:
             motivos.append(urgencia)
         avisos_triagem = [] if triagem.origem is Origem.IA else ["a triagem usou as regras"]
@@ -537,7 +569,12 @@ class ServicoAtendimento:
             comeco = time.perf_counter()
             try:
                 resultado = self._agente.responder(
-                    texto, canal.value, artigos, lojista_id, self._dados.hoje()
+                    texto,
+                    canal.value,
+                    artigos,
+                    lojista_id,
+                    self._dados.hoje(),
+                    historico=historico_mascarado,
                 )
                 uso_resposta, modelo, usadas = (
                     resultado.uso,
@@ -561,7 +598,7 @@ class ServicoAtendimento:
         # Temas de segurança (roubo, golpe, senha, link falso): chamam uma pessoa, e o
         # primeiro passo do artigo vai SEMPRE na resposta, mesmo quando a IA falha. Não vale
         # para quem tenta enganar a IA nem quando a busca não achou nada.
-        seguranca = None if tentativa else artigo_de_seguranca(busca, fontes, texto)
+        seguranca = None if tentativa else artigo_de_seguranca(busca, fontes, texto_contexto)
         if seguranca is not None:
             motivos.append(f"tema de segurança: {seguranca.titulo}")
 
@@ -587,7 +624,15 @@ class ServicoAtendimento:
         resposta_antes = resposta
         if conferida:
             conf = self._conferir_e_refazer(
-                texto, canal, artigos, lojista_id, resposta, fontes, consultas, motivos
+                texto,
+                canal,
+                artigos,
+                lojista_id,
+                resposta,
+                fontes,
+                consultas,
+                motivos,
+                historico_mascarado,
             )
             resposta, fontes, origem = conf.resposta, conf.fontes, conf.origem
             usadas = [*usadas, *conf.ferramentas_refeita]
@@ -621,7 +666,7 @@ class ServicoAtendimento:
             canal=canal,
             lojista_id=lojista_id,
             texto_mascarado=texto,
-            dados_pessoais_encontrados=dict(mascarado.encontrados),
+            dados_pessoais_encontrados=encontrados,
             resposta=resposta,
             fontes=fontes,
             fila=triagem.fila,
