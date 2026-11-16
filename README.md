@@ -8,7 +8,7 @@ A segunda parte, o [Atendimento com IA](#atendimento-com-ia), responde o lojista
 
 **Veja funcionando:** [luisgabriel102.github.io/triagem-chamados-ia](https://luisgabriel102.github.io/triagem-chamados-ia/), com respostas reais da IA gravadas para a triagem. O atendimento roda na página ao vivo, servida pela API.
 
-**Com pouco tempo?** [Resumo em uma página](docs/RESUMO.md) · [vídeo de 21 segundos](docs/video/demonstracao.webm), com respostas reais da IA gravadas uma vez.
+**Com pouco tempo?** [Resumo em uma página](docs/RESUMO.md) · [Summary in English](docs/SUMMARY.md) · [vídeo de 21 segundos](docs/video/demonstracao.webm), com respostas reais da IA gravadas uma vez.
 
 ![Página de demonstração: o chamado vira uma ficha de triagem com a cor da prioridade e os dados pessoais escondidos por tarjas](docs/demo.png)
 
@@ -188,17 +188,19 @@ O caminho de uma mensagem (`app/atendimento.py`):
 
 ### Os números
 
-| | Versão 1, prova 1 | **Versão 2, prova 2** (oficial) |
-|---|---|---|
-| Resolvido sem uma pessoa **e certo** | 10/24 | **11/21** |
-| Resolvido sem uma pessoa **e errado** | 3/40 | **2/40** |
-| Urgências e tentativas de enganar com uma pessoa | 8/8 | **8/8** |
-| "Não sei" certo quando a base não sabe | 7/7 | **8/8** |
-| Dados pessoais de teste enviados à IA ou ao Google (CPF, CNPJ, cartão, e-mail e telefone) | 0 de 6 | **0 de 6** |
+| | Versão 1, prova 1 | Versão 2, prova 2 | **Versão 2, prova 3** (a mais nova) |
+|---|---|---|---|
+| Resolvido sem uma pessoa **e certo** | 10/24 | 11/21 | **11/23** |
+| Resolvido sem uma pessoa **e errado** | 3/40 | 2/40 | **5/40** |
+| Urgências e tentativas de enganar com uma pessoa | 8/8 | 8/8 | **8/8** |
+| "Não sei" certo quando a base não sabe | 7/7 | 8/8 | **6/7** |
+| Dados pessoais de teste enviados à IA ou ao Google (CPF, CNPJ, cartão, e-mail e telefone) | 0 de 6 | 0 de 6 | **0 de 6** |
 
-Cada prova tem 40 mensagens e rodou 3 vezes; a tabela mostra a mediana. Na prova 2, o "e certo" deu 11 nas 3 rodadas, e o "e errado" ficou entre 1 e 2.
+Cada prova tem 40 mensagens e rodou 3 vezes; a tabela mostra a mediana. Na prova 2, o "e certo" deu 11 nas 3 rodadas, e o "e errado" ficou entre 1 e 2. Na prova 3, o "e certo" foi de 9 a 14, e o "e errado", de 4 a 7.
 
-**A margem de erro.** São poucas perguntas, então cada número é uma faixa. Com 95% de confiança (intervalo de Wilson, `avaliacao/margem.py`), o 11/21 (52%) fica entre 32% e 72%, e o 2/40 (5%), entre 1% e 17%. Na versão 1, o 10/24 (42%) fica entre 24% e 61%. As faixas se sobrepõem quase inteiras: a prova não mostra que a versão 2 é melhor. A margem conta as perguntas, não as rodadas, porque repetir a rodada não traz pergunta nova. Os relatórios novos já mostram a faixa ao lado de cada taxa.
+**A prova 3 foi escrita de outro jeito e foi mais difícil.** Um agente separado escreveu as mensagens com assunto e estilo sorteados (chat sem acento, história longa, áudio transcrito, pessoa idosa, erros de digitação), para não se parecer com as provas anteriores. O "e certo" ficou parecido, mas o "e errado" subiu de 2 para 5 em 40. Três desses erros são casos que eu marquei como difíceis antes de rodar (o gabarito pede uma pessoa, e a resposta é discutível). Os outros são extrapolações pequenas que a conferência deixou passar, como uma data que a própria IA calculou. Urgências, tentativas e dados pessoais continuaram perfeitos nas 3 rodadas. Nada foi ajustado depois de ver estes números.
+
+**A margem de erro.** São poucas perguntas, então cada número é uma faixa. Com 95% de confiança (intervalo de Wilson, `avaliacao/margem.py`), o 11/21 (52%) fica entre 32% e 72%, e o 2/40 (5%), entre 1% e 17%. Na prova 3, o 11/23 fica entre 29% e 67%, e o 5/40, entre 5% e 26%. Na versão 1, o 10/24 (42%) fica entre 24% e 61%. As faixas se sobrepõem quase inteiras: a prova não mostra que a versão 2 é melhor. A margem conta as perguntas, não as rodadas, porque repetir a rodada não traz pergunta nova. Os relatórios novos já mostram a faixa ao lado de cada taxa.
 
 **Como ler estes números.** As duas provas são diferentes, então a comparação é só uma indicação. As perguntas foram escritas por um agente separado (Claude), que só viu a descrição da empresa, sem ver os artigos. O gabarito foi montado depois, por quem escreveu a base. A resposta certa é julgada por um modelo (Claude Sonnet 5.5), não por uma pessoa. Para medir o juiz contra uma pessoa, `avaliacao/calibrar_juiz.py` sorteia 30 respostas já julgadas (15 aprovadas e 15 reprovadas) e monta uma página para marcar, sem o veredito do juiz; depois calcula a concordância e o kappa de Cohen. **Ainda não foi marcada.** As provas 1 e 2 vieram do mesmo pedido de escrita e se parecem. Com mensagens reais de lojistas, o resultado tende a ser pior.
 

@@ -44,15 +44,41 @@ que a versão 2 é melhor.
 - **Dados pessoais saem antes da IA.** CPF, CNPJ, cartão, e-mail, telefone, RG, endereço e nome
   (por regras de contexto).
 
-## O que ainda falta (e está pronto para medir)
+- **O histórico da conversa é dado não confiável.** Passa pelo mascaramento e pela detecção de
+  tentativa e vai à IA como dado, nunca como ordem.
+- **A fila de revisão humana** (`/fila`) mostra o que a equipe recebe quando a IA chama uma
+  pessoa.
 
-- **A conferência erra cerca de metade dos cortes.** A alternativa por citação (o modelo cita o
-  trecho exato da fonte e o código tira o que não tem prova) está pronta e desligada, esperando a
-  medida nas 60 (cerca de US$ 0,44).
-- **A prova 3**, escrita de outro jeito para não se parecer com as anteriores, está pronta e
-  ainda não rodou (cerca de US$ 0,90 nas 3 rodadas).
+## Um experimento que não deu certo (e ficou registrado)
+
+A conferência frase a frase erra cerca de metade dos cortes. A alternativa testada: o modelo
+reescreve a resposta citando o trecho exato da fonte, e o código tira a frase sem citação. Nas
+60, piorou: certo sem pessoa de 23/35 para 17/35, errado sem pessoa de 2/60 para 5/60. Ao ser
+obrigado a citar, o modelo copiou pedaços da fonte em vez de responder. Ficou desligada.
+
+## A prova 3
+
+Escrita por um agente separado, com assunto e estilo sorteados (chat sem acento, áudio
+transcrito, pessoa idosa...), para não se parecer com as anteriores. Rodou 3 vezes com o código
+congelado (mediana):
+
+| | Prova 3 | Faixa de 95% | Prova 2 |
+|---|---|---|---|
+| Resolvido sem uma pessoa **e certo** | 11/23 | de 29% a 67% | 11/21 |
+| Resolvido sem uma pessoa **e errado** | 5/40 | de 5% a 26% | 2/40 |
+| Urgências e tentativas com uma pessoa | 8/8 | de 68% a 100% | 8/8 |
+
+Foi mais difícil, e o número perigoso subiu. Três erros são casos marcados como difíceis antes
+de rodar; os outros são extrapolações pequenas que a conferência não pegou. É o próximo problema
+a atacar.
+
+## O que ainda falta
+
 - **O juiz contra uma pessoa:** a página para marcar 30 respostas está pronta e ainda não foi
   marcada.
+- **Uma avaliação de conversas:** a conversa com histórico só passou por um teste de fumaça.
+- **A conferência** ainda erra cerca de metade dos cortes. O próximo teste é um modelo mais forte
+  só nela.
 
 ## Onde olhar
 

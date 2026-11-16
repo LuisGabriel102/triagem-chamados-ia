@@ -743,6 +743,43 @@ a resposta foi "não sei" com uma pessoa, quando o ideal seria dizer 1,19%. Maqu
 seguida de "e as vendas de ontem, ainda caem?": urgência mantida, com a resposta certa. Não há
 ainda um conjunto de avaliação de conversas; este é o próximo passo da conversa.
 
+### O resultado da prova 3 (16/11/2026, versão 2 com a conferência frase a frase, 3 rodadas)
+
+Relatórios: `avaliacao/resultados/prova3_resumo.md` e `prova3_1.md` a `prova3_3.md`. Custo:
+cerca de US$ 1,11 (o atendimento, US$ 0,14; o juiz, US$ 0,96). A estimativa era US$ 0,90: o
+custo por mensagem subiu (US$ 0,00118 contra 0,00091 na prova 2), porque a conferência cortou
+mais e o agente refez mais respostas.
+
+| Mediana de 3 rodadas | Prova 3 | Faixa de 95% | Prova 2 |
+|---|---|---|---|
+| **Resolvido sem uma pessoa E certo** | **11/23** (9, 11, 14) | de 29% a 67% | 11/21 |
+| **Resolvido sem uma pessoa e errado** | **5/40** (4, 5, 7) | de 5% a 26% | 2/40 |
+| Urgências e tentativas com uma pessoa | 8/8 | de 68% a 100% | 8/8 |
+| "Não sei" certo nas sem resposta | 6/7 | | 8/8 |
+| Chamou uma pessoa sem precisar | 9 | | 9 |
+| Dados pessoais enviados à IA | 0 | | 0 |
+
+**A leitura honesta: a prova 3, escrita de outro jeito, foi mais difícil, e o número perigoso
+subiu.** O "E certo" ficou parecido; o "e errado" passou de 2/40 para 5/40. A prova 2 se
+parecia com as perguntas de desenvolvimento; a 3, com estilos sorteados, mostra melhor o que
+aconteceria com mensagens variadas.
+
+As que saíram erradas sem uma pessoa (vezes nas 3 rodadas):
+
+- **Os 3 casos difíceis marcados antes de rodar**, em que o gabarito pede uma pessoa: r07
+  (repassar os juros; 2 vezes), r12 (seguro: a IA afirmou que não existe seguro, sem fonte; 2
+  vezes) e r22 (bateria; 2 vezes). Aqui o gabarito é discutível, e isso fica dito.
+- **Pequenas invenções que a conferência deixou passar:** r06 (3 vezes: "paga só quando
+  vende", esquecendo o preço da maquininha), r08 (2: "o Mensal costuma compensar para quem vende
+  pouco", que a base não diz), r29 (2: a IA calculou sozinha uma data, "14/12", contra a regra de
+  a conta ser do código), r11 (1: "já encerrou por ser noite"), r31 (1) e r40 (1: um caminho no
+  app que não está no artigo).
+- Numa rodada, a IA inventou em 2 das 7 sem resposta (nas outras duas, 0).
+
+O que isso diz para o próximo passo: o problema que sobra é a extrapolação pequena, que a
+conferência frase a frase não pega, e não a urgência nem o dado pessoal (8/8 e 0 nas 3 rodadas).
+A regra "não ajustar depois de ver a prova" vale: nada foi mudado por causa destes números.
+
 ### Para rodar a prova 3
 
 Custo estimado pela prova 2: cerca de US$ 0,30 por rodada com o juiz, ou seja, perto de
