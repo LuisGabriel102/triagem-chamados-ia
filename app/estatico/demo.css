@@ -98,6 +98,17 @@ textarea[readonly] {
   white-space: nowrap;
 }
 
+/* Aviso no topo: a empresa e os dados são inventados. */
+
+.aviso-topo {
+  margin: 0;
+  padding: 0.55rem 1rem;
+  background: var(--tinta);
+  color: var(--fundo);
+  font-weight: 700;
+  text-align: center;
+}
+
 /* Cabeçalho */
 
 .topo,
@@ -135,6 +146,43 @@ h1 {
   flex-wrap: wrap;
   gap: 0.5rem 1.5rem;
   margin: 1rem 0 0;
+}
+
+/* Abas: Triagem e Atendimento */
+
+.abas {
+  display: flex;
+  gap: 0.25rem;
+  margin: 1.75rem 0 0;
+  border-bottom: 1.5px solid var(--linha);
+}
+
+[role="tab"] {
+  min-height: 2.75rem;
+  margin-bottom: -1.5px;
+  padding: 0.45rem 1.1rem;
+  border: 0;
+  border-bottom: 4px solid transparent;
+  background: none;
+  color: var(--tinta-suave);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+[role="tab"]:hover {
+  color: var(--tinta);
+}
+
+[role="tab"][aria-selected="true"] {
+  border-bottom-color: var(--tinta);
+  color: var(--tinta);
+  font-weight: 700;
+}
+
+.intro {
+  margin: -0.4rem 0 1.25rem;
+  max-width: 34rem;
+  color: var(--tinta-suave);
 }
 
 /* Grade principal */
@@ -245,7 +293,8 @@ textarea {
   color: var(--tinta-suave);
 }
 
-#botao {
+#botao,
+.botao-principal {
   min-height: 3rem;
   padding: 0 1.5rem;
   border: 0;
@@ -256,7 +305,8 @@ textarea {
   cursor: pointer;
 }
 
-#botao:disabled {
+#botao:disabled,
+.botao-principal:disabled {
   opacity: 0.65;
   cursor: progress;
 }
@@ -265,6 +315,75 @@ textarea {
   margin: 0.75rem 0 0;
   color: var(--erro);
   font-weight: 700;
+}
+
+/* Conversa com histórico */
+
+.conversa {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  background: var(--papel);
+}
+
+.conversa-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.conversa h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.botao-secundario {
+  min-height: 2.75rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  background: var(--fundo);
+  cursor: pointer;
+}
+
+.botao-secundario:hover {
+  border-color: var(--tinta-suave);
+}
+
+.turnos {
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.turnos li {
+  margin: 0 0 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border-left: 3px solid var(--linha);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.turnos li[data-papel="lojista"] {
+  border-left-color: var(--tinta);
+}
+
+.turnos .quem {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--tinta-suave);
+}
+
+.dica {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
 }
 
 /* Resultado */
@@ -469,8 +588,98 @@ h3 {
   border-top: 1px solid var(--linha);
 }
 
+.ficha-base-quatro {
+  grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+}
+
+/* Atendimento: a resposta, as fontes que abrem e os motivos */
+
+.resposta-atendimento {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.fontes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fontes li + li {
+  margin-top: 0.35rem;
+}
+
+.fontes summary {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.fontes summary::-webkit-details-marker {
+  display: none;
+}
+
+.fontes summary::before {
+  content: "+";
+  flex: none;
+  width: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.fontes details[open] summary::before {
+  content: "−";
+}
+
+.artigo {
+  padding: 0.6rem 0.9rem 0.2rem;
+  max-width: 62ch;
+  overflow-wrap: anywhere;
+}
+
+.artigo p,
+.artigo ul,
+.artigo ol {
+  margin: 0 0 0.6rem;
+}
+
+.artigo ul,
+.artigo ol {
+  padding-left: 1.3rem;
+}
+
+.artigo h4 {
+  margin: 0.9rem 0 0.3rem;
+  font-size: 0.95rem;
+}
+
+.sem-fonte,
+.consultas,
+.avisos {
+  margin: 0;
+  color: var(--tinta-suave);
+}
+
+.consultas,
+.avisos {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.texto-lido {
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 30rem) {
-  .ficha-base {
+  .ficha-base,
+  .ficha-base-quatro {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -479,7 +688,8 @@ h3 {
     align-items: stretch;
   }
 
-  #botao {
+  #botao,
+  .botao-principal {
     width: 100%;
   }
 }
@@ -506,4 +716,129 @@ h3 {
   html {
     scroll-behavior: auto;
   }
+}
+
+/* Fila de revisão humana (/fila) */
+
+.fila-pagina {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+}
+
+.fila-acesso {
+  margin: 0 0 2rem;
+  padding: 1rem;
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  background: var(--papel);
+}
+
+.fila-acesso h2,
+.fila-pagina h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.chave-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.chave-linha input {
+  flex: 1 1 14rem;
+  min-width: 0;
+  min-height: 3rem;
+  padding: 0 0.75rem;
+  border: 1.5px solid var(--linha);
+  border-radius: 6px;
+  background: var(--papel);
+  color: inherit;
+  font: inherit;
+}
+
+.casos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.caso {
+  margin: 0 0 1rem;
+  padding: 1rem;
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  background: var(--papel);
+  overflow-wrap: anywhere;
+}
+
+.caso h3 {
+  margin: 0.5rem 0 0.25rem;
+  font-size: 1.05rem;
+}
+
+.caso h4 {
+  margin: 0.9rem 0 0.25rem;
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+}
+
+.caso p,
+.caso ul {
+  margin: 0;
+}
+
+.caso .resposta {
+  white-space: pre-line;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--linha);
+}
+
+.caso .quando,
+.caso .fontes,
+.caso .resumo {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+}
+
+.caso-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.etiqueta {
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  border: 1px solid var(--linha);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.etiqueta[data-prioridade="urgente"] {
+  border-color: var(--urgente);
+  background: var(--urgente);
+  color: var(--urgente-texto);
+}
+
+.etiqueta[data-prioridade="alta"] {
+  border-color: var(--alta);
+  background: var(--alta);
+  color: var(--alta-texto);
+}
+
+.etiqueta[data-prioridade="media"] {
+  border-color: var(--media);
+  background: var(--media);
+  color: var(--media-texto);
+}
+
+.etiqueta[data-prioridade="baixa"] {
+  border-color: var(--baixa);
+  background: var(--baixa);
+  color: var(--baixa-texto);
 }

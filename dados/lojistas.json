@@ -1,0 +1,53 @@
+{
+  "_aviso": "Dados inventados para a demonstração. Nenhum lojista, documento, conta ou venda é real. Os dias são contados a partir de hoje, para a demonstração não envelhecer.",
+  "lojistas": {
+    "loja-001": {
+      "nome_fantasia": "Mercearia Dona Lia",
+      "plano": "Plano Mensal",
+      "documento": "529.982.247-25",
+      "conta_recebimento": {"banco": "000", "agencia": "0001", "conta": "12345-6"},
+      "email": "mercearia.lia@example.com",
+      "maquininhas": [
+        {"apelido": "Caixa 1", "modelo": "Tapiri Smart", "numero_serie": "TPS-0001-0101", "situacao": "ligada", "ultima_conexao_em_minutos": 5}
+      ],
+      "vendas": [
+        {"venda": "v-1001", "forma": "debito", "parcelas": 1, "valor_bruto": 45.90, "taxa_percentual": 1.19, "venda_em_dias": -1, "situacao": "a_receber"},
+        {"venda": "v-1002", "forma": "credito", "parcelas": 1, "valor_bruto": 120.00, "taxa_percentual": 2.49, "venda_em_dias": -10, "situacao": "a_receber"},
+        {"venda": "v-1003", "forma": "parcelado", "parcelas": 3, "valor_bruto": 300.00, "taxa_percentual": 2.99, "venda_em_dias": -5, "situacao": "a_receber", "observacao": "a data prevista é a da 1ª parcela; as outras caem a cada 30 dias"},
+        {"venda": "v-1004", "forma": "pix", "parcelas": 1, "valor_bruto": 32.00, "taxa_percentual": 0.49, "venda_em_dias": -2, "situacao": "pago"},
+        {"venda": "v-1005", "forma": "debito", "parcelas": 1, "valor_bruto": 18.50, "taxa_percentual": 1.19, "venda_em_dias": -3, "situacao": "pago"}
+      ]
+    },
+    "loja-002": {
+      "nome_fantasia": "Doceria Pé de Moça",
+      "plano": "Plano Na Hora",
+      "documento": "111.444.777-35",
+      "conta_recebimento": {"banco": "000", "agencia": "0002", "conta": "65432-1"},
+      "telefone": "(82) 99999-1234",
+      "maquininhas": [
+        {"apelido": "Balcão", "modelo": "Tapiri Smart", "numero_serie": "TPS-0002-0201", "situacao": "ligada", "ultima_conexao_em_minutos": 2},
+        {"apelido": "Entregas", "modelo": "Tapiri Mini", "numero_serie": "TPM-0002-0202", "situacao": "bloqueada", "ultima_conexao_em_minutos": 1500, "observacao": "bloqueada pelo lojista no app ontem"}
+      ],
+      "vendas": [
+        {"venda": "v-2001", "forma": "credito", "parcelas": 1, "valor_bruto": 89.90, "taxa_percentual": 3.19, "venda_em_dias": -1, "situacao": "a_receber"},
+        {"venda": "v-2002", "forma": "debito", "parcelas": 1, "valor_bruto": 27.00, "taxa_percentual": 1.39, "venda_em_dias": -2, "situacao": "pago"}
+      ]
+    },
+    "loja-003": {
+      "nome_fantasia": "Bicicletaria Dois Aros",
+      "plano": "Plano Na Hora",
+      "documento": "529.982.247-25",
+      "conta_recebimento": {"banco": "000", "agencia": "0003", "conta": "11223-4"},
+      "email": "doisaros@example.com",
+      "maquininhas": [
+        {"apelido": "Oficina", "modelo": "Tapiri Smart", "numero_serie": "TPS-0003-0301", "situacao": "ligada", "ultima_conexao_em_minutos": 1},
+        {"apelido": "Feira", "modelo": "Tapiri Mini", "numero_serie": "TPM-0003-0302", "situacao": "sem_conexao", "ultima_conexao_em_minutos": 2880}
+      ],
+      "vendas": [
+        {"venda": "v-3001", "forma": "credito", "parcelas": 1, "valor_bruto": 890.00, "taxa_percentual": 3.19, "venda_em_dias": -12, "situacao": "retido_contestacao", "prazo_documentos_em_dias": 4, "observacao": "o dono do cartão contestou a compra no banco dele; o valor fica bloqueado até a decisão"},
+        {"venda": "v-3002", "forma": "debito", "parcelas": 1, "valor_bruto": 150.00, "taxa_percentual": 1.39, "venda_em_dias": -2, "situacao": "pago"},
+        {"venda": "v-3003", "forma": "credito", "parcelas": 1, "valor_bruto": 1250.00, "taxa_percentual": 3.19, "venda_em_dias": -1, "situacao": "em_analise", "observacao": "conferência de segurança de até 2 dias úteis"}
+      ]
+    }
+  }
+}

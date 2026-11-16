@@ -1,6 +1,6 @@
 """Passa os exemplos da página pela IA uma vez e grava as respostas reais.
 
-Precisa da ANTHROPIC_API_KEY no .env. São 6 chamadas (cerca de US$ 0,0015 no total).
+Usa a IA do .env (PROVEDOR_IA). Com o Claude, são 6 chamadas (cerca de US$ 0,0015 no total).
 
     python scripts/gravar_exemplos.py
 
@@ -14,9 +14,8 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
-from app.classificador import criar_classificador  # noqa: E402
 from app.config import Configuracao  # noqa: E402
-from app.servico import ServicoTriagem  # noqa: E402
+from app.servico import criar_servico  # noqa: E402
 from app.site_estatico import ErroDeGravacao, carregar_exemplos, gravar_exemplos  # noqa: E402
 
 DESTINO = RAIZ / "docs" / "exemplos_gravados.json"
@@ -24,16 +23,11 @@ DESTINO = RAIZ / "docs" / "exemplos_gravados.json"
 
 def main() -> int:
     config = Configuracao()
-    classificador = criar_classificador(config)
-    if classificador is None:
-        print("A IA não está configurada. Coloque a ANTHROPIC_API_KEY no .env e rode de novo.")
+    servico = criar_servico(config)
+    if not servico.ia_configurada:
+        falta = "GOOGLE_CLOUD_PROJECT" if config.provedor_ia == "gemini" else "ANTHROPIC_API_KEY"
+        print(f"A IA não está configurada. Coloque o {falta} no .env e rode de novo.")
         return 1
-    servico = ServicoTriagem(
-        classificador,
-        limite_confianca=config.limite_confianca,
-        preco_entrada=config.preco_entrada_usd_mtok,
-        preco_saida=config.preco_saida_usd_mtok,
-    )
     try:
         gravacao = gravar_exemplos(servico, carregar_exemplos())
     except ErroDeGravacao as erro:

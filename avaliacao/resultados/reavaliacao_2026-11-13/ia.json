@@ -1,0 +1,1352 @@
+{
+  "modo": "ia",
+  "provedor": "anthropic",
+  "modelo": "claude-haiku-5-5",
+  "precos_usd_mtok": {
+    "entrada": 0.1,
+    "saida": 0.5
+  },
+  "quando": "13/11/2026 12:24 UTC",
+  "resumo": {
+    "total_chamados": 40,
+    "acertos": {
+      "categoria": 40,
+      "prioridade": 37,
+      "sentimento": 39,
+      "numero_pedido": 40
+    },
+    "taxa_acerto": {
+      "categoria": 1.0,
+      "prioridade": 0.925,
+      "sentimento": 0.975,
+      "numero_pedido": 1.0
+    },
+    "todos_os_campos_certos": 36,
+    "enviados_para_revisao": 14,
+    "liberados_sem_revisao": 26,
+    "liberados_certos": 23,
+    "urgentes": 7,
+    "urgentes_reconhecidos": 7,
+    "urgentes_sem_olhar_humano": 0,
+    "dados_pessoais": 9,
+    "dados_que_sobraram": 0,
+    "quedas_para_o_plano_b": 0,
+    "custo_total_usd": 0.009546,
+    "custo_medio_usd": 0.00023865,
+    "tempo_medio_ms": 2291.5,
+    "tokens_entrada_medio": 2332,
+    "tokens_saida_medio": 370,
+    "trocas_de_categoria": {}
+  },
+  "chamados": [
+    {
+      "id": "f01",
+      "gabarito": {
+        "categoria": "financeiro",
+        "prioridade": "urgente",
+        "sentimento": "neutro",
+        "numero_pedido": "458812"
+      },
+      "previsto": {
+        "categoria": "financeiro",
+        "prioridade": "urgente",
+        "sentimento": "neutro",
+        "numero_pedido": "458812"
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "prioridade urgente: uma pessoa confirma antes de escalar"
+      ],
+      "confianca": 0.92,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2361,
+      "tokens_cache_leitura": 0,
+      "tokens_saida": 393,
+      "custo_usd": 0.00048405,
+      "tempo_ms": 3666
+    },
+    {
+      "id": "f02",
+      "gabarito": {
+        "categoria": "financeiro",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "financeiro",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.9,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2352,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 352,
+      "custo_usd": 0.00022598,
+      "tempo_ms": 1920
+    },
+    {
+      "id": "f03",
+      "gabarito": {
+        "categoria": "financeiro",
+        "prioridade": "media",
+        "sentimento": "neutro",
+        "numero_pedido": "771203"
+      },
+      "previsto": {
+        "categoria": "financeiro",
+        "prioridade": "media",
+        "sentimento": "neutro",
+        "numero_pedido": "771203"
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.9,
+      "dados_pessoais": 1,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2331,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 383,
+      "custo_usd": 0.00023938,
+      "tempo_ms": 1889
+    },
+    {
+      "id": "f04",
+      "gabarito": {
+        "categoria": "financeiro",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "financeiro",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.85,
+      "dados_pessoais": 1,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2359,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 393,
+      "custo_usd": 0.00024718,
+      "tempo_ms": 2126
+    },
+    {
+      "id": "f05",
+      "gabarito": {
+        "categoria": "financeiro",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "financeiro",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.9,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2322,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 401,
+      "custo_usd": 0.00024748,
+      "tempo_ms": 2467
+    },
+    {
+      "id": "f06",
+      "gabarito": {
+        "categoria": "financeiro",
+        "prioridade": "urgente",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "financeiro",
+        "prioridade": "urgente",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "prioridade urgente: uma pessoa confirma antes de escalar"
+      ],
+      "confianca": 0.92,
+      "dados_pessoais": 1,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2368,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 390,
+      "custo_usd": 0.00024658,
+      "tempo_ms": 2283
+    },
+    {
+      "id": "f07",
+      "gabarito": {
+        "categoria": "financeiro",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "financeiro",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.8,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2325,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 374,
+      "custo_usd": 0.00023428,
+      "tempo_ms": 1856
+    },
+    {
+      "id": "f08",
+      "gabarito": {
+        "categoria": "financeiro",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "financeiro",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.9,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2353,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 384,
+      "custo_usd": 0.00024208,
+      "tempo_ms": 2211
+    },
+    {
+      "id": "s01",
+      "gabarito": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "alta",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": false,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.8,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2330,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 393,
+      "custo_usd": 0.00024428,
+      "tempo_ms": 3256
+    },
+    {
+      "id": "s02",
+      "gabarito": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "urgente",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "urgente",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "prioridade urgente: uma pessoa confirma antes de escalar"
+      ],
+      "confianca": 0.9,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2348,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 386,
+      "custo_usd": 0.00024258,
+      "tempo_ms": 1983
+    },
+    {
+      "id": "s03",
+      "gabarito": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.9,
+      "dados_pessoais": 1,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2329,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 378,
+      "custo_usd": 0.00023668,
+      "tempo_ms": 2124
+    },
+    {
+      "id": "s04",
+      "gabarito": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.8,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2330,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 414,
+      "custo_usd": 0.00025478,
+      "tempo_ms": 2165
+    },
+    {
+      "id": "s05",
+      "gabarito": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.85,
+      "dados_pessoais": 1,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2332,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 382,
+      "custo_usd": 0.00023898,
+      "tempo_ms": 2032
+    },
+    {
+      "id": "s06",
+      "gabarito": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "media",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "media",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "as palavras-chave indicam urgência e a IA não confirmou"
+      ],
+      "confianca": 0.85,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2339,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 382,
+      "custo_usd": 0.00023968,
+      "tempo_ms": 1897
+    },
+    {
+      "id": "s07",
+      "gabarito": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.85,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2328,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 374,
+      "custo_usd": 0.00023458,
+      "tempo_ms": 6211
+    },
+    {
+      "id": "s08",
+      "gabarito": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "urgente",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "suporte_tecnico",
+        "prioridade": "urgente",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "prioridade urgente: uma pessoa confirma antes de escalar"
+      ],
+      "confianca": 0.95,
+      "dados_pessoais": 1,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2347,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 373,
+      "custo_usd": 0.00023598,
+      "tempo_ms": 2217
+    },
+    {
+      "id": "c01",
+      "gabarito": {
+        "categoria": "comercial",
+        "prioridade": "media",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "comercial",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": false,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.9,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2323,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 343,
+      "custo_usd": 0.00021858,
+      "tempo_ms": 1899
+    },
+    {
+      "id": "c02",
+      "gabarito": {
+        "categoria": "comercial",
+        "prioridade": "media",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "comercial",
+        "prioridade": "media",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.9,
+      "dados_pessoais": 1,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2329,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 350,
+      "custo_usd": 0.00022268,
+      "tempo_ms": 2437
+    },
+    {
+      "id": "c03",
+      "gabarito": {
+        "categoria": "comercial",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "comercial",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.9,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2332,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 365,
+      "custo_usd": 0.00023048,
+      "tempo_ms": 2883
+    },
+    {
+      "id": "c04",
+      "gabarito": {
+        "categoria": "comercial",
+        "prioridade": "media",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "comercial",
+        "prioridade": "media",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.85,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2325,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 386,
+      "custo_usd": 0.00024028,
+      "tempo_ms": 1966
+    },
+    {
+      "id": "c05",
+      "gabarito": {
+        "categoria": "comercial",
+        "prioridade": "media",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "comercial",
+        "prioridade": "media",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.9,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2322,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 346,
+      "custo_usd": 0.00021998,
+      "tempo_ms": 2093
+    },
+    {
+      "id": "c06",
+      "gabarito": {
+        "categoria": "comercial",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "comercial",
+        "prioridade": "media",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": false,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.9,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2323,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 348,
+      "custo_usd": 0.00022108,
+      "tempo_ms": 1789
+    },
+    {
+      "id": "x01",
+      "gabarito": {
+        "categoria": "cancelamento",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "cancelamento",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.95,
+      "dados_pessoais": 1,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2315,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 333,
+      "custo_usd": 0.00021278,
+      "tempo_ms": 1854
+    },
+    {
+      "id": "x02",
+      "gabarito": {
+        "categoria": "cancelamento",
+        "prioridade": "urgente",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "cancelamento",
+        "prioridade": "urgente",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "prioridade urgente: uma pessoa confirma antes de escalar"
+      ],
+      "confianca": 0.9,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2357,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 406,
+      "custo_usd": 0.00025348,
+      "tempo_ms": 2396
+    },
+    {
+      "id": "x03",
+      "gabarito": {
+        "categoria": "cancelamento",
+        "prioridade": "alta",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "cancelamento",
+        "prioridade": "alta",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.85,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2319,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 373,
+      "custo_usd": 0.00023318,
+      "tempo_ms": 2958
+    },
+    {
+      "id": "x04",
+      "gabarito": {
+        "categoria": "cancelamento",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "cancelamento",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.85,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2312,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 361,
+      "custo_usd": 0.00022648,
+      "tempo_ms": 2163
+    },
+    {
+      "id": "x05",
+      "gabarito": {
+        "categoria": "cancelamento",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "cancelamento",
+        "prioridade": "alta",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.95,
+      "dados_pessoais": 1,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2328,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 357,
+      "custo_usd": 0.00022608,
+      "tempo_ms": 1821
+    },
+    {
+      "id": "x06",
+      "gabarito": {
+        "categoria": "cancelamento",
+        "prioridade": "alta",
+        "sentimento": "positivo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "cancelamento",
+        "prioridade": "alta",
+        "sentimento": "positivo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.92,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2333,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 375,
+      "custo_usd": 0.00023558,
+      "tempo_ms": 2073
+    },
+    {
+      "id": "r01",
+      "gabarito": {
+        "categoria": "reclamacao",
+        "prioridade": "alta",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "reclamacao",
+        "prioridade": "media",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": false,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.8,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2329,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 355,
+      "custo_usd": 0.00022518,
+      "tempo_ms": 2177
+    },
+    {
+      "id": "r02",
+      "gabarito": {
+        "categoria": "reclamacao",
+        "prioridade": "alta",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "reclamacao",
+        "prioridade": "alta",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.8,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2332,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 398,
+      "custo_usd": 0.00024698,
+      "tempo_ms": 2210
+    },
+    {
+      "id": "r03",
+      "gabarito": {
+        "categoria": "reclamacao",
+        "prioridade": "alta",
+        "sentimento": "negativo",
+        "numero_pedido": "552310"
+      },
+      "previsto": {
+        "categoria": "reclamacao",
+        "prioridade": "alta",
+        "sentimento": "negativo",
+        "numero_pedido": "552310"
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.85,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2321,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 364,
+      "custo_usd": 0.00022888,
+      "tempo_ms": 1999
+    },
+    {
+      "id": "r04",
+      "gabarito": {
+        "categoria": "reclamacao",
+        "prioridade": "urgente",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "reclamacao",
+        "prioridade": "urgente",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "prioridade urgente: uma pessoa confirma antes de escalar"
+      ],
+      "confianca": 0.85,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2321,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 358,
+      "custo_usd": 0.00022588,
+      "tempo_ms": 1884
+    },
+    {
+      "id": "r05",
+      "gabarito": {
+        "categoria": "reclamacao",
+        "prioridade": "media",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "reclamacao",
+        "prioridade": "media",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": false,
+      "motivos_revisao": [],
+      "confianca": 0.8,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2323,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 377,
+      "custo_usd": 0.00023558,
+      "tempo_ms": 3021
+    },
+    {
+      "id": "r06",
+      "gabarito": {
+        "categoria": "reclamacao",
+        "prioridade": "alta",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "reclamacao",
+        "prioridade": "alta",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "confiança baixa (0.70)"
+      ],
+      "confianca": 0.7,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2344,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 395,
+      "custo_usd": 0.00024668,
+      "tempo_ms": 2356
+    },
+    {
+      "id": "r07",
+      "gabarito": {
+        "categoria": "reclamacao",
+        "prioridade": "urgente",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "reclamacao",
+        "prioridade": "urgente",
+        "sentimento": "negativo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "prioridade urgente: uma pessoa confirma antes de escalar"
+      ],
+      "confianca": 0.8,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2336,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 391,
+      "custo_usd": 0.00024388,
+      "tempo_ms": 2244
+    },
+    {
+      "id": "o01",
+      "gabarito": {
+        "categoria": "outros",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "outros",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "categoria 'outros' precisa de um olhar humano"
+      ],
+      "confianca": 0.9,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2305,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 334,
+      "custo_usd": 0.00021228,
+      "tempo_ms": 1868
+    },
+    {
+      "id": "o02",
+      "gabarito": {
+        "categoria": "outros",
+        "prioridade": "baixa",
+        "sentimento": "positivo",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "outros",
+        "prioridade": "baixa",
+        "sentimento": "positivo",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "categoria 'outros' precisa de um olhar humano"
+      ],
+      "confianca": 0.95,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2331,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 340,
+      "custo_usd": 0.00021788,
+      "tempo_ms": 1860
+    },
+    {
+      "id": "o03",
+      "gabarito": {
+        "categoria": "outros",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "outros",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "as palavras-chave indicam urgência e a IA não confirmou",
+        "categoria 'outros' precisa de um olhar humano"
+      ],
+      "confianca": 0.9,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2336,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 344,
+      "custo_usd": 0.00022038,
+      "tempo_ms": 1810
+    },
+    {
+      "id": "o04",
+      "gabarito": {
+        "categoria": "outros",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "outros",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "categoria 'outros' precisa de um olhar humano"
+      ],
+      "confianca": 0.95,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2323,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 341,
+      "custo_usd": 0.00021758,
+      "tempo_ms": 1986
+    },
+    {
+      "id": "o05",
+      "gabarito": {
+        "categoria": "outros",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "previsto": {
+        "categoria": "outros",
+        "prioridade": "baixa",
+        "sentimento": "neutro",
+        "numero_pedido": null
+      },
+      "acertos": {
+        "categoria": true,
+        "prioridade": true,
+        "sentimento": true,
+        "numero_pedido": true
+      },
+      "origem": "ia",
+      "revisao_humana": true,
+      "motivos_revisao": [
+        "categoria 'outros' precisa de um olhar humano"
+      ],
+      "confianca": 0.95,
+      "dados_pessoais": 0,
+      "dados_que_sobraram": 0,
+      "tokens_entrada": 2300,
+      "tokens_cache_leitura": 2058,
+      "tokens_saida": 290,
+      "custo_usd": 0.00018978,
+      "tempo_ms": 1610
+    }
+  ]
+}

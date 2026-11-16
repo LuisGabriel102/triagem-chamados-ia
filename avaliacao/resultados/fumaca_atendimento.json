@@ -1,0 +1,288 @@
+{
+  "quando": "13/11/2026 12:31 UTC",
+  "medias": {
+    "custo_usd": 0.000720834,
+    "custo_triagem_usd": 0.00026895,
+    "custo_busca_usd": 4.66e-06,
+    "custo_resposta_usd": 0.00044722399999999997,
+    "tempo_ms": 4676.0
+  },
+  "linhas": [
+    {
+      "id": "b01",
+      "lojista": "loja-001",
+      "gabarito_da_busca": "recebimentos-e-prazos",
+      "pergunta_mascarada": "oi, vendi no debito sexta e ate agora nada, quando cai?",
+      "resposta": "Você tem uma venda no débito de sexta (13/11)? Pelos dados, a venda de débito que aparece como pendente foi feita na quinta, 12/11, e o valor de R$ 45,35 cai hoje, sexta, até as 18h. Se a venda foi feita na sexta, ela cai na segunda, 16/11. Se até as 18h não aparecer, fale com a gente.Para conferir, abra o app e toque em Extrato › A receber.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [
+        "recebimentos-e-prazos"
+      ],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.70)",
+        "confiança baixa na resposta (0.70)"
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [
+        "consultar_recebimentos"
+      ],
+      "fila": "Financeiro",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 2184,
+      "tokens_cache_escrita": 2184,
+      "custo_usd": 0.00144164,
+      "custo_triagem_usd": 0.0005127,
+      "custo_busca_usd": 4.6e-06,
+      "custo_resposta_usd": 0.00092434,
+      "tempo_ms": 6369
+    },
+    {
+      "id": "b03",
+      "lojista": "loja-003",
+      "gabarito_da_busca": "dinheiro-nao-caiu",
+      "pergunta_mascarada": "apareceu 'em analise' numa venda minha e o dinheiro nao vem, oq significa?",
+      "resposta": "\"Em análise\" quer dizer que a venda está passando por uma conferência de segurança, que pode levar até 2 dias úteis.\n\nA venda de R$ 1.250,00 feita quinta (12/11) estava prevista para hoje, sexta (13/11), e está em análise. Se for liberada, o valor de R$ 1.210,12 cai nesta sexta. Acompanhe no app, em Extrato › A receber.\n\nSe ainda estiver em análise depois de 2 dias úteis, uma pessoa da equipe deve olhar.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [
+        "dinheiro-nao-caiu",
+        "recebimentos-e-prazos"
+      ],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.70)"
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [
+        "consultar_recebimentos"
+      ],
+      "fila": "Financeiro",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 4368,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00091418,
+      "custo_triagem_usd": 0.0002402,
+      "custo_busca_usd": 5.2e-06,
+      "custo_resposta_usd": 0.00066878,
+      "tempo_ms": 6255
+    },
+    {
+      "id": "b10",
+      "lojista": "loja-001",
+      "gabarito_da_busca": "bobina",
+      "pergunta_mascarada": "a bubina acabou, onde compro mais?",
+      "resposta": "Não sei responder isso com segurança. Uma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.60)",
+        "triagem: categoria 'outros' precisa de um olhar humano",
+        "a busca não achou nada parecido na base: o agente não sabe"
+      ],
+      "origem_resposta": "fixa",
+      "ferramentas_usadas": [],
+      "fila": "Triagem humana",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 0,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.0002446,
+      "custo_triagem_usd": 0.0002414,
+      "custo_busca_usd": 3.2e-06,
+      "custo_resposta_usd": 0.0,
+      "tempo_ms": 2291
+    },
+    {
+      "id": "b14",
+      "lojista": "loja-002",
+      "gabarito_da_busca": "maquininha-perdida-ou-roubada",
+      "pergunta_mascarada": "roubaram minha maquininha ontem a noite, e agora?? me liga no [TELEFONE]",
+      "resposta": "Bloqueie a maquininha agora: no app, toque em Maquininhas, escolha a que sumiu e toque em Bloquear. Sem acesso ao app, o telefone da central faz o bloqueio 24 horas.\n\nSinto muito pelo roubo. Vi que a maquininha \"Entregas\" (Tapiri Mini) já está bloqueada, então ninguém consegue usar ela para cancelar vendas. Agora:\n1. Registre um boletim de ocorrência na polícia. Com o número, a nova maquininha sai com 30% de desconto.\n2. Se houver vendas ou cancelamentos que você não fez, avise a central.\n3. As vendas feitas antes do roubo continuam caindo na sua conta, nas datas de sempre.\nVou chamar uma pessoa da equipe para falar com você. Não consigo ligar para você por aqui.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [
+        "maquininha-a-mais",
+        "maquininha-perdida-ou-roubada"
+      ],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: prioridade urgente: uma pessoa confirma antes de escalar",
+        "a IA pediu uma pessoa: Maquininha roubada; o lojista pediu contato por telefone."
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [
+        "status_maquininha"
+      ],
+      "fila": "Suporte",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 4368,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00089708,
+      "custo_triagem_usd": 0.0002353,
+      "custo_busca_usd": 5.6e-06,
+      "custo_resposta_usd": 0.00065618,
+      "tempo_ms": 5020
+    },
+    {
+      "id": "b19",
+      "lojista": "loja-001",
+      "gabarito_da_busca": "cancelar-uma-venda",
+      "pergunta_mascarada": "cliente pagou no cartao [CARTAO] e desistiu, preciso desfazer a venda",
+      "resposta": "Dá para cancelar a venda no cartão, desde que ela tenha até 90 dias. Você tem dois caminhos:\n1. No app: Extrato, escolha a venda e toque em Cancelar venda.\n2. Na maquininha: Menu, Cancelar venda, escolha a venda.\n\nUse o caminho do app ou da maquininha, e não outro, pois o cancelamento não pode ser desfeito. Você vai precisar da sua senha do app. Se a venda ainda não tiver caído, ela simplesmente deixa de cair. Se já tiver caído, o valor é descontado das próximas vendas. Na venda de débito de hoje (R$ 45,90), o cancelamento é feito antes de cair, então o valor não entra.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [
+        "cancelar-uma-venda"
+      ],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.70)",
+        "confiança baixa na resposta (0.60)"
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [
+        "consultar_recebimentos"
+      ],
+      "fila": "Financeiro",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 4368,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00097178,
+      "custo_triagem_usd": 0.0002442,
+      "custo_busca_usd": 5.4e-06,
+      "custo_resposta_usd": 0.00072218,
+      "tempo_ms": 6120
+    },
+    {
+      "id": "b23",
+      "lojista": "loja-003",
+      "gabarito_da_busca": "contestacao",
+      "pergunta_mascarada": "o que é chargeback? bloquearam um valor meu",
+      "resposta": "Chargeback é a contestação de venda: o dono do cartão diz ao banco dele que não reconhece a compra ou não recebeu o que pagou. Por isso o valor fica bloqueado até a decisão.\n\nPara se defender:\n1. Abra no app Avisos › Contestação › Enviar documentos.\n2. Envie o comprovante da venda, a nota fiscal ou recibo, o comprovante de entrega (se houver envio) e a conversa com o cliente.\n\nVocê tem 7 dias corridos para enviar. A decisão do banco sai em até 60 dias. Se for a seu favor, o valor é liberado; se não, volta para o cliente.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [
+        "contestacao"
+      ],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.70)"
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [],
+      "fila": "Financeiro",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 2184,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00064684,
+      "custo_triagem_usd": 0.0002512,
+      "custo_busca_usd": 3.6e-06,
+      "custo_resposta_usd": 0.00039204,
+      "tempo_ms": 4960
+    },
+    {
+      "id": "b27",
+      "lojista": "loja-001",
+      "gabarito_da_busca": "pix-na-maquininha",
+      "pergunta_mascarada": "cliente me mostrou o comprovante do pix mas nao apareceu nada, posso entregar?",
+      "resposta": "Não entregue só com o comprovante da tela do celular do cliente, porque ele pode ser falso. Confie na mensagem \"Pix recebido\" na maquininha ou na venda no Extrato.\n\nSe o Pix não aparecer no Extrato depois de 30 minutos, e o banco do cliente mostrar o débito, uma pessoa da equipe precisa verificar isso para você.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [
+        "pix-na-maquininha"
+      ],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.70)",
+        "a IA pediu uma pessoa: Cliente pagou, mas o Pix não aparece no Extrato; precisa de verificação da equipe."
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [],
+      "fila": "Financeiro",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 2184,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00063094,
+      "custo_triagem_usd": 0.0002572,
+      "custo_busca_usd": 4.6e-06,
+      "custo_resposta_usd": 0.00036914,
+      "tempo_ms": 5836
+    },
+    {
+      "id": "b33",
+      "lojista": "loja-001",
+      "gabarito_da_busca": "alterar-dados",
+      "pergunta_mascarada": "troquei de numero, como atualizo o telefone no cadastro? o novo é [TELEFONE]",
+      "resposta": "Você pode trocar o telefone sozinho pelo app, em Perfil › Meus dados. O app vai enviar um código para o número novo, e você digita esse código para confirmar a mudança.\n\nSe você não tiver mais acesso ao telefone antigo, a confirmação é feita pelo atendimento. Nesse caso, fale com a gente pelo chat do app.",
+      "fontes": [
+        "alterar-dados",
+        "horarios-e-canais"
+      ],
+      "precisa_pessoa": false,
+      "motivos_pessoa": [],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [],
+      "fila": "Suporte",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 2184,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00059294,
+      "custo_triagem_usd": 0.0002368,
+      "custo_busca_usd": 5.6e-06,
+      "custo_resposta_usd": 0.00035054,
+      "tempo_ms": 3644
+    },
+    {
+      "id": "b38",
+      "lojista": "loja-001",
+      "gabarito_da_busca": "ouvidoria",
+      "pergunta_mascarada": "ja reclamei 2 vezes e ninguem resolve, quero falar com a ouvidoria",
+      "resposta": "Entendo sua frustração. Para falar com a ouvidoria, você precisa do número de protocolo do atendimento anterior. Você pode procurar a ouvidoria no app, em Ajuda › Ouvidoria, ou pelo e-mail ouvidoria@tapiri.example.com. Ela funciona de segunda a sexta, das 9h às 18h. Vou passar seu pedido para uma pessoa da equipe continuar o atendimento.\n\nUma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [
+        "ouvidoria",
+        "reclamacao-e-protocolo"
+      ],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.70)",
+        "triagem: prioridade urgente: uma pessoa confirma antes de escalar",
+        "reclamação: vai para a Ouvidoria",
+        "a IA pediu uma pessoa: O lojista quer registrar reclamação na ouvidoria, o que é um caso para pessoa da equipe."
+      ],
+      "origem_resposta": "ia",
+      "ferramentas_usadas": [],
+      "fila": "Ouvidoria",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 2184,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.00063544,
+      "custo_triagem_usd": 0.0002412,
+      "custo_busca_usd": 5.2e-06,
+      "custo_resposta_usd": 0.00038904,
+      "tempo_ms": 4145
+    },
+    {
+      "id": "b44",
+      "lojista": "loja-001",
+      "gabarito_da_busca": null,
+      "pergunta_mascarada": "voces emitem nota fiscal das minhas vendas pros clientes?",
+      "resposta": "Não sei responder isso com segurança. Uma pessoa da nossa equipe vai continuar o atendimento.",
+      "fontes": [],
+      "precisa_pessoa": true,
+      "motivos_pessoa": [
+        "triagem: confiança baixa (0.60)",
+        "a busca não achou nada parecido na base: o agente não sabe"
+      ],
+      "origem_resposta": "fixa",
+      "ferramentas_usadas": [],
+      "fila": "Financeiro",
+      "modo_busca": "hibrida",
+      "avisos": [],
+      "tokens_cache_leitura": 0,
+      "tokens_cache_escrita": 0,
+      "custo_usd": 0.0002329,
+      "custo_triagem_usd": 0.0002293,
+      "custo_busca_usd": 3.6e-06,
+      "custo_resposta_usd": 0.0,
+      "tempo_ms": 2120
+    }
+  ]
+}

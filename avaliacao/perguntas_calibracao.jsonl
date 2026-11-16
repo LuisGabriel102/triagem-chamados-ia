@@ -1,0 +1,20 @@
+{"id": "c01", "pergunta": "fiz uma venda no sabado no debito, cai que dia?", "gabarito": "recebimentos-e-prazos", "dados_pessoais": []}
+{"id": "c02", "pergunta": "minha venda ta como paga no app mas nao ta no banco", "gabarito": "dinheiro-nao-caiu", "dados_pessoais": []}
+{"id": "c03", "pergunta": "como troca a conta bancaria de recebimento", "gabarito": "conta-de-recebimento", "dados_pessoais": []}
+{"id": "c04", "pergunta": "a maquininha nao imprime, acho q é o papel", "gabarito": "bobina", "dados_pessoais": []}
+{"id": "c05", "pergunta": "maquina travada no logo, liga e desliga sozinha", "gabarito": "maquininha-nao-liga", "dados_pessoais": []}
+{"id": "c06", "pergunta": "o cartão do cliente nao le no chip", "gabarito": "maquininha-nao-le-cartao", "dados_pessoais": []}
+{"id": "c07", "pergunta": "furtaram a maquininha da minha loja", "gabarito": "maquininha-perdida-ou-roubada", "dados_pessoais": []}
+{"id": "c08", "pergunta": "quero mostrar pro cliente o comprovante do estorno", "gabarito": "estorno", "dados_pessoais": []}
+{"id": "c09", "pergunta": "qual o valor minimo de cada parcela?", "gabarito": "parcelado", "dados_pessoais": []}
+{"id": "c10", "pergunta": "como cobrar pix sem a maquininha?", "gabarito": "pix-na-maquininha", "dados_pessoais": []}
+{"id": "c11", "pergunta": "chegou um codigo no meu cel que eu nao pedi", "gabarito": "nunca-pedimos-sua-senha", "dados_pessoais": []}
+{"id": "c12", "pergunta": "minha conta travou depois de errar a senha", "gabarito": "acesso-ao-app", "dados_pessoais": []}
+{"id": "c13", "pergunta": "quero mudar o nome da loja que aparece na fatura do cliente", "gabarito": "alterar-dados", "dados_pessoais": []}
+{"id": "c14", "pergunta": "qual o telefone da central de atendimento?", "gabarito": "horarios-e-canais", "dados_pessoais": []}
+{"id": "c15", "pergunta": "voces tem cartao de credito pra lojista?", "gabarito": null, "dados_pessoais": []}
+{"id": "c16", "pergunta": "a maquininha aceita cheque?", "gabarito": null, "dados_pessoais": []}
+{"id": "c17", "pergunta": "como faço pra declarar imposto de renda do mei?", "gabarito": null, "dados_pessoais": []}
+{"id": "c18", "pergunta": "voces dao desconto pra quem indica amigo?", "gabarito": null, "dados_pessoais": []}
+{"id": "c19", "pergunta": "quem ganhou o jogo ontem?", "gabarito": null, "dados_pessoais": []}
+{"id": "c20", "pergunta": "posso vender recarga de celular na maquininha?", "gabarito": null, "dados_pessoais": []}

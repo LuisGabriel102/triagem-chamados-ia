@@ -1,0 +1,23 @@
+{
+  "conjunto_de_calibracao": "avaliacao/perguntas_calibracao.jsonl",
+  "regra": "o limiar que mais separa as perguntas com resposta das sem resposta, pesando os dois grupos igualmente (app/busca.py, escolher_limiar)",
+  "sobrescrever": "LIMIAR_BM25 e LIMIAR_SIMILARIDADE no ambiente, se existirem",
+  "bm25": {
+    "limiar": 6.2882,
+    "calibrado_em": "2026-11-13",
+    "com_resposta_que_passam": 10,
+    "com_resposta": 14,
+    "sem_resposta_barradas": 6,
+    "sem_resposta": 6
+  },
+  "similaridade": {
+    "modelo": "gemini-embedding-2",
+    "dimensoes": 768,
+    "limiar": 0.7108,
+    "calibrado_em": "2026-11-13",
+    "com_resposta_que_passam": 13,
+    "com_resposta": 14,
+    "sem_resposta_barradas": 6,
+    "sem_resposta": 6
+  }
+}

@@ -19,8 +19,27 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app import banco
+from app.atendimento import ResultadoAtendimento, ServicoAtendimento, criar_atendimento
 from app.config import Configuracao
-from app.esquemas import ChamadoDemo, ChamadoEntrada, ChamadoSaida, Metricas, TriagemDemo
+from app.esquemas import (
+    AtendimentoDemo,
+    AtendimentoDemoEntrada,
+    AtendimentoEntrada,
+    AtendimentoSaida,
+    ChamadoDemo,
+    ChamadoEntrada,
+    ChamadoSaida,
+    CustoAtendimento,
+    CustoAtendimentoDemo,
+    FonteDemo,
+    FonteSaida,
+    LojistaDemo,
+    Metricas,
+    TempoAtendimento,
+    TempoAtendimentoDemo,
+    TriagemDemo,
+)
+from app.ferramentas import LojistaDesconhecido
 from app.limite import LimiteDeUso
 from app.servico import ServicoTriagem, criar_servico, para_demo
 
@@ -119,19 +138,107 @@ def inicio(request: Request) -> Response:
     return HTMLResponse(montar_pagina(config.url_publica), headers=CABECALHOS_DA_PAGINA)
 
 
+def _turnos(entrada: AtendimentoEntrada | AtendimentoDemoEntrada) -> list[tuple[str, str]]:
+    """O histórico da conversa como (papel, texto), do mais antigo ao mais novo."""
+    return [(turno.papel, turno.texto) for turno in entrada.historico]
+
+
+def _demo_ligada(request: Request) -> None:
+    if not request.app.state.config.demo_ativa:
+        raise HTTPException(status_code=404, detail="A demonstração está desligada.")
+
+
+def _conferir_limite(request: Request, limite: LimiteDeUso) -> None:
+    """Limite por endereço (por hora) e da demonstração inteira (por dia)."""
+    pessoa = request.client.host if request.client else "desconhecido"
+    bloqueio = limite.verificar(pessoa)
+    if bloqueio:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=bloqueio)
+
+
+def _atendimento_no_ar(request: Request) -> ServicoAtendimento:
+    atendimento: ServicoAtendimento | None = request.app.state.atendimento
+    if atendimento is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="O atendimento não está disponível neste servidor.",
+        )
+    return atendimento
+
+
 @rotas_abertas.post(
     "/demo/triagem",
     response_model=TriagemDemo,
     summary="Triagem de demonstração: aberta, não grava nada e tem limite de uso",
 )
 def triagem_demo(entrada: ChamadoDemo, request: Request, servico: Servico) -> TriagemDemo:
-    if not request.app.state.config.demo_ativa:
-        raise HTTPException(status_code=404, detail="A demonstração está desligada.")
-    pessoa = request.client.host if request.client else "desconhecido"
-    bloqueio = request.app.state.limite_demo.verificar(pessoa)
-    if bloqueio:
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=bloqueio)
+    _demo_ligada(request)
+    _conferir_limite(request, request.app.state.limite_demo)
     return para_demo(servico.triar(entrada.texto, entrada.canal))
+
+
+@rotas_abertas.get(
+    "/demo/lojistas",
+    response_model=list[LojistaDemo],
+    summary="As lojas inventadas que a página de demonstração pode escolher",
+)
+def lojistas_demo(request: Request) -> list[LojistaDemo]:
+    _demo_ligada(request)
+    return [LojistaDemo(**loja) for loja in _atendimento_no_ar(request).lojistas()]
+
+
+def para_atendimento_demo(resultado: ResultadoAtendimento) -> AtendimentoDemo:
+    return AtendimentoDemo(
+        resposta=resultado.resposta,
+        fontes=[FonteDemo(id=a.id, titulo=a.titulo, texto=a.texto) for a in resultado.fontes],
+        fila=resultado.fila,
+        precisa_pessoa=resultado.precisa_pessoa,
+        motivos_pessoa=resultado.motivos_pessoa,
+        origem_resposta=resultado.origem_resposta,
+        categoria=resultado.categoria,
+        prioridade=resultado.prioridade,
+        texto_mascarado=resultado.texto_mascarado,
+        dados_pessoais_encontrados=resultado.dados_pessoais_encontrados,
+        frases_removidas=[*resultado.frases_removidas, *resultado.frases_removidas_refeita],
+        refeita=resultado.refeita,
+        modo_busca=resultado.modo_busca,
+        ferramentas_usadas=resultado.ferramentas_usadas,
+        avisos=resultado.avisos,
+        modelo=resultado.modelo_resposta,
+        custo=CustoAtendimentoDemo(
+            total_usd=resultado.custo_usd,
+            triagem_usd=resultado.custo_triagem_usd,
+            busca_usd=resultado.custo_busca_usd,
+            resposta_usd=resultado.custo_resposta_usd,
+            conferencia_usd=resultado.custo_conferencia_usd,
+            refeita_usd=resultado.custo_refeita_usd,
+        ),
+        tempo=TempoAtendimentoDemo(
+            total_ms=resultado.tempo_ms,
+            triagem_ms=resultado.tempo_triagem_ms,
+            busca_ms=resultado.tempo_busca_ms,
+            resposta_ms=resultado.tempo_resposta_ms,
+            conferencia_ms=resultado.tempo_conferencia_ms,
+            refeita_ms=resultado.tempo_refeita_ms,
+        ),
+    )
+
+
+@rotas_abertas.post(
+    "/demo/atendimento",
+    response_model=AtendimentoDemo,
+    summary="Atendimento de demonstração: aberto, não grava nada e tem limite de uso",
+)
+def atendimento_demo(entrada: AtendimentoDemoEntrada, request: Request) -> AtendimentoDemo:
+    _demo_ligada(request)
+    atendimento = _atendimento_no_ar(request)
+    if not atendimento.existe_lojista(entrada.sessao.lojista_id):
+        raise HTTPException(status_code=404, detail="Lojista da sessão não encontrado.")
+    _conferir_limite(request, request.app.state.limite_atendimento_demo)
+    resultado = atendimento.atender(
+        entrada.mensagem, entrada.canal, entrada.sessao.lojista_id, _turnos(entrada)
+    )
+    return para_atendimento_demo(resultado)
 
 
 @rotas_abertas.get("/saude", summary="Diz se a API está no ar e se a IA está configurada")
@@ -173,6 +280,86 @@ def listar_chamados(
     return banco.listar(sessao, revisao_humana=revisao_humana, limite=limite)
 
 
+def para_atendimento_saida(registro: banco.AtendimentoRegistro) -> AtendimentoSaida:
+    return AtendimentoSaida(
+        id=registro.id,
+        criado_em=registro.criado_em,
+        resposta=registro.resposta,
+        fontes=[FonteSaida(**fonte) for fonte in registro.fontes],
+        fila=registro.fila,
+        precisa_pessoa=registro.precisa_pessoa,
+        motivos_pessoa=registro.motivos_pessoa,
+        origem_resposta=registro.origem_resposta,
+        categoria=registro.categoria,
+        prioridade=registro.prioridade,
+        ferramentas_usadas=registro.ferramentas_usadas,
+        avisos=registro.avisos,
+        texto_mascarado=registro.texto_mascarado,
+        frases_removidas=registro.frases_removidas,
+        custo=CustoAtendimento(
+            total_usd=registro.custo_usd,
+            triagem_usd=registro.custo_triagem_usd,
+            busca_usd=registro.custo_busca_usd,
+            resposta_usd=registro.custo_resposta_usd,
+            conferencia_usd=registro.custo_conferencia_usd,
+        ),
+        tempo=TempoAtendimento(
+            total_ms=registro.tempo_ms,
+            triagem_ms=registro.tempo_triagem_ms,
+            busca_ms=registro.tempo_busca_ms,
+            resposta_ms=registro.tempo_resposta_ms,
+            conferencia_ms=registro.tempo_conferencia_ms,
+        ),
+    )
+
+
+@rotas_protegidas.post(
+    "/atendimento",
+    response_model=AtendimentoSaida,
+    summary="Responde uma mensagem do lojista com a base de conhecimento e chama uma pessoa "
+    "quando precisa",
+)
+def atender(entrada: AtendimentoEntrada, request: Request, sessao: Sessao) -> AtendimentoSaida:
+    atendimento = _atendimento_no_ar(request)
+    try:
+        resultado = atendimento.atender(
+            entrada.mensagem, entrada.canal, entrada.sessao.lojista_id, _turnos(entrada)
+        )
+    except LojistaDesconhecido as erro:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Lojista da sessão não encontrado."
+        ) from erro
+    return para_atendimento_saida(banco.salvar_atendimento(sessao, resultado))
+
+
+@rotas_protegidas.get(
+    "/atendimentos",
+    response_model=list[AtendimentoSaida],
+    summary="Lista os atendimentos mais recentes, com filtro de quem espera uma pessoa",
+)
+def listar_atendimentos(
+    sessao: Sessao,
+    precisa_pessoa: bool | None = None,
+    limite: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> list[AtendimentoSaida]:
+    registros = banco.listar_atendimentos(sessao, precisa_pessoa=precisa_pessoa, limite=limite)
+    return [para_atendimento_saida(registro) for registro in registros]
+
+
+@rotas_abertas.get("/fila", include_in_schema=False)
+def fila(request: Request) -> Response:
+    """A fila de revisão humana: o que a equipe recebe quando a IA chama uma pessoa.
+
+    A página é aberta, mas os dados não: ela pede a chave da API e lê /chamados e
+    /atendimentos. Sem a chave, mostra um exemplo com respostas reais já gravadas.
+    """
+    if not request.app.state.config.demo_ativa:
+        return RedirectResponse(url="/docs")
+    return HTMLResponse(
+        (PASTA_PAGINAS / "fila.html").read_text(encoding="utf-8"), headers=CABECALHOS_DA_PAGINA
+    )
+
+
 @rotas_protegidas.get(
     "/metricas", response_model=Metricas, summary="Totais, revisão humana, custo e tempo"
 )
@@ -184,6 +371,7 @@ def criar_app(
     config: Configuracao | None = None,
     servico: ServicoTriagem | None = None,
     motor: Engine | None = None,
+    atendimento: ServicoAtendimento | None = None,
 ) -> FastAPI:
     """Monta a API. Os testes passam peças prontas; em produção tudo vem do .env."""
 
@@ -199,8 +387,22 @@ def criar_app(
         app.state.servico = servico or criar_servico(cfg)
         app.state.fabrica_sessao = sessionmaker(mot, expire_on_commit=False)
         app.state.limite_demo = LimiteDeUso(cfg.demo_limite_por_hora, cfg.demo_limite_por_dia)
+        # O atendimento da página tem o mesmo limite, com a conta separada: quem testou a
+        # triagem ainda pode testar o atendimento.
+        app.state.limite_atendimento_demo = LimiteDeUso(
+            cfg.demo_limite_por_hora, cfg.demo_limite_por_dia
+        )
+        app.state.atendimento = atendimento
+        if atendimento is None:
+            # Sem a base ou os dados (por exemplo, numa imagem antiga), a triagem segue no ar
+            # e só a rota /atendimento responde 503.
+            try:
+                app.state.atendimento = criar_atendimento(cfg)
+            except Exception:
+                log.exception("Atendimento desligado: não deu para montar a busca e o agente.")
         if not app.state.servico.ia_configurada:
-            log.warning("ANTHROPIC_API_KEY vazia: os chamados serão classificados só por regras.")
+            falta = "GOOGLE_CLOUD_PROJECT" if cfg.provedor_ia == "gemini" else "ANTHROPIC_API_KEY"
+            log.warning("%s vazia: os chamados serão classificados só por regras.", falta)
         if not (cfg.chave_api_app and cfg.chave_api_app.get_secret_value()):
             log.warning("CHAVE_API_APP vazia: a API está aberta. Use assim só no seu computador.")
         yield

@@ -1,0 +1,1021 @@
+{
+  "quando": "13/11/2026 16:04 UTC",
+  "contexto": {
+    "modelo_triagem": "claude-haiku-5-5",
+    "modelo_agente": "claude-haiku-5-5",
+    "modo_busca": "sentido",
+    "modelo_embedding": "gemini-embedding-2",
+    "perguntas": "avaliacao/perguntas_prova2.jsonl"
+  },
+  "resumo": {
+    "repeticoes": 3,
+    "resolvido_sem_pessoa_e_certo": {
+      "mediana": 11,
+      "menor": 11,
+      "maior": 11,
+      "todo": 21,
+      "todos": [
+        21,
+        21,
+        21
+      ],
+      "valores": [
+        11,
+        11,
+        11
+      ]
+    },
+    "resolvido_sem_pessoa_e_errado": {
+      "mediana": 2,
+      "menor": 1,
+      "maior": 2,
+      "todo": 40,
+      "todos": [
+        40,
+        40,
+        40
+      ],
+      "valores": [
+        2,
+        2,
+        1
+      ]
+    },
+    "resolvido_sem_pessoa": {
+      "mediana": 12,
+      "menor": 11,
+      "maior": 13,
+      "todo": 21,
+      "todos": [
+        21,
+        21,
+        21
+      ],
+      "valores": [
+        13,
+        12,
+        11
+      ]
+    },
+    "resposta_certa": {
+      "mediana": 17,
+      "menor": 15,
+      "maior": 19,
+      "todo": 28,
+      "todos": [
+        28,
+        28,
+        28
+      ],
+      "valores": [
+        17,
+        15,
+        19
+      ]
+    },
+    "resposta_certa_rubrica_antiga": {
+      "mediana": 17,
+      "menor": 13,
+      "maior": 17,
+      "todo": 28,
+      "todos": [
+        28,
+        28,
+        28
+      ],
+      "valores": [
+        17,
+        13,
+        17
+      ]
+    },
+    "nao_sei_certo": {
+      "mediana": 8,
+      "menor": 8,
+      "maior": 8,
+      "todo": 8,
+      "todos": [
+        8,
+        8,
+        8
+      ],
+      "valores": [
+        8,
+        8,
+        8
+      ]
+    },
+    "inventou_nas_sem_resposta": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "chamou_pessoa_quando_devia": {
+      "mediana": 8,
+      "menor": 8,
+      "maior": 8,
+      "todo": 8,
+      "todos": [
+        8,
+        8,
+        8
+      ],
+      "valores": [
+        8,
+        8,
+        8
+      ]
+    },
+    "fonte_nas_respostas_com_instrucao": {
+      "mediana": 27,
+      "menor": 27,
+      "maior": 27,
+      "todo": 27,
+      "todos": [
+        27,
+        27,
+        27
+      ],
+      "valores": [
+        27,
+        27,
+        27
+      ]
+    },
+    "fila_certa": {
+      "mediana": 32,
+      "menor": 31,
+      "maior": 35,
+      "todo": 40,
+      "todos": [
+        40,
+        40,
+        40
+      ],
+      "valores": [
+        32,
+        35,
+        31
+      ]
+    },
+    "dados_enviados_ia": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "dados_enviados_embeddings": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "conferidas": {
+      "mediana": 16,
+      "menor": 16,
+      "maior": 16,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        16,
+        16,
+        16
+      ]
+    },
+    "conferencia_tirou_frase": {
+      "mediana": 5,
+      "menor": 5,
+      "maior": 7,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        7,
+        5,
+        5
+      ]
+    },
+    "conferencia_chamou_pessoa": {
+      "mediana": 2,
+      "menor": 1,
+      "maior": 4,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        1,
+        2,
+        4
+      ]
+    },
+    "refeitas": {
+      "mediana": 5,
+      "menor": 5,
+      "maior": 7,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        7,
+        5,
+        5
+      ]
+    },
+    "refeita_ainda_sem_apoio": {
+      "mediana": 2,
+      "menor": 1,
+      "maior": 4,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        1,
+        2,
+        4
+      ]
+    },
+    "custo_medio_usd": {
+      "mediana": 0.00090819,
+      "menor": 0.00088617,
+      "maior": 0.00092324,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0.00092324,
+        0.00088617,
+        0.00090819
+      ]
+    },
+    "custo_conferencia_medio_usd": {
+      "mediana": 0.00043722,
+      "menor": 0.00041525,
+      "maior": 0.00044842,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0.00043722,
+        0.00041525,
+        0.00044842
+      ]
+    },
+    "tempo_medio_ms": {
+      "mediana": 6254,
+      "menor": 6087,
+      "maior": 6369,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        6254,
+        6087,
+        6369
+      ]
+    },
+    "tempo_conferencia_medio_ms": {
+      "mediana": 2518,
+      "menor": 2314,
+      "maior": 2527,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        2527,
+        2314,
+        2518
+      ]
+    },
+    "juiz_nao_julgou": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "custo_do_juiz_usd": {
+      "mediana": 0.254016,
+      "menor": 0.253906,
+      "maior": 0.254968,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0.254968,
+        0.254016,
+        0.253906
+      ]
+    },
+    "custo_triagem_por_mensagem_usd": {
+      "mediana": 0.00025354,
+      "menor": 0.00025264,
+      "maior": 0.00025406,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0.00025406,
+        0.00025264,
+        0.00025354
+      ]
+    },
+    "custo_busca_por_mensagem_usd": {
+      "mediana": 7.34e-06,
+      "menor": 7.34e-06,
+      "maior": 7.34e-06,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        7.34e-06,
+        7.34e-06,
+        7.34e-06
+      ]
+    },
+    "custo_resposta_por_mensagem_usd": {
+      "mediana": 0.00037495,
+      "menor": 0.00037382,
+      "maior": 0.00038246,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0.00037495,
+        0.00037382,
+        0.00038246
+      ]
+    },
+    "custo_conferencia_por_mensagem_usd": {
+      "mediana": 0.00017489,
+      "menor": 0.0001661,
+      "maior": 0.00017937,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0.00017489,
+        0.0001661,
+        0.00017937
+      ]
+    },
+    "custo_refeita_por_mensagem_usd": {
+      "mediana": 8.626e-05,
+      "menor": 8.547e-05,
+      "maior": 0.000112,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0.000112,
+        8.626e-05,
+        8.547e-05
+      ]
+    },
+    "tempo_triagem_por_mensagem_ms": {
+      "mediana": 2686,
+      "menor": 2651,
+      "maior": 2748,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        2651,
+        2686,
+        2748
+      ]
+    },
+    "tempo_busca_por_mensagem_ms": {
+      "mediana": 723,
+      "menor": 684,
+      "maior": 726,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        684,
+        726,
+        723
+      ]
+    },
+    "tempo_resposta_por_mensagem_ms": {
+      "mediana": 2074,
+      "menor": 2036,
+      "maior": 2179,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        2074,
+        2036,
+        2179
+      ]
+    },
+    "tempo_conferencia_por_mensagem_ms": {
+      "mediana": 1007,
+      "menor": 925,
+      "maior": 1011,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        1011,
+        925,
+        1007
+      ]
+    },
+    "tempo_refeita_por_mensagem_ms": {
+      "mediana": 436,
+      "menor": 431,
+      "maior": 515,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        515,
+        436,
+        431
+      ]
+    },
+    "raciocinio_triagem": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "raciocinio_agente": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "raciocinio_conferencia": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "raciocinio_juiz": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "chamou_pessoa": {
+      "mediana": 27,
+      "menor": 27,
+      "maior": 28,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        27,
+        27,
+        28
+      ]
+    },
+    "chamou_sem_precisar": {
+      "mediana": 9,
+      "menor": 8,
+      "maior": 10,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        8,
+        9,
+        10
+      ]
+    },
+    "motivo_urgente": {
+      "mediana": 8,
+      "menor": 8,
+      "maior": 8,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        8,
+        8,
+        8
+      ]
+    },
+    "motivo_seguranca": {
+      "mediana": 2,
+      "menor": 2,
+      "maior": 2,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        2,
+        2,
+        2
+      ]
+    },
+    "motivo_tentativa": {
+      "mediana": 3,
+      "menor": 3,
+      "maior": 3,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        3,
+        3,
+        3
+      ]
+    },
+    "motivo_reclamacao": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_nada_encontrado": {
+      "mediana": 10,
+      "menor": 10,
+      "maior": 10,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        10,
+        10,
+        10
+      ]
+    },
+    "motivo_sem_fonte": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_conferencia": {
+      "mediana": 2,
+      "menor": 2,
+      "maior": 4,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        2,
+        2,
+        4
+      ]
+    },
+    "motivo_ia_pediu": {
+      "mediana": 10,
+      "menor": 9,
+      "maior": 10,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        10,
+        10,
+        9
+      ]
+    },
+    "motivo_confianca_baixa": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_ia_falhou": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_dado_pessoal": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_outro": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_sem_precisar_urgente": {
+      "mediana": 2,
+      "menor": 2,
+      "maior": 2,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        2,
+        2,
+        2
+      ]
+    },
+    "motivo_sem_precisar_seguranca": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_sem_precisar_tentativa": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_sem_precisar_reclamacao": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_sem_precisar_nada_encontrado": {
+      "mediana": 2,
+      "menor": 2,
+      "maior": 2,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        2,
+        2,
+        2
+      ]
+    },
+    "motivo_sem_precisar_sem_fonte": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_sem_precisar_conferencia": {
+      "mediana": 2,
+      "menor": 2,
+      "maior": 4,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        2,
+        2,
+        4
+      ]
+    },
+    "motivo_sem_precisar_ia_pediu": {
+      "mediana": 3,
+      "menor": 3,
+      "maior": 4,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        3,
+        4,
+        3
+      ]
+    },
+    "motivo_sem_precisar_confianca_baixa": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_sem_precisar_ia_falhou": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_sem_precisar_dado_pessoal": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    },
+    "motivo_sem_precisar_outro": {
+      "mediana": 0,
+      "menor": 0,
+      "maior": 0,
+      "todo": null,
+      "todos": [
+        null,
+        null,
+        null
+      ],
+      "valores": [
+        0,
+        0,
+        0
+      ]
+    }
+  }
+}

@@ -3,9 +3,9 @@
 import re
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Annotated
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, StringConstraints, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 TAMANHO_MAXIMO_TEXTO = 4000
 _CONTROLE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
@@ -205,3 +205,166 @@ class Metricas(BaseModel):
     custo_total_usd: float
     custo_medio_usd: float
     tempo_medio_ms: float
+
+
+# --- Atendimento (etapa 2): o agente responde o lojista ---
+
+IdLojista = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[a-z0-9-]{1,40}$")]
+
+
+class SessaoLojista(BaseModel):
+    """Quem está logado. Em produção, vem do login; na demonstração, a sessão é simulada.
+
+    O lojista vem daqui, nunca do texto da mensagem.
+    """
+
+    lojista_id: IdLojista
+
+
+# Conversa com histórico (16/11/2026): até 6 turnos anteriores (3 idas e voltas). Quem guarda
+# é quem chama (a página guarda no navegador); o servidor não grava conversa. Por isso o
+# histórico é tratado como dado não confiável: passa pelo mascaramento e pela detecção de
+# tentativa, e o agente é avisado de que ele não é fonte.
+MAXIMO_DE_TURNOS = 6
+TAMANHO_MAXIMO_TURNO = 2000
+
+TextoTurno = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=TAMANHO_MAXIMO_TURNO),
+]
+
+
+class TurnoConversa(BaseModel):
+    """Uma mensagem anterior da conversa: do lojista ou do atendimento."""
+
+    papel: Literal["lojista", "atendimento"]
+    texto: TextoTurno
+
+
+class AtendimentoEntrada(BaseModel):
+    """Uma mensagem do lojista, com o histórico da conversa (opcional, até 6 turnos)."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "mensagem": "A bobina acabou, onde compro mais?",
+                    "canal": "chat",
+                    "sessao": {"lojista_id": "loja-001"},
+                }
+            ]
+        }
+    )
+
+    mensagem: TextoChamado
+    canal: Canal = Canal.CHAT
+    sessao: SessaoLojista
+    historico: list[TurnoConversa] = Field(default_factory=list, max_length=MAXIMO_DE_TURNOS)
+
+
+class FonteSaida(BaseModel):
+    id: str
+    titulo: str
+
+
+class CustoAtendimento(BaseModel):
+    """Em dólar. A soma da triagem, da busca (embeddings), da resposta e da conferência."""
+
+    total_usd: float
+    triagem_usd: float
+    busca_usd: float
+    resposta_usd: float
+    conferencia_usd: float = 0.0
+
+
+class TempoAtendimento(BaseModel):
+    """Em milissegundos. A triagem e a busca rodam ao mesmo tempo: o total não é a soma."""
+
+    total_ms: int
+    triagem_ms: int
+    busca_ms: int
+    resposta_ms: int
+    conferencia_ms: int = 0
+
+
+class AtendimentoSaida(BaseModel):
+    """A resposta ao lojista, como fica guardada. O texto original nunca é guardado."""
+
+    id: int
+    criado_em: datetime
+    resposta: str
+    fontes: list[FonteSaida]
+    fila: str
+    precisa_pessoa: bool
+    motivos_pessoa: list[str]
+    origem_resposta: str
+    categoria: Categoria
+    prioridade: Prioridade
+    ferramentas_usadas: list[str]
+    avisos: list[str]
+    texto_mascarado: str
+    # As frases que a conferência tirou da resposta por não estarem nas fontes.
+    frases_removidas: list[str] = []
+    custo: CustoAtendimento
+    tempo: TempoAtendimento
+
+
+# --- Atendimento na página de demonstração (etapa 4): aberto, com limite e sem gravar ---
+
+
+class AtendimentoDemoEntrada(BaseModel):
+    """Mensagem enviada pela página. A sessão é simulada: quem visita escolhe uma das lojas
+    inventadas. O lojista vem da sessão, nunca do texto da mensagem."""
+
+    mensagem: TextoDemo
+    canal: Canal = Canal.CHAT
+    sessao: SessaoLojista
+    historico: list[TurnoConversa] = Field(default_factory=list, max_length=MAXIMO_DE_TURNOS)
+
+
+class LojistaDemo(BaseModel):
+    """Uma das lojas inventadas que quem visita a página pode ser."""
+
+    id: str
+    nome: str
+    plano: str
+
+
+class FonteDemo(BaseModel):
+    """O artigo citado, com o texto, para a página abrir na hora."""
+
+    id: str
+    titulo: str
+    texto: str
+
+
+class CustoAtendimentoDemo(CustoAtendimento):
+    refeita_usd: float = 0.0
+
+
+class TempoAtendimentoDemo(TempoAtendimento):
+    refeita_ms: int = 0
+
+
+class AtendimentoDemo(BaseModel):
+    """Resultado mostrado na página. Nada disso é gravado."""
+
+    resposta: str
+    fontes: list[FonteDemo]
+    fila: str
+    precisa_pessoa: bool
+    motivos_pessoa: list[str]
+    origem_resposta: str
+    categoria: Categoria
+    prioridade: Prioridade
+    texto_mascarado: str
+    dados_pessoais_encontrados: dict[str, int]
+    frases_removidas: list[str]
+    refeita: bool
+    modo_busca: str
+    # As consultas aos dados da loja da sessão que o agente fez (recebimentos, maquininhas).
+    ferramentas_usadas: list[str]
+    avisos: list[str]
+    modelo: str | None
+    custo: CustoAtendimentoDemo
+    tempo: TempoAtendimentoDemo

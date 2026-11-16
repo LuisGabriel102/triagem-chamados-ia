@@ -1,0 +1,7 @@
+# Tapiri Pagamentos (empresa inventada)
+
+A Tapiri Pagamentos não existe. Ela foi inventada para este projeto, e tudo o que está nesta pasta é fictício: o nome, os produtos, os prazos, as taxas, os preços, os horários e os endereços. Antes de escolher o nome, uma busca na internet em 13/11/2026 não achou nenhuma empresa chamada assim. Os endereços de e-mail usam o domínio reservado para exemplos (example.com), e nenhum telefone foi inventado: os artigos mandam procurar o número no app.
+
+A Tapiri vende maquininhas de cartão e uma conta digital de recebimento para pequenos lojistas: quem trabalha por conta própria, MEI e pequenos comércios. São dois modelos, sem aluguel e sem mensalidade: a Tapiri Mini, que liga no celular por bluetooth e não imprime (12 vezes de R$ 9,90), e a Tapiri Smart, com chip 4G, wi-fi e impressora (12 vezes de R$ 29,90). O lojista escolhe entre dois planos. No Plano Na Hora, tudo cai em 1 dia útil, com taxas de 1,39% no débito, 3,19% no crédito à vista, 5,49% no parcelado de 2 a 6 vezes e 8,99% de 7 a 12 vezes. No Plano Mensal, o débito cai em 1 dia útil (1,19%), o crédito à vista em 30 dias (2,49%) e o parcelado uma parcela a cada 30 dias (2,99%), com antecipação a 1,79% ao mês. O Pix na maquininha custa 0,49% e cai na hora nos dois planos. **Todos esses números são inventados** e não valem para nenhuma empresa real.
+
+Os 30 artigos da base estão em `base/artigos/`, um por arquivo. Cada um tem título, categoria (uma das filas da triagem) e o bloco "Quando chamar uma pessoa".

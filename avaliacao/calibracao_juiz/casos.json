@@ -1,0 +1,392 @@
+[
+  {
+    "caso": "c01",
+    "rodada": "prova2_3",
+    "id": "q18",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta traz o passo a passo do artigo (Esqueci minha senha, CPF ou CNPJ, código de 6 números por SMS ou e-mail válido por 10 minutos) e as regras da senha nova, sem acrescentar nada fora das fontes. As dicas sobre o código que não chega e o aviso de que a Tapiri nunca pede a senha também estão nos artigos."
+    }
+  },
+  {
+    "caso": "c02",
+    "rodada": "prova2_1",
+    "id": "q29",
+    "juiz": {
+      "correta": true,
+      "completa": false,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": false,
+      "comentario": "A resposta traz os prazos de débito (até 5 dias úteis) e crédito (fatura atual ou seguinte), o conselho de conferir a fatura e quando chamar uma pessoa, tudo conforme o artigo. Falta mencionar que dá para mandar o comprovante de cancelamento à cliente, mas isso é secundário. O trecho sobre 'Extrato' é plausível a partir do artigo e não há invenção relevante."
+    }
+  },
+  {
+    "caso": "c03",
+    "rodada": "prova2_2",
+    "id": "q20",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": false,
+      "sem_inventar": false,
+      "certa": false,
+      "comentario": "A resposta traz os passos do artigo (7 dias, caminho no app, bloqueio do valor, decisão em até 60 dias) e avisa que não achou a venda de 280. Porém inventa a data limite \"até quinta, 20/11/2026\", contando a partir de hoje, quando os artigos só dizem 7 dias corridos após o aviso, sem data de início nos dados. Isso é prazo calculado sem base e faz a resposta deixar de ser fiel e sem invenção."
+    }
+  },
+  {
+    "caso": "c04",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a04",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta traz o passo principal (Maquininhas > Bloquear), o telefone 24h, o boletim com 30% de desconto e as vendas anteriores, tudo conforme os artigos. A mensagem de urgência é do sistema e foi desconsiderada; não há invenção nem erro. Há só um pequeno deslize ao dizer que o chat de atendimento humano é 24h, mas o artigo diz que o atendimento de urgência é 24h pelo chat ou telefone, então está fiel."
+    }
+  },
+  {
+    "caso": "c05",
+    "rodada": "prova2_2",
+    "id": "q27",
+    "juiz": {
+      "correta": true,
+      "completa": false,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": false,
+      "comentario": "A resposta traz o caminho Perfil > Encerrar conta e diz que as vendas a receber continuam caindo nas datas de sempre, com valores e datas corretos conforme os dados. Mas omite que no Plano Mensal, que é o plano do lojista, dá para antecipar tudo antes de encerrar, fato esperado pelo gabarito. Isso a deixa incompleta, embora sem erros ou invenções."
+    }
+  },
+  {
+    "caso": "c06",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a15",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta dá o primeiro passo certo (reiniciar por 20 segundos, Pix pelo QR code) e avisa que uma pessoa continua, conforme o gabarito. Pequenos desvios: o passo 2 (tomada e esperar a tela acender) omite a espera de 30 minutos, e a frase 'chame a equipe se nenhum cartão passar' vem de outro artigo, mas é compatível com as fontes. O restante vem dos artigos e dos dados da conta."
+    }
+  },
+  {
+    "caso": "c07",
+    "rodada": "prova2_1",
+    "id": "q12",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta traz o fato esperado (débito 1,39% no Na Hora e 1,19% no Mensal, ambos em 1 dia útil), conclui que o Mensal compensa para quem vende quase tudo no débito e indica o simulador no caminho certo. Tudo bate com os artigos; a frase sobre o crédito à vista ser melhor no Na Hora é uma inferência razoável sobre o prazo, não invenção."
+    }
+  },
+  {
+    "caso": "c08",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a11",
+    "juiz": {
+      "correta": false,
+      "completa": false,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": false,
+      "comentario": "A resposta só traz a mensagem fixa de urgência e informações de horários, sem dizer que a Tapiri não cobra mensalidade nem pedir para anotar data e valor da cobrança. Não responde ao que foi perguntado, embora não invente nada."
+    }
+  },
+  {
+    "caso": "c09",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a30",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta informa corretamente que o acesso fica travado por 30 minutos após 5 tentativas erradas e oferece a alternativa Esqueci minha senha, tudo conforme o artigo, sem inventar nada."
+    }
+  },
+  {
+    "caso": "c10",
+    "rodada": "prova2_1",
+    "id": "q38",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta traz o caminho no app, a regra do dia seguinte e que as vendas antigas seguem o plano original, tudo conforme o artigo. Sobre a multa, diz com cuidado que o artigo não fala de cobrança, sem inventar nada; o artigo diz que não há mensalidade nem aluguel, mas não afirma isso sobre multa, então a postura é honesta."
+    }
+  },
+  {
+    "caso": "c11",
+    "rodada": "prova2_3",
+    "id": "q02",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta diz que não há venda de R$ 350, mostra a venda de R$ 89,90 no crédito que cai hoje até as 18h e explica o prazo de 1 dia útil do Plano Na Hora, tudo de acordo com os dados e os artigos. Só a frase final \"me avise, pois a equipe precisa verificar\" é uma pequena promessa sem fonte direta, mas é aceitável como encaminhamento."
+    }
+  },
+  {
+    "caso": "c12",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a57",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta usa corretamente os dados do lojista (Smart, ligada, última conexão há 5 min) e o artigo (chip 4G incluso, operadora de melhor sinal, passos de sinal, wi-fi e reinício, Extrato), e admite que os artigos não dizem se dá para usar outro chip. Não inventa nada. A resposta sobre 'pega em qualquer lugar' é parcial, mas isso é coerente com a fonte."
+    }
+  },
+  {
+    "caso": "c13",
+    "rodada": "prova2_1",
+    "id": "q07",
+    "juiz": {
+      "correta": true,
+      "completa": false,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": false,
+      "comentario": "A resposta dá o passo certo (bloquear pelo app ou pelo telefone da central 24h), cita o boletim com 30% de desconto e diz que as vendas continuam caindo, tudo conforme os artigos. Falta o fato esperado de trocar a senha do app em outro aparelho, por isso é incompleta, e há uma imprecisão: a central por telefone só funciona de seg a sex, mas para roubo o artigo diz 24h, então isso está certo."
+    }
+  },
+  {
+    "caso": "c14",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a08",
+    "juiz": {
+      "correta": true,
+      "completa": false,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": false,
+      "comentario": "A resposta traz os passos do artigo para quando o código não chega (conferir cadastro, spam, esperar 1 minuto e reenviar) e orienta chamar uma pessoa se persistir, sem inventar nada. Porém omite o passo principal de 'Esqueci minha senha' (tela de entrada, digitar CPF, código de 6 números, criar senha nova), então fica incompleta."
+    }
+  },
+  {
+    "caso": "c15",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a23",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta indica Extrato, os filtros e Exportar, que gera a planilha para o contador, tudo conforme o artigo. A única extrapolação é sugerir que o filtro de dia seleciona o mês inteiro, o que é uma inferência razoável e não um dado inventado."
+    }
+  },
+  {
+    "caso": "c16",
+    "rodada": "prova2_3",
+    "id": "q36",
+    "juiz": {
+      "correta": false,
+      "completa": false,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": false,
+      "comentario": "A resposta informa corretamente o status das duas maquininhas (Oficina ligada, Feira sem conexão desde 11/11), mas não traz o passo principal do artigo de conexão: a Mini usa a internet do celular por bluetooth com o app aberto. Em vez disso, mistura passos do artigo 'não liga' (o passo 1 está truncado/confuso, e 'apagada' não condiz com 'sem conexão'), o que a torna parcialmente errada e incompleta; os passos vêm dos artigos, sem invenção."
+    }
+  },
+  {
+    "caso": "c17",
+    "rodada": "prova2_3",
+    "id": "q24",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta traz o caminho no app, a taxa de 1,79% ao mês proporcional aos dias e o aviso de que o app mostra o custo antes de confirmar, tudo conforme o artigo e os dados. Porém, inclui a venda de débito que cai hoje como antecipável, o que não faz sentido, e não calcula quanto dá para antecipar, mas o app mostra o valor exato; o essencial está correto."
+    }
+  },
+  {
+    "caso": "c18",
+    "rodada": "prova2_2",
+    "id": "q06",
+    "juiz": {
+      "correta": false,
+      "completa": true,
+      "fiel_a_fonte": false,
+      "sem_inventar": false,
+      "certa": false,
+      "comentario": "A resposta traz o caminho (Perfil > Meus dados) e o código enviado ao e-mail novo, como o gabarito pede. Mas afirma que o e-mail antigo 'ainda não foi confirmado como seu' e que a troca pode não ser feita só pelo app, o que não está no artigo: ele só manda chamar uma pessoa se o lojista não tiver mais telefone nem e-mail antigos, e aqui o telefone pode estar disponível. Isso contradiz o gabarito (não chamar pessoa) e é uma afirmação sem base."
+    }
+  },
+  {
+    "caso": "c19",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a48",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta segue o artigo: troca pelo app em Perfil > Meus dados, com código enviado ao e-mail novo, e traz o aviso final do artigo. Não inventa nada e responde diretamente, sem ser necessário chamar uma pessoa."
+    }
+  },
+  {
+    "caso": "c20",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a50",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": false,
+      "certa": false,
+      "comentario": "A resposta traz os dois caminhos de cancelamento, a senha do app, a irreversibilidade e o que acontece com o dinheiro, tudo conforme o artigo, e observa corretamente que não há venda de R$ 150 nos dados. Porém, ao pedir 'a data da venda e a forma de pagamento para eu conferir de novo', promete uma nova conferência que não está nas fontes, o que conta como invenção."
+    }
+  },
+  {
+    "caso": "c21",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a51",
+    "juiz": {
+      "correta": false,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": false,
+      "comentario": "A resposta usa os dados da conta e os artigos, e a mensagem de urgência é aceitável porque o gabarito manda chamar uma pessoa. Mas a parte sobre pessoa/protocolo/diferença de R$ 80 fica um pouco vaga, e há uma afirmação sem apoio: 'Nenhuma delas está com o valor sumido' é conclusão da IA, sem checar a diferença de 80 reais contra os dados. Também há um pequeno desvio ao citar o 'Extrato › A receber' (caminho correto), e a venda de 03/11 de 120,00 'cai em 03/12, em 20 dias' bate com os dados. Dentro do esperado, mas a IA minimiza o problema em vez de tratar como caso de pessoa, e ainda pede que o lojista traga informações."
+    }
+  },
+  {
+    "caso": "c22",
+    "rodada": "prova2_2",
+    "id": "q35",
+    "juiz": {
+      "correta": false,
+      "completa": false,
+      "fiel_a_fonte": false,
+      "sem_inventar": true,
+      "certa": false,
+      "comentario": "A resposta traz o caminho Perfil > Meus dados e o código enviado ao número novo, mas afirma que o lojista não consegue confirmar pelo app porque o código vai ao número antigo. Isso é incorreto: o código de troca vai ao contato novo, e a confirmação pelo atendimento só vale se ele não tiver mais o telefone nem o e-mail antigos. A resposta não pergunta nem condiciona isso, e encaminha para uma pessoa sem necessidade, o que também deixa o fato esperado incompleto."
+    }
+  },
+  {
+    "caso": "c23",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a18",
+    "juiz": {
+      "correta": true,
+      "completa": false,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": false,
+      "comentario": "A resposta traz a regra correta (30 dias depois da venda no Plano Mensal) e o caminho do app, sem inventar nada. Porém não dá a data esperada, segunda 14/12/2026, nem identifica a venda de ontem (quinta 12/11), então fica incompleta; a resposta ainda deixa o lojista calcular a data sozinho."
+    }
+  },
+  {
+    "caso": "c24",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a14",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta confirma que dá para desistir, traz o prazo de 7 dias corridos da entrega, sem custo, o pedido no app e os passos de devolução e reembolso, tudo conforme o artigo. Não inventa nada; o único acréscimo é a sugestão de conferir a data de entrega, que é coerente com a fonte."
+    }
+  },
+  {
+    "caso": "c25",
+    "rodada": "prova2_3",
+    "id": "q01",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta traz a taxa de 8,99% para 7 a 12 vezes no Plano Na Hora, aplicada corretamente ao caso de 10x. Também diz que o valor cai de uma vez em 1 dia útil, cita a parcela mínima de R$ 5 e indica o simulador, tudo conforme os artigos, sem invenções."
+    }
+  },
+  {
+    "caso": "c26",
+    "rodada": "prova2_2",
+    "id": "q25",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": false,
+      "sem_inventar": false,
+      "certa": false,
+      "comentario": "Confirma que é golpe, manda desligar e não digitar o cartão, e traz os canais 24h, cobrindo o fato esperado. Porém o início sobre 'não clique no link' não tem relação com a situação (ligação telefônica), e 'nem pede dados do cartão por telefone' extrapola o artigo, que só cita senha do cartão de cliente e venda/cancelamento/Pix para teste."
+    }
+  },
+  {
+    "caso": "c27",
+    "rodada": "prova2_1",
+    "id": "q32",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta traz todos os fatos esperados: amanhã é sábado e nenhuma venda cai, a v-1001 cai hoje até as 18h e o dinheiro cai ao longo do dia sem hora marcada. Os valores e datas batem com os dados, e ela admite que não há regra de horário antes do meio-dia sem inventar nada."
+    }
+  },
+  {
+    "caso": "c28",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a45",
+    "juiz": {
+      "correta": true,
+      "completa": false,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": false,
+      "comentario": "A resposta usa bem os dados (hoje é sexta, 13/11; débito de quinta cai hoje até 18h; débito de terça já pago) e corrige a premissa de data, o que o gabarito prevê. Mas não explica os motivos do artigo (feriado, venda em análise, contestação, troca de conta) nem o prazo do débito. Também tem um pequeno deslize ao escrever 'Extrato › A receber' em vez de 'Extrato > A receber', sem impacto no conteúdo."
+    }
+  },
+  {
+    "caso": "c29",
+    "rodada": "prova2_3",
+    "id": "q31",
+    "juiz": {
+      "correta": true,
+      "completa": false,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": false,
+      "comentario": "A resposta traz os passos da aproximação e diz que uma pessoa verifica se nenhum cartão passa, e o que afirma sobre a Smart e a ausência de Mini bate com os dados. Mas omite o fato esperado da garantia de 12 meses, que responderia à dúvida sobre defeito, então fica incompleta."
+    }
+  },
+  {
+    "caso": "c30",
+    "rodada": "dev_v2_mudanca3",
+    "id": "a60",
+    "juiz": {
+      "correta": true,
+      "completa": true,
+      "fiel_a_fonte": true,
+      "sem_inventar": true,
+      "certa": true,
+      "comentario": "A resposta explica os passos do artigo, confirma que aparece um QR code (na tela da Smart ou no app, no caso da Mini) e traz o alerta sobre o comprovante falso. Tudo vem do artigo, sem invenção, e responde à pergunta sem encaminhar para uma pessoa."
+    }
+  }
+]

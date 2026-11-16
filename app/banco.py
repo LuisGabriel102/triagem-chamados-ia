@@ -8,6 +8,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 from sqlalchemy.pool import StaticPool
 
+from app.atendimento import ResultadoAtendimento
 from app.esquemas import Metricas
 from app.servico import ResultadoTriagem
 
@@ -46,6 +47,50 @@ class ChamadoRegistro(Base):
     tokens_cache_leitura: Mapped[int] = mapped_column(default=0)
     custo_usd: Mapped[float] = mapped_column(default=0.0)
     tempo_ms: Mapped[int] = mapped_column(default=0)
+
+
+class AtendimentoRegistro(Base):
+    """Uma mensagem do lojista e a resposta do agente. Só o texto mascarado é guardado."""
+
+    __tablename__ = "atendimentos"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), index=True
+    )
+    canal: Mapped[str] = mapped_column(String(20))
+    lojista_id: Mapped[str] = mapped_column(String(40), index=True)
+    texto_mascarado: Mapped[str] = mapped_column(Text)
+    dados_pessoais_encontrados: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    resposta: Mapped[str] = mapped_column(Text)
+    # Cada fonte é {"id": ..., "titulo": ...}.
+    fontes: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    fila: Mapped[str] = mapped_column(String(40))
+    precisa_pessoa: Mapped[bool] = mapped_column(index=True)
+    motivos_pessoa: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    origem_resposta: Mapped[str] = mapped_column(String(10))
+    categoria: Mapped[str] = mapped_column(String(30), index=True)
+    prioridade: Mapped[str] = mapped_column(String(10))
+    ferramentas_usadas: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    avisos: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    modo_busca: Mapped[str] = mapped_column(String(10))
+    modelo_resposta: Mapped[str | None] = mapped_column(String(60))
+    tokens_entrada: Mapped[int] = mapped_column(default=0)
+    tokens_saida: Mapped[int] = mapped_column(default=0)
+    tokens_cache_escrita: Mapped[int] = mapped_column(default=0)
+    tokens_cache_leitura: Mapped[int] = mapped_column(default=0)
+    custo_usd: Mapped[float] = mapped_column(default=0.0)
+    custo_triagem_usd: Mapped[float] = mapped_column(default=0.0)
+    custo_busca_usd: Mapped[float] = mapped_column(default=0.0)
+    custo_resposta_usd: Mapped[float] = mapped_column(default=0.0)
+    tempo_ms: Mapped[int] = mapped_column(default=0)
+    tempo_triagem_ms: Mapped[int] = mapped_column(default=0)
+    tempo_busca_ms: Mapped[int] = mapped_column(default=0)
+    tempo_resposta_ms: Mapped[int] = mapped_column(default=0)
+    # A conferência frase a frase (etapa 3B): as frases tiradas, o custo e o tempo.
+    frases_removidas: Mapped[list[Any]] = mapped_column(JSON, default=list)
+    custo_conferencia_usd: Mapped[float] = mapped_column(default=0.0)
+    tempo_conferencia_ms: Mapped[int] = mapped_column(default=0)
 
 
 def criar_motor(url: str) -> Engine:
@@ -107,6 +152,16 @@ def listar(
     return list(sessao.scalars(consulta))
 
 
+def listar_atendimentos(
+    sessao: Session, precisa_pessoa: bool | None = None, limite: int = 50
+) -> list[AtendimentoRegistro]:
+    """Os atendimentos mais recentes; com precisa_pessoa=True, a fila de quem espera uma pessoa."""
+    consulta = select(AtendimentoRegistro).order_by(AtendimentoRegistro.id.desc()).limit(limite)
+    if precisa_pessoa is not None:
+        consulta = consulta.where(AtendimentoRegistro.precisa_pessoa.is_(precisa_pessoa))
+    return list(sessao.scalars(consulta))
+
+
 def calcular_metricas(sessao: Session) -> Metricas:
     def contar_por(coluna: Any) -> dict[str, int]:
         linhas = sessao.execute(select(coluna, func.count()).group_by(coluna)).all()
@@ -134,3 +189,44 @@ def calcular_metricas(sessao: Session) -> Metricas:
         custo_medio_usd=round(custo_total / total, 8) if total else 0.0,
         tempo_medio_ms=round(tempo_medio, 1),
     )
+
+
+def salvar_atendimento(sessao: Session, resultado: ResultadoAtendimento) -> AtendimentoRegistro:
+    uso = resultado.uso_resposta
+    registro = AtendimentoRegistro(
+        canal=resultado.canal.value,
+        lojista_id=resultado.lojista_id,
+        texto_mascarado=resultado.texto_mascarado,
+        dados_pessoais_encontrados=dict(resultado.dados_pessoais_encontrados),
+        resposta=resultado.resposta,
+        fontes=[{"id": artigo.id, "titulo": artigo.titulo} for artigo in resultado.fontes],
+        fila=resultado.fila,
+        precisa_pessoa=resultado.precisa_pessoa,
+        motivos_pessoa=list(resultado.motivos_pessoa),
+        origem_resposta=resultado.origem_resposta,
+        categoria=resultado.categoria.value,
+        prioridade=resultado.prioridade.value,
+        ferramentas_usadas=list(resultado.ferramentas_usadas),
+        avisos=list(resultado.avisos),
+        modo_busca=resultado.modo_busca,
+        modelo_resposta=resultado.modelo_resposta,
+        tokens_entrada=uso.tokens_entrada,
+        tokens_saida=uso.tokens_saida,
+        tokens_cache_escrita=uso.tokens_cache_escrita,
+        tokens_cache_leitura=uso.tokens_cache_leitura,
+        custo_usd=resultado.custo_usd,
+        custo_triagem_usd=resultado.custo_triagem_usd,
+        custo_busca_usd=resultado.custo_busca_usd,
+        custo_resposta_usd=resultado.custo_resposta_usd,
+        tempo_ms=resultado.tempo_ms,
+        tempo_triagem_ms=resultado.tempo_triagem_ms,
+        tempo_busca_ms=resultado.tempo_busca_ms,
+        tempo_resposta_ms=resultado.tempo_resposta_ms,
+        frases_removidas=list(resultado.frases_removidas),
+        custo_conferencia_usd=resultado.custo_conferencia_usd,
+        tempo_conferencia_ms=resultado.tempo_conferencia_ms,
+    )
+    sessao.add(registro)
+    sessao.commit()
+    sessao.refresh(registro)
+    return registro
