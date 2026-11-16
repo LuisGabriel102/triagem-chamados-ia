@@ -24,11 +24,15 @@ O que ela não resolve: uma frase com um pedaço citado e outro inventado SEM n�
 exemplo, "e o app avisa você"). O ganho esperado é deixar de tirar frase certa e deixar de
 depender do julgamento do modelo. Se é melhor de verdade, só a medida nas 60 diz.
 
-Sem temperature. O raciocínio fica desligado, escrito no código, como na conferência frase a
-frase.
+Sem temperature. O raciocínio fica ligado (adaptativo, esforço medium), escrito no código.
+
+A sonda de 16/11/2026 (2 chamadas reais, antes de medir nas 60) achou dois defeitos de desenho:
+1. com os dados da loja num bloco de JSON, o modelo não citou nenhum dado: toda frase com a
+   data ou o valor da venda saía "sem prova". Agora cada fato é um bloco citável;
+2. sem raciocínio, o Haiku escreveu a própria checagem dentro da resposta ("Vou checar cada
+   frase...") em vez de citar. Com o raciocínio ligado, citou as 4 frases, inclusive os dados.
 """
 
-import json
 import re
 import time
 import unicodedata
@@ -40,7 +44,7 @@ from typing import Any
 import anthropic
 
 from app.base_conhecimento import Artigo
-from app.classificador import ler_uso_claude
+from app.classificador import RACIOCINIO_ATENDIMENTO, ler_uso_claude
 from app.conferencia import (
     FRACAO_MINIMA_DE_PALAVRAS,
     ErroConferencia,
@@ -59,8 +63,9 @@ Os documentos são as únicas fontes: os artigos de ajuda, os dados da conta do 
 de hoje com os prazos já calculados.
 
 Reescreva o rascunho (entre <rascunho>) para o lojista:
-- Mantenha só o que os documentos dizem. Cada frase com fato (prazo, taxa, valor, data, \
-caminho no app, regra, recurso) precisa citar o trecho do documento que a apoia.
+- Mantenha só o que os documentos dizem. Toda frase precisa citar o trecho do documento que \
+a apoia, inclusive as frases com dados da conta do lojista (vendas, valores, datas, \
+maquininhas) e com a data de hoje. Uma frase sem citação é apagada antes de chegar ao lojista.
 - Tire do rascunho o que nenhum documento apoia. Não acrescente nada que não estava no \
 rascunho.
 - Não escreva cumprimento, despedida nem frase sem fato.
@@ -90,20 +95,59 @@ def _documento(titulo: str, texto: str) -> dict[str, Any]:
     }
 
 
+def _documento_em_blocos(titulo: str, fatos: Sequence[str]) -> dict[str, Any]:
+    """Um documento em que cada fato é um bloco citável (o "conteúdo próprio" da API)."""
+    return {
+        "type": "document",
+        "source": {"type": "content", "content": [{"type": "text", "text": f} for f in fatos]},
+        "title": titulo,
+        "citations": {"enabled": True},
+    }
+
+
+def _valor(valor: Any) -> str:
+    if isinstance(valor, float):
+        return f"{valor:.2f}".replace(".", ",")
+    return str(valor)
+
+
+def fatos_dos_dados(consultas: Mapping[str, Any]) -> list[str]:
+    """Os dados da loja em frases curtas, uma por fato: cada venda e cada maquininha numa linha.
+
+    Por que não o JSON: na sonda de 16/11/2026, com os dados num bloco de JSON, o modelo citou
+    o artigo e não citou nenhum dado da loja; todas as frases com a data ou o valor da venda
+    saíram "sem prova". Uma linha legível por fato dá um trecho claro para citar.
+    """
+    fatos: list[str] = []
+    for consulta in consultas.values():
+        if not isinstance(consulta, Mapping):
+            fatos.append(_valor(consulta))
+            continue
+        for chave, valor in consulta.items():
+            if isinstance(valor, list):
+                for item in valor:
+                    if isinstance(item, Mapping):
+                        fatos.append("; ".join(f"{k}: {_valor(v)}" for k, v in item.items()))
+                    else:
+                        fatos.append(_valor(item))
+            else:
+                fatos.append(f"{chave}: {_valor(valor)}")
+    return fatos
+
+
 def montar_documentos(
     artigos: Sequence[Artigo], consultas: Mapping[str, Any], hoje: date
 ) -> list[dict[str, Any]]:
     """Os documentos citáveis: um por artigo, os dados da loja (se houve consulta) e a data."""
-    prazos = "\n".join(f"{nome}: {data}" for nome, data in prazos_a_partir_de(hoje).items())
     documentos = [_documento(a.titulo, a.texto) for a in artigos]
     if consultas:
         documentos.append(
-            _documento(
-                "Dados da conta do lojista",
-                json.dumps(dict(consultas), ensure_ascii=False, indent=1),
-            )
+            _documento_em_blocos("Dados da conta do lojista", fatos_dos_dados(consultas))
         )
-    documentos.append(_documento("Data de hoje e prazos", f"Hoje: {por_extenso(hoje)}\n{prazos}"))
+    prazos = [f"{nome}: {data}" for nome, data in prazos_a_partir_de(hoje).items()]
+    documentos.append(
+        _documento_em_blocos("Data de hoje e prazos", [f"Hoje: {por_extenso(hoje)}", *prazos])
+    )
     return documentos
 
 
@@ -170,7 +214,8 @@ class ConferenteCitacoes:
 
     reescreve = True
 
-    def __init__(self, cliente: Any, modelo: str, max_tokens: int = 1024) -> None:
+    # Com o raciocínio ligado, 1.024 tokens não bastaram na sonda (parou em max_tokens).
+    def __init__(self, cliente: Any, modelo: str, max_tokens: int = 4096) -> None:
         self._cliente = cliente
         self.modelo = modelo
         self._max_tokens = max_tokens
@@ -195,9 +240,10 @@ class ConferenteCitacoes:
             saida = self._cliente.messages.create(
                 model=self.modelo,
                 max_tokens=self._max_tokens,
-                # Sem raciocínio, escrito no código, como na conferência frase a frase.
-                thinking={"type": "disabled"},
-                output_config={"effort": "medium"},
+                # Com raciocínio (adaptativo, esforço medium), escrito no código. Na sonda de
+                # 16/11/2026, sem raciocínio, o Haiku escreveu a checagem dentro da resposta
+                # ("Vou checar cada frase...") em vez de citar.
+                **RACIOCINIO_ATENDIMENTO,
                 system=[
                     {
                         "type": "text",

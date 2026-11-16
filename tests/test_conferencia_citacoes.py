@@ -16,6 +16,7 @@ from app.conferencia import ConferenteClaude, ErroConferencia
 from app.conferencia_citacoes import (
     PROMPT_CITACOES,
     ConferenteCitacoes,
+    fatos_dos_dados,
     frases_com_prova,
     ler_pedacos,
 )
@@ -118,6 +119,21 @@ def test_lista_numerada_fica_e_e_renumerada():
 # --- O pedido à API ---
 
 
+def test_dados_da_loja_viram_um_fato_por_linha():
+    consultas = {
+        "consultar_recebimentos": {
+            "plano": "Plano Mensal",
+            "vendas": [{"venda": "v-1", "forma": "debito", "valor_bruto": 45.9}],
+        },
+        "status_maquininha": {"maquininhas": [{"apelido": "Caixa 1", "situacao": "ligada"}]},
+    }
+    assert fatos_dos_dados(consultas) == [
+        "plano: Plano Mensal",
+        "venda: v-1; forma: debito; valor_bruto: 45,90",
+        "apelido: Caixa 1; situacao: ligada",
+    ]
+
+
 def test_pedido_leva_documentos_com_citacao_e_nada_de_formato_estrito():
     cliente = ClienteCitacoesFalso(CITADA_1)
     conferente = ConferenteCitacoes(cliente, "claude-haiku-5-5")
@@ -128,7 +144,10 @@ def test_pedido_leva_documentos_com_citacao_e_nada_de_formato_estrito():
     assert "tools" not in pedido
     assert "format" not in pedido["output_config"]
     assert "temperature" not in pedido
-    assert pedido["thinking"] == {"type": "disabled"}
+    # Raciocínio ligado, escrito no código (sem ele, o Haiku escrevia a checagem na resposta).
+    assert pedido["thinking"] == {"type": "adaptive"}
+    assert pedido["output_config"] == {"effort": "medium"}
+    assert pedido["max_tokens"] == 4096
     assert pedido["system"][0]["text"] == PROMPT_CITACOES
     conteudo = pedido["messages"][0]["content"]
     documentos = [b for b in conteudo if b["type"] == "document"]
@@ -138,8 +157,9 @@ def test_pedido_leva_documentos_com_citacao_e_nada_de_formato_estrito():
         "Data de hoje e prazos",
     ]
     assert all(d["citations"] == {"enabled": True} for d in documentos)
-    assert "Plano Mensal" in documentos[1]["source"]["data"]
-    assert "13/11/2026" in documentos[2]["source"]["data"]
+    # Os dados e a data vão em blocos, um fato por bloco (o JSON inteiro não era citado).
+    assert documentos[1]["source"]["content"] == [{"type": "text", "text": "plano: Plano Mensal"}]
+    assert documentos[2]["source"]["content"][0]["text"].startswith("Hoje: sexta, 13/11/2026")
     texto = conteudo[-1]["text"]
     # O texto de fora não consegue fechar a marcação.
     assert "‹pergunta›" in texto

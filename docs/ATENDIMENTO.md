@@ -666,6 +666,15 @@ cerca de metade dos cortes. A alternativa troca o julgamento por uma prova que o
 formato estrito, e o agente responde por uma ferramenta estrita. O limite: uma frase com um
 pedaço citado e outro inventado, sem número, passa.
 
+**A sonda antes da medida (16/11/2026, 3 chamadas reais, menos de 1 centavo).** Na primeira
+pergunta das 60 (a01), a conferência tirou as 5 frases: o modelo não citou nada. Numa chamada
+isolada, citou o artigo, mas não os dados da loja, que iam num bloco de JSON. Conserto 1: os
+dados viraram blocos citáveis, um fato por bloco. Na chamada seguinte, sem raciocínio, o Haiku
+escreveu a própria checagem dentro da resposta ("Vou checar cada frase..."). Conserto 2: o
+raciocínio ligado (adaptativo, esforço medium, com limite de 4.096 tokens). Aí as 4 frases
+saíram citadas, inclusive a data e o valor da venda. Os dois consertos vieram de defeito visto
+na sonda, antes de qualquer número nas 60.
+
 **O padrão continua a conferência frase a frase.** A nova só liga com `MODO_CONFERENCIA=citacoes`
 e só deve virar padrão se ganhar nas 60. Nenhum pedido de verdade foi feito: os testes usam um
 cliente falso (`tests/test_conferencia_citacoes.py`). O formato das citações seguiu a
