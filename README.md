@@ -256,7 +256,7 @@ pytest
 ruff check .
 ```
 
-Os testes não chamam a API real: clientes falsos imitam a Anthropic e o Google, inclusive quedas, falta de login e respostas fora do formato. No GitHub Actions, os testes rodam no SQLite e no PostgreSQL 17, e a imagem Docker é montada a cada envio. Outro fluxo publica a página no GitHub Pages.
+Os testes não chamam a API real: clientes falsos imitam a Anthropic e o Google, inclusive quedas, falta de login e respostas fora do formato. **A busca tem trava de regressão** (`tests/test_busca_regressao.py`): a cada envio, ela é medida nas 48 perguntas com gabarito, por palavras e por sentido, e o teste falha se piorar. A busca por sentido roda sem chave, com os vetores das perguntas guardados uma vez (`avaliacao/vetores_guardados.py`). No GitHub Actions, os testes rodam no SQLite e no PostgreSQL 17, e a imagem Docker é montada a cada envio. Outro fluxo publica a página no GitHub Pages.
 
 ## Estrutura
 
