@@ -55,6 +55,11 @@ class Configuracao(BaseSettings):
     # contra híbrida 37/44 (avaliacao/resultados/busca_agente.md). Se o Google cair, a busca
     # segue por palavras.
     modo_busca_agente: Literal["sentido", "hibrida", "palavras"] = "sentido"
+    # Como a resposta é conferida antes de sair sem uma pessoa. "frases": um modelo julga cada
+    # frase (app/conferencia.py), a que foi medida nas provas. "citacoes": o modelo reescreve
+    # citando as fontes e o código tira o que não tem prova (app/conferencia_citacoes.py),
+    # ainda não medida. O padrão só muda depois da medida nas 60.
+    modo_conferencia: Literal["frases", "citacoes"] = "frases"
 
     database_url: str = "sqlite:///./triagem.db"
     # Chave que quem chama a API envia no cabeçalho X-API-Key. Vazia = API aberta (só local).

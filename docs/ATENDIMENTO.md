@@ -648,8 +648,45 @@ anteriores (empréstimo, nota fiscal, sistema de caixa), porque o sorteio os esc
 "duas perguntas" saiu só 1 vez e "pessoa idosa" 9 vezes, porque o estilo foi sorteado vaga por
 vaga, sem cota.
 
-**Para rodar** (custo estimado pela prova 2: cerca de US$ 0,30 por rodada com o juiz, ou seja,
-perto de US$ 0,90 nas 3 rodadas):
+### A conferência por citação (pronta, ainda não medida)
+
+O problema: a conferência frase a frase pede a um modelo que julgue cada frase, e ela errou
+cerca de metade dos cortes. A alternativa troca o julgamento por uma prova que o código confere
+(`app/conferencia_citacoes.py`):
+
+1. Os artigos citados, os dados da loja e a data de hoje vão como documentos com citações
+   ligadas (recurso da API da Anthropic). O modelo reescreve a resposta do agente e aponta, em
+   cada afirmação, o trecho exato da fonte.
+2. O código decide: frase sem trecho citado sai; número, valor ou porcentagem fora de um pedaço
+   citado também derruba a frase.
+3. Se sobrar pouco, vai para uma pessoa. Não há resposta refeita: o corte é do código, não um
+   julgamento que valha repetir.
+
+É um passo separado do agente porque a API devolve erro 400 quando as citações vêm junto com o
+formato estrito, e o agente responde por uma ferramenta estrita. O limite: uma frase com um
+pedaço citado e outro inventado, sem número, passa.
+
+**O padrão continua a conferência frase a frase.** A nova só liga com `MODO_CONFERENCIA=citacoes`
+e só deve virar padrão se ganhar nas 60. Nenhum pedido de verdade foi feito: os testes usam um
+cliente falso (`tests/test_conferencia_citacoes.py`). O formato das citações seguiu a
+documentação da Anthropic, lida em 16/11/2026.
+
+**Para medir nas 60** (custo pela última rodada nas 60: cerca de US$ 0,44 com o juiz):
+
+```bash
+MODO_CONFERENCIA=citacoes python -m avaliacao.avaliar_agente \
+    --nome dev_citacoes --titulo "As 60, conferência por citação"
+```
+
+A comparação é com `avaliacao/resultados/dev_v2_mudanca3.md` (frase a frase: E certo 23/35; e
+errado 2/60; 10 chamadas sem precisar). Regra decidida antes de rodar: a citação vira padrão se
+não piorar o "e errado" e melhorar o "E certo" ou as chamadas sem precisar. Depois, a prova 3
+mede a escolhida.
+
+### Para rodar a prova 3
+
+Custo estimado pela prova 2: cerca de US$ 0,30 por rodada com o juiz, ou seja, perto de
+US$ 0,90 nas 3 rodadas.
 
 ```bash
 python -m avaliacao.avaliar_agente --perguntas avaliacao/perguntas_prova3.jsonl \

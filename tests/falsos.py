@@ -306,3 +306,56 @@ class ClienteConferenciaFalso:
             model="claude-haiku-5-5",
             stop_reason=self._stop_reason,
         )
+
+
+class ClienteCitacoesFalso:
+    """Imita o cliente da Anthropic na conferência por citação.
+
+    Devolve os pedaços dados, na ordem, como blocos de texto: (texto, trecho_citado) com o
+    trecho, ou (texto, None) sem citação. Guarda uma cópia de cada pedido.
+    """
+
+    def __init__(
+        self,
+        *pedacos: tuple[str, str | None],
+        erro: Exception | None = None,
+        stop_reason: str = "end_turn",
+    ) -> None:
+        self.chamadas: list[dict[str, Any]] = []
+        self.messages = self
+        self._pedacos = pedacos
+        self._erro = erro
+        self._stop_reason = stop_reason
+
+    def create(self, **kwargs: Any) -> SimpleNamespace:
+        self.chamadas.append(copy.deepcopy(kwargs))
+        if self._erro is not None:
+            raise self._erro
+        blocos = []
+        for texto, trecho in self._pedacos:
+            citacoes = (
+                [
+                    SimpleNamespace(
+                        type="char_location",
+                        cited_text=trecho,
+                        document_index=0,
+                        document_title="Documento",
+                        start_char_index=0,
+                        end_char_index=len(trecho),
+                    )
+                ]
+                if trecho is not None
+                else None
+            )
+            blocos.append(SimpleNamespace(type="text", text=texto, citations=citacoes))
+        return SimpleNamespace(
+            content=blocos,
+            usage=SimpleNamespace(
+                input_tokens=2500,
+                output_tokens=90,
+                cache_creation_input_tokens=0,
+                cache_read_input_tokens=0,
+            ),
+            model="claude-haiku-5-5",
+            stop_reason=self._stop_reason,
+        )

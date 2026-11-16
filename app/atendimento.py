@@ -42,7 +42,8 @@ from app.base_conhecimento import (
 from app.busca import Busca, Modo, ResultadoBusca, criar_busca
 from app.busca_palavras import normalizar
 from app.classificador import RACIOCINIO_ATENDIMENTO, Uso
-from app.conferencia import ConferenteClaude, ErroConferencia
+from app.conferencia import ConferenteClaude, ErroConferencia, ResultadoConferencia
+from app.conferencia_citacoes import ConferenteCitacoes
 from app.config import Configuracao
 from app.esquemas import Canal, Categoria, Origem, Prioridade
 from app.ferramentas import DadosLojistas, LojistaDesconhecido
@@ -299,7 +300,7 @@ class ServicoAtendimento:
         contatos_permitidos: frozenset[str] = frozenset(),
         modo_busca: Modo = "sentido",
         horarios: Artigo | None = None,
-        conferente: ConferenteClaude | None = None,
+        conferente: ConferenteClaude | ConferenteCitacoes | None = None,
     ) -> None:
         self._triagem = triagem
         self._horarios = horarios  # a fonte da mensagem de urgência
@@ -409,6 +410,8 @@ class ServicoAtendimento:
         saida.cortes_sem_trecho = list(primeira.cortes_sem_trecho)
         saida.removidas = primeira.removidas
         saida.tempo_conferencia_ms = int((time.perf_counter() - comeco) * 1000)
+        if self._conferente.reescreve:
+            return self._depois_da_citacao(saida, primeira, motivos)
         if not primeira.removidas:
             return saida
 
@@ -457,6 +460,29 @@ class ServicoAtendimento:
                 f"{len(segunda.removidas)} frase(s) sem apoio"
             )
             return self._so_o_que_tem_apoio(saida, segunda.texto)
+        return saida
+
+    def _depois_da_citacao(
+        self, saida: _Conferencia, conferida: ResultadoConferencia, motivos: list[str]
+    ) -> _Conferencia:
+        """Conferência por citação: o texto que sai é o reescrito, só com frases que têm prova.
+
+        Não há resposta refeita: o corte já é do código (frase sem trecho citado sai), não de
+        um julgamento que valha a pena repetir. Se sobrar pouco, vai para uma pessoa com o que
+        tem prova. O texto reescrito passa de novo pelo mascaramento (defesa extra), deixando
+        os contatos da própria empresa.
+        """
+        if conferida.sobrou_pouco:
+            motivos.append(
+                f"conferência por citação: {len(conferida.removidas)} de "
+                f"{conferida.total_frases} frase(s) sem trecho citado"
+            )
+            texto = mascarar_resposta(conferida.texto, self._contatos_permitidos).texto
+            return self._so_o_que_tem_apoio(saida, texto)
+        mascarada = mascarar_resposta(conferida.texto, self._contatos_permitidos)
+        if mascarada.encontrados:
+            motivos.append("a resposta reescrita tinha dado pessoal e foi mascarada")
+        saida.resposta = mascarada.texto
         return saida
 
     @staticmethod
@@ -631,6 +657,13 @@ class ServicoAtendimento:
         )
 
 
+def criar_conferente(cliente: Any, config: Configuracao) -> ConferenteClaude | ConferenteCitacoes:
+    """A conferência escolhida em MODO_CONFERENCIA (padrão: a frase a frase, a medida)."""
+    if config.modo_conferencia == "citacoes":
+        return ConferenteCitacoes(cliente, modelo=config.modelo_agente)
+    return ConferenteClaude(cliente, modelo=config.modelo_agente)
+
+
 def criar_atendimento(config: Configuracao) -> ServicoAtendimento:
     """Monta o atendimento: a triagem com o negócio da Tapiri, a busca, os dados e o Claude.
 
@@ -647,7 +680,7 @@ def criar_atendimento(config: Configuracao) -> ServicoAtendimento:
     if chave:
         cliente = anthropic.Anthropic(api_key=chave, timeout=config.timeout_llm_s, max_retries=2)
         agente = AgenteClaude(cliente, dados, modelo=config.modelo_agente)
-        conferente = ConferenteClaude(cliente, modelo=config.modelo_agente)
+        conferente = criar_conferente(cliente, config)
     return ServicoAtendimento(
         triagem=triagem,
         busca=criar_busca(config),

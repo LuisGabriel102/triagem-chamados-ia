@@ -51,12 +51,12 @@ from app.atendimento import (
     ServicoAtendimento,
     artigo_de_horarios,
     contatos_da_empresa,
+    criar_conferente,
 )
 from app.base_conhecimento import Artigo, carregar_artigos, negocio_do_atendimento
 from app.busca import Busca, escolher_limiares
 from app.busca_sentido import ARQUIVO_INDICE, carregar_indice_memoria, criar_gerador
 from app.classificador import RACIOCINIO_ATENDIMENTO, ClassificadorClaude
-from app.conferencia import ConferenteClaude
 from app.config import Configuracao
 from app.esquemas import Canal
 from app.ferramentas import DadosLojistas
@@ -249,7 +249,7 @@ def montar_atendimento(
         contatos_permitidos=contatos_da_empresa(artigos),
         modo_busca=config.modo_busca_agente,
         horarios=artigo_de_horarios(artigos),
-        conferente=ConferenteClaude(conferencia_ia, config.modelo_agente),
+        conferente=criar_conferente(conferencia_ia, config),
     )
     return atendimento, [triagem_ia, agente_ia, conferencia_ia], gravador
 

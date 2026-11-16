@@ -16,7 +16,7 @@ import re
 import time
 import unicodedata
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
@@ -241,9 +241,14 @@ class ResultadoConferencia:
     uso: Uso
     modelo: str
     tempo_ms: int
+    # Só na conferência por citação (app/conferencia_citacoes.py): os trechos citados.
+    citacoes: list[str] = field(default_factory=list)
 
 
 class ConferenteClaude:
+    # A resposta que sai é a do agente, sem as frases cortadas (não é reescrita).
+    reescreve = False
+
     def __init__(self, cliente: Any, modelo: str, max_tokens: int = 1024) -> None:
         self._cliente = cliente
         self.modelo = modelo
