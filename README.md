@@ -96,7 +96,7 @@ Quando `CHAVE_API_APP` está configurada, as rotas de chamados, de atendimento e
 
 ## Decisões de projeto
 
-**A IA não recebe CPF, CNPJ, cartão, e-mail nem telefone.** O texto passa pelo mascaramento antes de sair do servidor. Os formatos comuns são sempre escondidos, inclusive o CNPJ com letras, o celular com o 9 separado e o cartão com a validade logo depois. Número sem pontuação passa por uma conferência antes: dígito verificador para CPF e CNPJ, algoritmo de Luhn para cartão e DDD para telefone. Assim um número de protocolo não é apagado por engano. Perto das palavras "CPF", "cartão" ou "telefone", o número é escondido mesmo com dígito errado, porque cliente digita errado. O banco guarda só a versão mascarada, os logs não guardam o texto e o erro 422 não devolve o que foi enviado. Os formatos cobertos estão em `tests/test_mascaramento.py`. **Limite conhecido:** nome, endereço e RG ainda passam. Detectar isso pede outra técnica e está nos próximos passos.
+**A IA não recebe CPF, CNPJ, cartão, e-mail nem telefone.** O texto passa pelo mascaramento antes de sair do servidor. Os formatos comuns são sempre escondidos, inclusive o CNPJ com letras, o celular com o 9 separado e o cartão com a validade logo depois. Número sem pontuação passa por uma conferência antes: dígito verificador para CPF e CNPJ, algoritmo de Luhn para cartão e DDD para telefone. Assim um número de protocolo não é apagado por engano. Perto das palavras "CPF", "cartão" ou "telefone", o número é escondido mesmo com dígito errado, porque cliente digita errado. O banco guarda só a versão mascarada, os logs não guardam o texto e o erro 422 não devolve o que foi enviado. Os formatos cobertos estão em `tests/test_mascaramento.py`. **RG, endereço e nome** são escondidos por regras de contexto: o RG perto da palavra "RG" ou "identidade" (ou no formato 12.345.678-9), a rua ou avenida com o número da casa, e o nome depois de "meu nome é", "me chamo", "aqui é o/a", "sou o/a" e "atenciosamente". Passadas em 1.095 textos do repositório (perguntas, artigos e respostas guardadas), as regras acharam 2 nomes de verdade e nenhum falso, depois de corrigir 3 casos (`tests/test_mascaramento_contexto.py`). Foram escolhidas regras, e não um modelo de reconhecimento de entidades, porque o modelo pesa centenas de megabytes na imagem e erra em texto de chat sem maiúscula. **Limite conhecido:** um nome solto no meio da frase ("a Joana pediu") passa, e o CEP sozinho fica, porque aponta uma região, não uma pessoa.
 
 **A IA responde sempre no mesmo formato.** No Claude, a chamada usa *tool use* em modo estrito, com a ferramenta obrigatória. No Gemini, a resposta vem em JSON preso a um esquema (saída estruturada), que sai da mesma definição. Nos dois, a resposta tem os mesmos 8 campos e valores da lista, e o Pydantic confere de novo antes de usar.
 
@@ -163,7 +163,7 @@ A segunda parte do projeto responde o lojista sozinha quando pode, mostra de ond
 
 O caminho de uma mensagem (`app/atendimento.py`):
 
-1. **Mascara** CPF, CNPJ, cartão, e-mail e telefone. Daqui em diante, só o texto mascarado circula.
+1. **Mascara** CPF, CNPJ, cartão, e-mail, telefone, RG, endereço e nome. Daqui em diante, só o texto mascarado circula.
 2. **Triagem e busca juntas.** A triagem decide a fila e a urgência. A busca acha os artigos parecidos, por sentido (embeddings do Gemini) ou, se o Google cair, por palavras (BM25).
 3. **Resposta.** O Claude Haiku 5.5 responde citando os artigos achados e pode consultar os dados da loja da sessão (recebimentos e maquininhas). Se a IA cair, entra o plano B: o trecho do artigo, com "uma pessoa vai confirmar".
 4. **Conferência.** Frase a frase, um segundo passo confere se cada frase tem apoio no artigo ou nos dados. Se alguma não tem, a resposta é refeita uma vez, só com o que tem apoio, e conferida de novo. Se falhar de novo, uma pessoa continua.
@@ -206,7 +206,7 @@ Cada prova tem 40 mensagens e rodou 3 vezes; a tabela mostra a mediana. Na prova
 
 A triagem e a busca rodam ao mesmo tempo, então o tempo total não é a soma.
 
-**Os limites e o próximo passo.** A conferência frase a frase ainda corta frases certas. Rodada sozinha sobre 53 respostas guardadas das 60 de desenvolvimento, ela cortou 22 frases: de 10 a 13 eram certas, 6 eram cortes certos e 3 ficaram em dúvida. As frases inventadas que ela deixou passar não foram contadas uma a uma. Pelo juiz, nas 60 com o código final, 1 resposta saiu sem uma pessoa com invenção: a promessa de "conferir de novo", que não está nas fontes. Então a conferência não segura toda invenção. O próximo passo é testar, nas 60, um modelo mais forte só na conferência (o Claude Sonnet 5.5) ou deixar o Haiku raciocinar antes de conferir. Outros limites: uma mensagem por vez, sem histórico de conversa, e a próxima prova deveria vir de outro pedido de escrita. O mascaramento não detecta nome, endereço nem RG.
+**Os limites e o próximo passo.** A conferência frase a frase ainda corta frases certas. Rodada sozinha sobre 53 respostas guardadas das 60 de desenvolvimento, ela cortou 22 frases: de 10 a 13 eram certas, 6 eram cortes certos e 3 ficaram em dúvida. As frases inventadas que ela deixou passar não foram contadas uma a uma. Pelo juiz, nas 60 com o código final, 1 resposta saiu sem uma pessoa com invenção: a promessa de "conferir de novo", que não está nas fontes. Então a conferência não segura toda invenção. O próximo passo é testar, nas 60, um modelo mais forte só na conferência (o Claude Sonnet 5.5) ou deixar o Haiku raciocinar antes de conferir. Outros limites: uma mensagem por vez, sem histórico de conversa, e a próxima prova deveria vir de outro pedido de escrita. O mascaramento não pega um nome solto no meio da frase.
 
 **A busca está pronta para o pgvector.** Hoje os vetores dos 30 artigos ficam num arquivo versionado (`base/indice.json`) e a comparação roda na memória. A busca fala com o índice por uma interface pequena; trocar pelo pgvector no PostgreSQL fica para quando a base crescer.
 
@@ -262,7 +262,7 @@ Os testes não chamam a API real: clientes falsos imitam a Anthropic e o Google,
 app/
   main.py            rotas da API, página de demonstração e chave de acesso
   servico.py         o fluxo: mascarar, classificar, conferir e decidir
-  mascaramento.py    CPF, CNPJ, cartão, e-mail e telefone (LGPD)
+  mascaramento.py    CPF, CNPJ, cartão, e-mail, telefone, RG, endereço e nome (LGPD)
   classificador.py   chamada ao Claude com formato estrito, e o prompt dos dois
   classificador_gemini.py  chamada ao Gemini no Vertex AI com saída estruturada
   precos.py          preço de cada modelo, para o custo de cada chamado
@@ -301,7 +301,7 @@ tests/                   testes com pytest
 
 1. Publicar na AWS (Lambda com Terraform) e ligar a um banco PostgreSQL gerenciado.
 2. Avaliar com chamados reais anonimizados.
-3. Esconder também nome, endereço e RG, com reconhecimento de entidades.
+3. Pegar também o nome solto no meio da frase, com um modelo de reconhecimento de entidades, se o custo na imagem compensar.
 4. Criar uma tela simples para a fila de revisão humana.
 5. Versionar o banco com Alembic.
 

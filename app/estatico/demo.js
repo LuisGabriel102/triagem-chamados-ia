@@ -23,7 +23,16 @@
     },
     prioridade: { urgente: "Urgente", alta: "Alta", media: "Média", baixa: "Baixa" },
     sentimento: { positivo: "Positivo", neutro: "Neutro", negativo: "Negativo" },
-    dado: { CPF: "CPF", CNPJ: "CNPJ", CARTAO: "cartão", EMAIL: "e-mail", TELEFONE: "telefone" },
+    dado: {
+      CPF: "CPF",
+      CNPJ: "CNPJ",
+      CARTAO: "cartão",
+      EMAIL: "e-mail",
+      TELEFONE: "telefone",
+      RG: "RG",
+      ENDERECO: "endereço",
+      NOME: "nome",
+    },
     busca: { sentido: "Por sentido", hibrida: "Híbrida", palavras: "Por palavras" },
     ferramenta: {
       consultar_recebimentos: "os recebimentos",
@@ -31,7 +40,7 @@
     },
   };
 
-  const MARCADOR = /(\[(?:CPF|CNPJ|CARTAO|EMAIL|TELEFONE)\])/;
+  const MARCADOR = /(\[(?:CPF|CNPJ|CARTAO|EMAIL|TELEFONE|RG|ENDERECO|NOME)\])/;
 
   const numero = (valor, casas) =>
     valor.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });

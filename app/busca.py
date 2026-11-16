@@ -39,7 +39,7 @@ K_RRF = 60
 # Os limiares de "nada encontrado", gravados pela calibração. Não são segredo.
 ARQUIVO_LIMIARES = PASTA_BASE / "limiares.json"
 # Os marcadores do mascaramento não são palavras da pergunta: saem antes do BM25.
-_MARCADOR = re.compile(r"\[(?:CPF|CNPJ|CARTAO|EMAIL|TELEFONE)\]")
+_MARCADOR = re.compile(r"\[(?:CPF|CNPJ|CARTAO|EMAIL|TELEFONE|RG|ENDERECO|NOME)\]")
 
 Modo = Literal["hibrida", "palavras", "sentido"]
 Criterio = Literal["similaridade", "nota_bm25"]
