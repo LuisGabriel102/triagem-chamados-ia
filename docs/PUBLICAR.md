@@ -5,7 +5,11 @@ Passo a passo para quando o Gabriel disser "pode publicar". Até lá, nada vai p
 O Render publica a branch `main`. O link que já foi mostrado não pode quebrar: a aba Triagem
 tem que continuar igual a antes.
 
-## Onde as coisas estão (15/11/2026)
+**Publicado em 16/11/2026:** o `main` foi para o GitHub no commit `489c1b8` (a junção das
+branches `atendimento` e `melhorias`), e as duas branches também. O texto abaixo é o
+passo a passo que foi seguido.
+
+## Onde as coisas estavam (15/11/2026)
 
 - **No GitHub:** só a branch `main`, no commit `cccdcc0` ("Gravação dos exemplos e fotos da
   página", 05/11/2026). A branch `atendimento` nunca foi enviada.
@@ -67,6 +71,15 @@ pytest
 git push origin main
 ```
 
+**O Render não publica sozinho depois do push** (visto em 16/11/2026). Depois de cada envio do
+`main`, abra o serviço no painel do Render e use **Manual Deploy → "Deploy latest commit"**.
+
+**O login do GitHub neste computador é pelo GitHub CLI**, não pelo Git Credential Manager: o
+`~/.gitconfig` usa o `gh` para o github.com. Para entrar de novo, com a permissão de mexer no
+arquivo do CI: `gh auth login --web --scopes workflow` (abre um código de dispositivo para
+digitar em github.com/login/device). Dentro do Claude Code, o login interativo do Git fica
+desligado; o `gh auth login` funciona rodando em segundo plano, para o código aparecer.
+
 O push no `main` também dispara o CI (testes, a imagem Docker e a conferência da imagem no ar)
 e o fluxo do GitHub Pages. A página do GitHub Pages ganha as abas; a aba Atendimento explica
 que ele roda só ao vivo, e a triagem gravada continua igual.
@@ -87,6 +100,10 @@ que ele roda só ao vivo, e a triagem gravada continua igual.
    `app/estatico/previa.png` ficaram iguais).
 6. **`/docs`:** as rotas `/demo/atendimento` e `/demo/lojistas` aparecem; `/atendimento` pede a
    chave.
+7. **`/fila`:** os 6 casos do exemplo, com os urgentes primeiro.
+8. **Sem recarga forçada:** num navegador que já tinha aberto o site, a página nova aparece com
+   o estilo e as abas funcionando. O CSS e o JS vão com a versão no endereço (`?v=`) e com
+   `Cache-Control: no-cache`.
 
 ## 5. Se algo der errado
 

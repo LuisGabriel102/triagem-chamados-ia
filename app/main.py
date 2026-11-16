@@ -1,5 +1,6 @@
 """API de triagem de chamados (FastAPI)."""
 
+import hashlib
 import html
 import logging
 import mimetypes
@@ -8,7 +9,7 @@ from collections.abc import AsyncIterator, Iterator
 from contextlib import asynccontextmanager
 from functools import lru_cache
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, Query, Request, status
 from fastapi.encoders import jsonable_encoder
@@ -59,7 +60,46 @@ CABECALHOS_DA_PAGINA = {
     ),
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "no-referrer",
+    # A página sempre pergunta ao servidor se mudou: depois de uma publicação, quem já tinha
+    # aberto o site recebe o HTML novo, que aponta para o CSS e o JS novos.
+    "Cache-Control": "no-cache",
 }
+
+# Cache do navegador (achado depois da publicação de 16/11/2026): quem tinha aberto o site antes
+# recebia o demo.css e o demo.js antigos, e a aba Atendimento não funcionava sem Ctrl+Shift+R.
+# Duas proteções juntas:
+# 1. o endereço do CSS e do JS leva a versão do arquivo (?v=, tirada do conteúdo): arquivo
+#    novo, endereço novo, e o navegador não tem como reaproveitar o antigo;
+# 2. os arquivos estáticos vão com "Cache-Control: no-cache": o navegador sempre confere com o
+#    servidor (que responde 304, sem reenviar, quando nada mudou). Vale também para os JSON que
+#    a página lê (as perguntas prontas e o exemplo da fila), que não passam pelo item 1.
+_ARQUIVOS_VERSIONADOS = ("demo.css", "demo.js", "fila.js")
+
+
+@lru_cache(maxsize=32)
+def versao_do_arquivo(caminho: Path) -> str:
+    """Os 10 primeiros caracteres do SHA-256 do conteúdo. Muda sempre que o arquivo muda."""
+    return hashlib.sha256(caminho.read_bytes()).hexdigest()[:10]
+
+
+def com_versoes(pagina: str, pasta: Path = PASTA_ESTATICA) -> str:
+    """Põe a versão no endereço de cada CSS e JS da página: /estatico/demo.css?v=1a2b3c4d5e."""
+    for nome in _ARQUIVOS_VERSIONADOS:
+        endereco = f"/estatico/{nome}"
+        pagina = pagina.replace(
+            f'"{endereco}"', f'"{endereco}?v={versao_do_arquivo(pasta / nome)}"'
+        )
+    return pagina
+
+
+class EstaticosSemCacheVelho(StaticFiles):
+    """Os arquivos de /estatico, sempre conferidos com o servidor antes de usar."""
+
+    async def get_response(self, path: str, scope: Any) -> Response:
+        resposta = await super().get_response(path, scope)
+        resposta.headers["Cache-Control"] = "no-cache"
+        return resposta
+
 
 DESCRICAO = """
 Recebe o texto de um chamado de atendimento, esconde os dados pessoais (LGPD),
@@ -127,7 +167,7 @@ def montar_pagina(url_publica: str) -> str:
                 f'\n<meta property="og:image" content="{url}/estatico/previa.png">'
                 '\n<meta name="twitter:card" content="summary_large_image">'
             )
-    return _modelo_da_pagina().replace("<!--META_PUBLICA-->", meta)
+    return com_versoes(_modelo_da_pagina().replace("<!--META_PUBLICA-->", meta))
 
 
 @rotas_abertas.get("/", include_in_schema=False)
@@ -355,9 +395,8 @@ def fila(request: Request) -> Response:
     """
     if not request.app.state.config.demo_ativa:
         return RedirectResponse(url="/docs")
-    return HTMLResponse(
-        (PASTA_PAGINAS / "fila.html").read_text(encoding="utf-8"), headers=CABECALHOS_DA_PAGINA
-    )
+    pagina = com_versoes((PASTA_PAGINAS / "fila.html").read_text(encoding="utf-8"))
+    return HTMLResponse(pagina, headers=CABECALHOS_DA_PAGINA)
 
 
 @rotas_protegidas.get(
@@ -416,7 +455,7 @@ def criar_app(
         lifespan=ciclo_de_vida,
     )
     app.add_exception_handler(RequestValidationError, erro_de_validacao)
-    app.mount("/estatico", StaticFiles(directory=PASTA_ESTATICA), name="estatico")
+    app.mount("/estatico", EstaticosSemCacheVelho(directory=PASTA_ESTATICA), name="estatico")
     app.include_router(rotas_abertas)
     app.include_router(rotas_protegidas)
     return app
