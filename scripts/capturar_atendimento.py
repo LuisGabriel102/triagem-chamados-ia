@@ -168,12 +168,18 @@ def fotos(pasta: Path) -> int:
                 pagina.wait_for_timeout(600)
                 pagina.evaluate("window.scrollTo(0, 0)")
                 pagina.screenshot(path=str(FOTOS / f"atendimento-{largura}.png"), full_page=True)
+
+                # A fila de revisão humana, com o exemplo gravado (sem chave).
+                pagina.goto(f"{url}fila")
+                pagina.wait_for_selector("#casos .caso")
+                pagina.wait_for_timeout(400)
+                pagina.screenshot(path=str(FOTOS / f"fila-{largura}.png"), full_page=True)
                 pagina.close()
             navegador.close()
     finally:
         servidor.should_exit = True
         linha.join(timeout=10)
-    print("Pronto: docs/fotos/triagem-390.png, triagem-1280.png, atendimento-390.png e 1280.png")
+    print("Pronto: docs/fotos/ triagem, atendimento e fila, em 390 e 1280 px")
     return 0
 
 

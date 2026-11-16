@@ -717,3 +717,128 @@ h3 {
     scroll-behavior: auto;
   }
 }
+
+/* Fila de revisão humana (/fila) */
+
+.fila-pagina {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+}
+
+.fila-acesso {
+  margin: 0 0 2rem;
+  padding: 1rem;
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  background: var(--papel);
+}
+
+.fila-acesso h2,
+.fila-pagina h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.chave-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.chave-linha input {
+  flex: 1 1 14rem;
+  min-width: 0;
+  min-height: 3rem;
+  padding: 0 0.75rem;
+  border: 1.5px solid var(--linha);
+  border-radius: 6px;
+  background: var(--papel);
+  color: inherit;
+  font: inherit;
+}
+
+.casos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.caso {
+  margin: 0 0 1rem;
+  padding: 1rem;
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  background: var(--papel);
+  overflow-wrap: anywhere;
+}
+
+.caso h3 {
+  margin: 0.5rem 0 0.25rem;
+  font-size: 1.05rem;
+}
+
+.caso h4 {
+  margin: 0.9rem 0 0.25rem;
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+}
+
+.caso p,
+.caso ul {
+  margin: 0;
+}
+
+.caso .resposta {
+  white-space: pre-line;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--linha);
+}
+
+.caso .quando,
+.caso .fontes,
+.caso .resumo {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+}
+
+.caso-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.etiqueta {
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  border: 1px solid var(--linha);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.etiqueta[data-prioridade="urgente"] {
+  border-color: var(--urgente);
+  background: var(--urgente);
+  color: var(--urgente-texto);
+}
+
+.etiqueta[data-prioridade="alta"] {
+  border-color: var(--alta);
+  background: var(--alta);
+  color: var(--alta-texto);
+}
+
+.etiqueta[data-prioridade="media"] {
+  border-color: var(--media);
+  background: var(--media);
+  color: var(--media-texto);
+}
+
+.etiqueta[data-prioridade="baixa"] {
+  border-color: var(--baixa);
+  background: var(--baixa);
+  color: var(--baixa-texto);
+}

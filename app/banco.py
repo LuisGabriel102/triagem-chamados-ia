@@ -152,6 +152,16 @@ def listar(
     return list(sessao.scalars(consulta))
 
 
+def listar_atendimentos(
+    sessao: Session, precisa_pessoa: bool | None = None, limite: int = 50
+) -> list[AtendimentoRegistro]:
+    """Os atendimentos mais recentes; com precisa_pessoa=True, a fila de quem espera uma pessoa."""
+    consulta = select(AtendimentoRegistro).order_by(AtendimentoRegistro.id.desc()).limit(limite)
+    if precisa_pessoa is not None:
+        consulta = consulta.where(AtendimentoRegistro.precisa_pessoa.is_(precisa_pessoa))
+    return list(sessao.scalars(consulta))
+
+
 def calcular_metricas(sessao: Session) -> Metricas:
     def contar_por(coluna: Any) -> dict[str, int]:
         linhas = sessao.execute(select(coluna, func.count()).group_by(coluna)).all()

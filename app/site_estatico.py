@@ -88,6 +88,8 @@ def montar_site(
         'href="/estatico/demo.css"': 'href="estatico/demo.css"',
         'src="/estatico/demo.js"': 'src="estatico/demo.js"',
         '\n    <a href="/docs">Documentação da API</a>': "",
+        # A fila de revisão é uma página do servidor da API; no GitHub Pages, ela não existe.
+        '\n    <a href="/fila">Fila de revisão humana</a>': "",
         "<!--META_PUBLICA-->": _meta_publica(url_publica, tem_previa),
         "Demonstração com limite de uso. Use só dados fictícios: nada do que você digita é "
         "gravado.": "Estas são respostas reais da IA, gravadas uma vez. Para testar com a sua "

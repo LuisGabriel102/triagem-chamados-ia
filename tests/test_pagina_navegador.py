@@ -9,6 +9,7 @@ Sem o Playwright e o Chromium instalados, os testes são pulados:
     python -m playwright install chromium
 """
 
+import json
 import socket
 import threading
 import time
@@ -416,4 +417,87 @@ def test_trocar_de_loja_comeca_outra_conversa(navegador, servidor):
     pagina.select_option("#loja", outra)
     assert pagina.locator("#conversa").is_hidden()
     assert pagina.locator("#turnos li").count() == 0
+    pagina.close()
+
+
+@pytest.mark.parametrize("largura", LARGURAS)
+def test_fila_mostra_o_exemplo_com_urgente_primeiro(navegador, servidor, largura):
+    url, _ = servidor
+    pagina = _abrir(navegador, f"{url}fila", largura)
+    pagina.wait_for_selector("#casos .caso")
+    assert pagina.locator("#casos .caso").count() == 6
+    assert pagina.locator("#casos .caso .prioridade").first.inner_text() == "Urgente"
+    # O texto mascarado aparece com tarja, nunca com o dado.
+    assert pagina.locator("#casos .tarja").count() >= 1
+    _sem_vazamento(pagina)
+    _contraste_ok(pagina, 40)
+    # O filtro por fila.
+    pagina.select_option("#filtro-fila", "Suporte")
+    filas = pagina.locator("#casos .caso .fila").all_inner_texts()
+    assert filas and all(f == "Fila Suporte" for f in filas)
+    pagina.close()
+
+
+def test_fila_com_chave_errada_avisa(navegador, servidor):
+    url, _ = servidor
+    pagina = _abrir(navegador, f"{url}fila", 1280)
+    pagina.wait_for_selector("#casos .caso")
+    pagina.route(
+        "**/chamados?*",
+        lambda rota: rota.fulfill(status=401, content_type="application/json", body="{}"),
+    )
+    pagina.route(
+        "**/atendimentos?*",
+        lambda rota: rota.fulfill(status=401, content_type="application/json", body="{}"),
+    )
+    pagina.fill("#chave", "errada")
+    pagina.click("#formulario-chave button")
+    pagina.wait_for_selector("#erro-fila:not([hidden])")
+    assert pagina.locator("#erro-fila").inner_text() == "Chave inválida."
+    # O exemplo continua na tela.
+    assert pagina.locator("#casos .caso").count() == 6
+    pagina.close()
+
+
+def test_fila_ao_vivo_junta_chamados_e_atendimentos(navegador, servidor):
+    url, _ = servidor
+    chamado = {
+        "id": 7,
+        "criado_em": "2026-11-16T10:00:00Z",
+        "fila": "Financeiro",
+        "prioridade": "alta",
+        "motivos_revisao": ["confiança baixa"],
+        "texto_mascarado": "Meu CPF é [CPF] e fui cobrado duas vezes.",
+        "resumo": "Cobrança em dobro.",
+        "resposta_sugerida": "Vamos verificar.",
+    }
+    atendimento = {
+        "id": 3,
+        "criado_em": "2026-11-16T09:00:00Z",
+        "fila": "Suporte",
+        "prioridade": "urgente",
+        "motivos_pessoa": ["triagem: urgente"],
+        "texto_mascarado": "A maquininha parou.",
+        "resposta": "Seu caso é urgente.",
+        "fontes": [{"id": "conexao", "titulo": "Maquininha sem conexão"}],
+    }
+    pagina = _abrir(navegador, f"{url}fila", 1280)
+    pagina.wait_for_selector("#casos .caso")
+    pedidos = []
+
+    def responder(rota, corpo):
+        pedidos.append(rota.request.headers.get("x-api-key"))
+        rota.fulfill(status=200, content_type="application/json", body=json.dumps([corpo]))
+
+    pagina.route("**/chamados?*", lambda rota: responder(rota, chamado))
+    pagina.route("**/atendimentos?*", lambda rota: responder(rota, atendimento))
+    pagina.fill("#chave", "chave-certa")
+    pagina.click("#formulario-chave button")
+    # O exemplo já tinha 6 casos na tela: espera a troca para os dados ao vivo.
+    pagina.wait_for_selector("#origem-fila:has-text('Ao vivo')")
+    titulos = pagina.locator("#casos .caso .titulo").all_inner_texts()
+    assert titulos == ["Atendimento 3", "Chamado 7"]  # urgente primeiro
+    assert pedidos == ["chave-certa", "chave-certa"]
+    assert "Ao vivo" in pagina.locator("#origem-fila").inner_text()
+    assert "Fontes: Maquininha sem conexão" in pagina.locator("#casos").inner_text()
     pagina.close()

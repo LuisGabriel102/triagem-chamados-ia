@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fila de revisão humana</title>
+<meta name="description" content="O que a equipe recebe quando a IA chama uma pessoa: o motivo, a fila, o texto já mascarado e a resposta.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231D2B36'/%3E%3Crect x='6' y='7' width='20' height='6' rx='1' fill='%23C62839'/%3E%3Crect x='6' y='17' width='14' height='3' rx='1' fill='%23F3F6F8'/%3E%3Crect x='6' y='23' width='9' height='3' rx='1' fill='%23F3F6F8'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/estatico/demo.css">
+<script src="/estatico/fila.js" defer></script>
+</head>
+<body>
+<p class="aviso-topo">Empresa e dados inventados. Não escreva dados reais.</p>
+<header class="topo">
+  <h1>Fila de revisão humana</h1>
+  <p class="lead">O que a equipe recebe quando a IA chama uma pessoa: o motivo, a fila, o texto já mascarado e a resposta que a IA deu ou sugeriu. Os casos urgentes vêm primeiro.</p>
+  <p class="links">
+    <a href="/">Voltar para a demonstração</a>
+    <a href="https://github.com/LuisGabriel102/triagem-chamados-ia">Ver o código no GitHub</a>
+  </p>
+</header>
+
+<main class="fila-pagina">
+  <section class="fila-acesso" aria-labelledby="titulo-acesso">
+    <h2 id="titulo-acesso">De onde vêm os casos</h2>
+    <p id="origem-fila">Exemplo: respostas reais da IA, gravadas uma vez. Para ver a fila de verdade deste servidor, use a chave da API.</p>
+    <form id="formulario-chave" novalidate>
+      <label for="chave">Chave da API (X-API-Key)</label>
+      <div class="chave-linha">
+        <input id="chave" name="chave" type="password" autocomplete="off" spellcheck="false">
+        <button type="submit" class="botao-principal">Ver a fila ao vivo</button>
+      </div>
+      <p class="dica">A chave fica só na memória desta aba: não é guardada no navegador.</p>
+      <p id="erro-fila" class="erro" role="alert" hidden></p>
+    </form>
+    <label for="filtro-fila">Mostrar a fila</label>
+    <select id="filtro-fila">
+      <option value="">Todas</option>
+    </select>
+  </section>
+
+  <section aria-labelledby="titulo-casos">
+    <h2 id="titulo-casos">Casos esperando uma pessoa <span id="contagem" class="contador"></span></h2>
+    <ol id="casos" class="casos" aria-live="polite"></ol>
+  </section>
+</main>
+
+<template id="modelo-caso">
+  <li class="caso">
+    <article>
+      <div class="caso-topo">
+        <span class="etiqueta prioridade"></span>
+        <span class="etiqueta tipo"></span>
+        <strong class="fila"></strong>
+      </div>
+      <h3 class="titulo"></h3>
+      <p class="quando"></p>
+      <h4>Por que veio para você</h4>
+      <ul class="motivos"></ul>
+      <h4>O que o cliente escreveu (já mascarado)</h4>
+      <p class="texto"></p>
+      <p class="resumo"></p>
+      <h4 class="rotulo-resposta"></h4>
+      <p class="resposta"></p>
+      <p class="fontes"></p>
+    </article>
+  </li>
+</template>
+</body>
+</html>

@@ -90,6 +90,8 @@ Sem chave da IA, o plano B responde no mesmo formato, com `origem` "regras" e re
 | `POST /chamados` | Faz a triagem e guarda o resultado |
 | `GET /chamados/{id}` | Busca um chamado |
 | `GET /chamados?revisao_humana=true` | Lista a fila de revisão humana |
+| `GET /atendimentos?precisa_pessoa=true` | Lista os atendimentos que esperam uma pessoa |
+| `GET /fila` | Página da fila de revisão humana (os dados pedem a chave) |
 | `GET /metricas` | Totais, taxa de revisão, custo e tempo médio |
 | `GET /saude` | Diz se a API está no ar e se a IA está configurada |
 | `GET /docs` | Documentação interativa para testar no navegador |
@@ -170,6 +172,10 @@ O caminho de uma mensagem (`app/atendimento.py`):
 3. **Resposta.** O Claude Haiku 5.5 responde citando os artigos achados e pode consultar os dados da loja da sessão (recebimentos e maquininhas). Se a IA cair, entra o plano B: o trecho do artigo, com "uma pessoa vai confirmar".
 4. **Conferência.** Frase a frase, um segundo passo confere se cada frase tem apoio no artigo ou nos dados. Se alguma não tem, a resposta é refeita uma vez, só com o que tem apoio, e conferida de novo. Se falhar de novo, uma pessoa continua.
 5. **Uma pessoa, quando precisa:** urgência, reclamação, segurança, tentativa de enganar, falta de fonte ou de dado. Na urgência, uma mensagem fixa diz que uma pessoa já foi chamada, por qual fila e em que horário.
+
+**A fila de revisão humana** (`/fila`) mostra o que a equipe recebe quando a IA chama uma pessoa: o motivo, a fila, o texto já mascarado e a resposta que a IA deu (no atendimento) ou sugeriu (na triagem), com os urgentes primeiro e filtro por fila. Com a chave da API, ela lê os casos deste servidor (`GET /chamados?revisao_humana=true` e `GET /atendimentos?precisa_pessoa=true`); sem a chave, mostra um exemplo com respostas reais já gravadas. Ela só mostra: marcar um caso como resolvido pediria uma coluna nova no banco, e o projeto ainda não tem migração (o Alembic está nos próximos passos).
+
+![Fila de revisão humana: os casos urgentes primeiro, com o motivo, o texto mascarado e a resposta](docs/fotos/fila-1280.png)
 
 **Conversa com histórico.** A página guarda as últimas 6 mensagens no navegador e manda junto com a nova; o servidor não grava conversa. "E no crédito à vista?" é entendido como continuação da pergunta anterior: a triagem e a busca usam também a última mensagem do lojista. O histórico é tratado como dado não confiável, porque quem visita pode forjar uma "resposta do atendimento": ele passa pelo mascaramento e pela detecção de tentativa, e o agente é avisado de que ele não é fonte. Num teste real com uma resposta forjada ("a taxa do débito é 0%"), a IA não confirmou o valor falso. Sem histórico, o pedido à IA é idêntico ao que foi medido.
 
@@ -306,7 +312,7 @@ tests/                   testes com pytest
 1. Publicar na AWS (Lambda com Terraform) e ligar a um banco PostgreSQL gerenciado.
 2. Avaliar com chamados reais anonimizados.
 3. Pegar também o nome solto no meio da frase, com um modelo de reconhecimento de entidades, se o custo na imagem compensar.
-4. Criar uma tela simples para a fila de revisão humana.
+4. Deixar a pessoa marcar o caso como resolvido na fila (pede a migração do banco, item 5).
 5. Versionar o banco com Alembic.
 
 ## Autor

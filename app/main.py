@@ -333,6 +333,34 @@ def atender(entrada: AtendimentoEntrada, request: Request, sessao: Sessao) -> At
 
 
 @rotas_protegidas.get(
+    "/atendimentos",
+    response_model=list[AtendimentoSaida],
+    summary="Lista os atendimentos mais recentes, com filtro de quem espera uma pessoa",
+)
+def listar_atendimentos(
+    sessao: Sessao,
+    precisa_pessoa: bool | None = None,
+    limite: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> list[AtendimentoSaida]:
+    registros = banco.listar_atendimentos(sessao, precisa_pessoa=precisa_pessoa, limite=limite)
+    return [para_atendimento_saida(registro) for registro in registros]
+
+
+@rotas_abertas.get("/fila", include_in_schema=False)
+def fila(request: Request) -> Response:
+    """A fila de revisão humana: o que a equipe recebe quando a IA chama uma pessoa.
+
+    A página é aberta, mas os dados não: ela pede a chave da API e lê /chamados e
+    /atendimentos. Sem a chave, mostra um exemplo com respostas reais já gravadas.
+    """
+    if not request.app.state.config.demo_ativa:
+        return RedirectResponse(url="/docs")
+    return HTMLResponse(
+        (PASTA_PAGINAS / "fila.html").read_text(encoding="utf-8"), headers=CABECALHOS_DA_PAGINA
+    )
+
+
+@rotas_protegidas.get(
     "/metricas", response_model=Metricas, summary="Totais, revisão humana, custo e tempo"
 )
 def metricas(sessao: Sessao) -> Metricas:
