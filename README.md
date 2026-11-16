@@ -8,6 +8,8 @@ A segunda parte, o [Atendimento com IA](#atendimento-com-ia), responde o lojista
 
 **Veja funcionando:** [luisgabriel102.github.io/triagem-chamados-ia](https://luisgabriel102.github.io/triagem-chamados-ia/), com respostas reais da IA gravadas para a triagem. O atendimento roda na página ao vivo, servida pela API.
 
+**Com pouco tempo?** [Resumo em uma página](docs/RESUMO.md) · [vídeo de 21 segundos](docs/video/demonstracao.webm), com respostas reais da IA gravadas uma vez.
+
 ![Página de demonstração: o chamado vira uma ficha de triagem com a cor da prioridade e os dados pessoais escondidos por tarjas](docs/demo.png)
 
 **Tecnologias:** Python 3.12 · FastAPI · Claude (API da Anthropic) · Gemini (Vertex AI, Google Cloud) · embeddings do Gemini · BM25 · PostgreSQL · SQLAlchemy · Pydantic · Docker · GitHub Actions · pytest
@@ -20,7 +22,7 @@ A equipe de atendimento perde tempo lendo cada mensagem para decidir para onde e
 
 Para cada chamado, a API:
 
-1. **Esconde os dados pessoais (LGPD).** CPF, CNPJ, cartão, e-mail e telefone viram `[CPF]`, `[CARTAO]` e assim por diante, antes de qualquer coisa sair do servidor.
+1. **Esconde os dados pessoais (LGPD).** CPF, CNPJ, cartão, e-mail, telefone, RG, endereço e nome viram `[CPF]`, `[CARTAO]`, `[NOME]` e assim por diante, antes de qualquer coisa sair do servidor.
 2. **Classifica com IA.** Categoria, prioridade, sentimento, resumo, número do pedido e uma resposta sugerida para o atendente.
 3. **Confere a resposta da IA.** O formato é fixo, número de pedido que não está no texto é descartado, a resposta passa de novo pelo mascaramento e as palavras-chave dão uma segunda opinião sobre urgência.
 4. **Decide o destino.** Escolhe a fila (Financeiro, Suporte, Vendas, Retenção, Ouvidoria) e diz se uma pessoa precisa revisar.
@@ -292,7 +294,7 @@ scripts/
   gravar_exemplos.py     passa os exemplos pela IA uma vez e grava as respostas
   montar_site.py         monta o site estático a partir da gravação
   capturar_demo.py       tira a foto da página, sem chamar a IA
-  capturar_atendimento.py  roda as 6 perguntas prontas e tira as fotos das duas abas
+  capturar_atendimento.py  roda as 6 perguntas prontas, tira as fotos e grava o vídeo
 docs/                    gravações, fotos, ATENDIMENTO.md e PUBLICAR.md
 tests/                   testes com pytest
 ```

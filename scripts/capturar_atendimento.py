@@ -177,12 +177,100 @@ def fotos(pasta: Path) -> int:
     return 0
 
 
+VIDEO = RAIZ / "docs" / "video" / "demonstracao.webm"
+# O roteiro do vídeo: um caso que a IA resolve (com a fonte aberta) e um que chama uma pessoa.
+PERGUNTAS_DO_VIDEO = ["Quando cai minha venda", "Maquininha parada"]
+
+
+def video(pasta: Path) -> int:
+    """Grava um vídeo curto da página com as respostas gravadas. NÃO GASTA.
+
+    As respostas chegam na hora (vêm do arquivo), então o roteiro tem pausas para dar tempo de
+    ler. O custo e o tempo que aparecem na tela são os da gravação real.
+    """
+    if not GRAVACAO.exists():
+        print("Falta docs/atendimento_gravado.json. Rode antes com --ao-vivo.")
+        return 1
+    respostas = {r["texto"]: r for r in json.loads(GRAVACAO.read_text("utf-8"))["respostas"]}
+    triagens = {
+        e["texto"]: e["resultado"]
+        for e in json.loads(TRIAGEM_GRAVADA.read_text("utf-8"))["exemplos"]
+    }
+    config = Configuracao(
+        _env_file=None,
+        anthropic_api_key=None,
+        gemini_api_key=None,
+        google_cloud_project="",
+        database_url=f"sqlite:///{pasta / 'demo.db'}",
+    )
+    url, servidor, linha = subir(config)
+
+    def gravada(rota, banco: dict) -> None:
+        enviado = json.loads(rota.request.post_data or "{}")
+        corpo = banco[enviado.get("mensagem") or enviado.get("texto")]
+        rota.fulfill(status=200, content_type="application/json", body=json.dumps(corpo))
+
+    tamanho = {"width": 1100, "height": 760}
+    try:
+        with sync_playwright() as playwright:
+            navegador = playwright.chromium.launch()
+            contexto = navegador.new_context(
+                viewport=tamanho,
+                color_scheme="light",
+                record_video_dir=str(pasta / "video"),
+                record_video_size=tamanho,
+            )
+            pagina = contexto.new_page()
+            pagina.route("**/demo/atendimento", lambda r: gravada(r, respostas))
+            pagina.route("**/demo/triagem", lambda r: gravada(r, triagens))
+            pagina.goto(url)
+            pagina.wait_for_timeout(1500)
+            pagina.get_by_role("button", name=EXEMPLO_DA_TRIAGEM).click()
+            pagina.wait_for_selector("#resultado[data-estado='pronto']")
+            pagina.locator("#resultado").scroll_into_view_if_needed()
+            pagina.wait_for_timeout(3500)
+
+            pagina.evaluate("window.scrollTo(0, 0)")
+            pagina.click("#aba-atendimento")
+            pagina.wait_for_selector("#perguntas button")
+            pagina.select_option("#loja", LOJA)
+            pagina.wait_for_timeout(1200)
+            for nome in PERGUNTAS_DO_VIDEO:
+                pagina.get_by_role("button", name=nome).click()
+                pagina.wait_for_selector("#resultado-atendimento[data-estado='pronto']")
+                pagina.locator("#resultado-atendimento").scroll_into_view_if_needed()
+                pagina.wait_for_timeout(2500)
+                fonte = pagina.locator("#resultado-atendimento .fontes summary").first
+                if fonte.count():
+                    fonte.click()
+                    pagina.wait_for_timeout(2500)
+                pagina.evaluate("window.scrollTo(0, 0)")
+                pagina.wait_for_timeout(800)
+            gravacao = pagina.video
+            # O vídeo só termina de ser escrito quando o contexto fecha, e só pode ser salvo
+            # enquanto o navegador ainda está aberto.
+            contexto.close()
+            VIDEO.parent.mkdir(parents=True, exist_ok=True)
+            gravacao.save_as(str(VIDEO))
+            navegador.close()
+    finally:
+        servidor.should_exit = True
+        linha.join(timeout=10)
+    print(f"Pronto: {VIDEO.relative_to(RAIZ)} ({VIDEO.stat().st_size // 1024} KB)")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--ao-vivo", action="store_true", help="roda as 6 com a IA (gasta)")
+    parser.add_argument("--video", action="store_true", help="grava o vídeo (não gasta)")
     args = parser.parse_args()
     with tempfile.TemporaryDirectory() as pasta:
-        return ao_vivo(Path(pasta)) if args.ao_vivo else fotos(Path(pasta))
+        if args.ao_vivo:
+            return ao_vivo(Path(pasta))
+        if args.video:
+            return video(Path(pasta))
+        return fotos(Path(pasta))
 
 
 if __name__ == "__main__":
