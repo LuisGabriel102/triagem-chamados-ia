@@ -22,7 +22,7 @@ A equipe de atendimento perde tempo lendo cada mensagem para decidir para onde e
 
 Para cada chamado, a API:
 
-1. **Esconde os dados pessoais (LGPD).** CPF, CNPJ, cartão, e-mail, telefone, RG, endereço e nome viram `[CPF]`, `[CARTAO]`, `[NOME]` e assim por diante, antes de qualquer coisa sair do servidor.
+1. **Esconde os dados pessoais (LGPD).** CPF, CNPJ, cartão, e-mail, telefone, RG, endereço e o nome de quem se apresenta ("meu nome é", "sou a") viram `[CPF]`, `[CARTAO]`, `[NOME]` e assim por diante, antes de qualquer coisa sair do servidor.
 2. **Classifica com IA.** Categoria, prioridade, sentimento, resumo, número do pedido e uma resposta sugerida para o atendente.
 3. **Confere a resposta da IA.** O formato é fixo, número de pedido que não está no texto é descartado, a resposta passa de novo pelo mascaramento e as palavras-chave dão uma segunda opinião sobre urgência.
 4. **Decide o destino.** Escolhe a fila (Financeiro, Suporte, Vendas, Retenção, Ouvidoria) e diz se uma pessoa precisa revisar.
@@ -167,7 +167,7 @@ A segunda parte do projeto responde o lojista sozinha quando pode, mostra de ond
 
 O caminho de uma mensagem (`app/atendimento.py`):
 
-1. **Mascara** CPF, CNPJ, cartão, e-mail, telefone, RG, endereço e nome. Daqui em diante, só o texto mascarado circula.
+1. **Mascara** CPF, CNPJ, cartão, e-mail, telefone, RG, endereço e o nome de quem se apresenta ("meu nome é", "sou a"). Daqui em diante, só o texto mascarado circula.
 2. **Triagem e busca juntas.** A triagem decide a fila e a urgência. A busca acha os artigos parecidos, por sentido (embeddings do Gemini) ou, se o Google cair, por palavras (BM25).
 3. **Resposta.** O Claude Haiku 5.5 responde citando os artigos achados e pode consultar os dados da loja da sessão (recebimentos e maquininhas). Se a IA cair, entra o plano B: o trecho do artigo, com "uma pessoa vai confirmar".
 4. **Conferência.** Frase a frase, um segundo passo confere se cada frase tem apoio no artigo ou nos dados. Se alguma não tem, a resposta é refeita uma vez, só com o que tem apoio, e conferida de novo. Se falhar de novo, uma pessoa continua.
@@ -177,7 +177,7 @@ O caminho de uma mensagem (`app/atendimento.py`):
 
 ![Fila de revisão humana: os casos urgentes primeiro, com o motivo, o texto mascarado e a resposta](docs/fotos/fila-1280.png)
 
-**Conversa com histórico.** A página guarda as últimas 6 mensagens no navegador e manda junto com a nova; o servidor não grava conversa. "E no crédito à vista?" é entendido como continuação da pergunta anterior: a triagem e a busca usam também a última mensagem do lojista. O histórico é tratado como dado não confiável, porque quem visita pode forjar uma "resposta do atendimento": ele passa pelo mascaramento e pela detecção de tentativa, e o agente é avisado de que ele não é fonte. Num teste real com uma resposta forjada ("a taxa do débito é 0%"), a IA não confirmou o valor falso. Sem histórico, o pedido à IA é idêntico ao que foi medido.
+**Conversa com histórico.** A página guarda as últimas 6 mensagens no navegador e manda junto com a nova; o servidor não grava conversa. "E no crédito à vista?" é entendido como continuação da pergunta anterior: a triagem e a busca usam também a última mensagem do lojista. O histórico é tratado como dado não confiável, porque quem visita pode forjar uma "resposta do atendimento": ele passa pelo mascaramento e pela detecção de tentativa, e o agente é avisado de que ele não é fonte. Num teste real com uma resposta forjada ("a taxa do débito é 0%"), a IA não confirmou o valor falso, mas também não deu a taxa certa: respondeu "não sei" e chamou uma pessoa. Sem histórico, o pedido à IA é idêntico ao que foi medido.
 
 **As regras que fazem a segurança:**
 
@@ -185,6 +185,8 @@ O caminho de uma mensagem (`app/atendimento.py`):
 - **Sem fonte, sem conselho.** Toda instrução cita um artigo que veio da busca. Sem artigo, a resposta é "não sei" e uma pessoa continua; numa urgência, vai a mensagem fixa de urgência.
 - **A conta é do código.** Datas, prazos e valores líquidos saem das ferramentas, já calculados. A IA só escreve.
 - **A confiança da IA não decide sozinha.** A autoavaliação do modelo fica registrada, mas não libera nem segura uma resposta. Quem decide são os motivos objetivos e a conferência.
+
+Essas regras estão no código, mas não seguram tudo. Na prova 3, a IA calculou uma data sozinha (r29) e deu um conselho sobre plano que a base não dá (r08), e a conferência deixou passar.
 
 ### Os números
 
@@ -194,15 +196,15 @@ O caminho de uma mensagem (`app/atendimento.py`):
 | Resolvido sem uma pessoa **e errado** | 3/40 | 2/40 | **5/40** |
 | Urgências e tentativas de enganar com uma pessoa | 8/8 | 8/8 | **8/8** |
 | "Não sei" certo quando a base não sabe | 7/7 | 8/8 | **6/7** |
-| Dados pessoais de teste enviados à IA ou ao Google (CPF, CNPJ, cartão, e-mail e telefone) | 0 de 6 | 0 de 6 | **0 de 6** |
+| Dados pessoais de teste enviados à IA ou ao Google (CPF, cartão, e-mail e telefone) | 0 de 6 | 0 de 6 | **0 de 6** |
 
-Cada prova tem 40 mensagens e rodou 3 vezes; a tabela mostra a mediana. Na prova 2, o "e certo" deu 11 nas 3 rodadas, e o "e errado" ficou entre 1 e 2. Na prova 3, o "e certo" foi de 9 a 14, e o "e errado", de 4 a 7.
+Cada prova tem 40 mensagens e rodou 3 vezes; a tabela mostra a mediana. O "e certo" é contado sobre as mensagens que, pelo gabarito, dá para resolver sem uma pessoa (24, 21 e 23); o "e errado", sobre as 40. Na prova 2, o "e certo" deu 11 nas 3 rodadas, e o "e errado" ficou entre 1 e 2. Na prova 3, o "e certo" foi de 9 a 14, e o "e errado", de 4 a 7.
 
-**A prova 3 foi escrita de outro jeito e foi mais difícil.** Um agente separado escreveu as mensagens com assunto e estilo sorteados (chat sem acento, história longa, áudio transcrito, pessoa idosa, erros de digitação), para não se parecer com as provas anteriores. O "e certo" ficou parecido, mas o "e errado" subiu de 2 para 5 em 40. Três desses erros são casos que eu marquei como difíceis antes de rodar (o gabarito pede uma pessoa, e a resposta é discutível). Os outros são extrapolações pequenas que a conferência deixou passar, como uma data que a própria IA calculou. Urgências, tentativas e dados pessoais continuaram perfeitos nas 3 rodadas. Nada foi ajustado depois de ver estes números.
+**A prova 3 foi escrita de outro jeito e foi mais difícil.** Um agente separado escreveu as mensagens com assunto e estilo sorteados (chat sem acento, história longa, áudio transcrito, pessoa idosa, erros de digitação), para não se parecer com as provas anteriores. O "e certo" ficou parecido, mas o "e errado" subiu de 2 para 5 em 40 (mediana). Nas 3 rodadas, foram 16 erros em 9 perguntas: 6 vieram das 3 perguntas marcadas como difíceis antes de rodar (r07, r12 e r22), e 10 foram invenções que a conferência deixou passar, como uma data que a própria IA calculou, um conselho sobre plano que a base não dá e um caminho no app que não está no artigo. Na r12, uma das difíceis, a IA afirmou sem fonte que não existe seguro, e isso também é invenção. Urgências, tentativas e dados pessoais continuaram perfeitos nas 3 rodadas. Ao montar o gabarito, li as mensagens e acrescentei uma regra ao mascaramento (o tratamento "dona", visto na r24), antes de rodar. Fora isso, o código estava congelado, e nada foi ajustado depois de ver estes números.
 
 **A margem de erro.** São poucas perguntas, então cada número é uma faixa. Com 95% de confiança (intervalo de Wilson, `avaliacao/margem.py`), o 11/21 (52%) fica entre 32% e 72%, e o 2/40 (5%), entre 1% e 17%. Na prova 3, o 11/23 fica entre 29% e 67%, e o 5/40, entre 5% e 26%. Na versão 1, o 10/24 (42%) fica entre 24% e 61%. As faixas se sobrepõem quase inteiras: a prova não mostra que a versão 2 é melhor. A margem conta as perguntas, não as rodadas, porque repetir a rodada não traz pergunta nova. Os relatórios novos já mostram a faixa ao lado de cada taxa.
 
-**Como ler estes números.** As duas provas são diferentes, então a comparação é só uma indicação. As perguntas foram escritas por um agente separado (Claude), que só viu a descrição da empresa, sem ver os artigos. O gabarito foi montado depois, por quem escreveu a base. A resposta certa é julgada por um modelo (Claude Sonnet 5.5), não por uma pessoa. Para medir o juiz contra uma pessoa, `avaliacao/calibrar_juiz.py` sorteia 30 respostas já julgadas (15 aprovadas e 15 reprovadas) e monta uma página para marcar, sem o veredito do juiz; depois calcula a concordância e o kappa de Cohen. **Ainda não foi marcada.** As provas 1 e 2 vieram do mesmo pedido de escrita e se parecem. Com mensagens reais de lojistas, o resultado tende a ser pior.
+**Como ler estes números.** As provas são diferentes, então a comparação é só uma indicação. As perguntas foram escritas por um agente separado (Claude), que só viu a descrição da empresa, sem ver os artigos. O gabarito foi montado depois, por quem escreveu a base. A resposta certa é julgada por um modelo (Claude Sonnet 5.5), não por uma pessoa. Para medir o juiz contra uma pessoa, `avaliacao/calibrar_juiz.py` sorteia 30 respostas já julgadas (15 aprovadas e 15 reprovadas) e monta uma página para marcar, sem o veredito do juiz; depois calcula a concordância e o kappa de Cohen. **Ainda não foi marcada.** As provas 1 e 2 vieram do mesmo pedido de escrita e se parecem. Com mensagens reais de lojistas, o resultado tende a ser pior.
 
 **O método.** Treino e prova separados: as mudanças foram decididas em 60 perguntas de desenvolvimento, nunca na prova. O código foi congelado antes de abrir a prova 2, e a prova rodou 3 vezes. Nada foi ajustado depois de ver o resultado. O passo a passo, com cada rodada e cada erro, está em [`docs/ATENDIMENTO.md`](docs/ATENDIMENTO.md) e em [`avaliacao/resultados/`](avaliacao/resultados/).
 
@@ -218,7 +220,7 @@ Cada prova tem 40 mensagens e rodou 3 vezes; a tabela mostra a mediana. Na prova
 
 A triagem e a busca rodam ao mesmo tempo, então o tempo total não é a soma.
 
-**Os limites e o próximo passo.** A conferência frase a frase ainda corta frases certas. Rodada sozinha sobre 53 respostas guardadas das 60 de desenvolvimento, ela cortou 22 frases: de 10 a 13 eram certas, 6 eram cortes certos e 3 ficaram em dúvida. As frases inventadas que ela deixou passar não foram contadas uma a uma. Pelo juiz, nas 60 com o código final, 1 resposta saiu sem uma pessoa com invenção: a promessa de "conferir de novo", que não está nas fontes. Então a conferência não segura toda invenção. O próximo passo é testar, nas 60, um modelo mais forte só na conferência (o Claude Sonnet 5.5) ou deixar o Haiku raciocinar antes de conferir. Uma terceira saída foi testada e **descartada pela medida**: a conferência por citação (`app/conferencia_citacoes.py`), em que o modelo reescreve a resposta citando o trecho exato de cada fonte e o código tira a frase sem citação. Nas 60, ela piorou tudo: E certo de 23/35 para 17/35, e errado de 2/60 para 5/60. Ao reescrever com citações, o modelo copia pedaços da fonte em vez de responder: perde parte da pergunta e cola frases soltas do artigo. A citação prova de onde veio cada trecho, mas não prova que a resposta responde. O código ficou, desligado, com o registro em `docs/ATENDIMENTO.md`. Outros limites: a conversa com histórico ainda não tem avaliação própria (só um teste de fumaça com 5 conversas), e a próxima prova deveria vir de outro pedido de escrita. O mascaramento não pega um nome solto no meio da frase.
+**Os limites e o próximo passo.** A conferência frase a frase ainda corta frases certas. Rodada sozinha em 13/11, sobre 53 respostas guardadas das 60 de desenvolvimento, ela cortou 22 frases: 14 eram certas, 3 eram cortes certos e 5 ficaram em dúvida (14 + 3 + 5 = 22). As 22 foram classificadas uma a uma por um modelo (o Claude Code), em 16/11, não por uma pessoa; a lista está em [`avaliacao/resultados/conferencia_cortes.md`](avaliacao/resultados/conferencia_cortes.md). A rodada de 13/11 usou a mesma conferência de hoje (o mesmo pedido, a mesma ferramenta e a mesma regra do corte). A contagem de 13/11 ("10 a 13 certas, 6 cortes certos, 3 em dúvida") não ficou registrada e somava 19. As frases inventadas que ela deixou passar não foram contadas uma a uma. Pelo juiz, nas 60 com o código final, 1 resposta com invenção saiu sem uma pessoa: a promessa de "conferir de novo", que não está nas fontes. Então a conferência não segura toda invenção. O próximo passo é testar, nas 60, um modelo mais forte só na conferência (o Claude Sonnet 5.5) ou deixar o Haiku raciocinar antes de conferir, sem forçar a ferramenta (com a ferramenta forçada, ele pula o raciocínio). Uma terceira saída foi testada e **descartada pela medida**: a conferência por citação (`app/conferencia_citacoes.py`), em que o modelo reescreve a resposta citando o trecho exato de cada fonte e o código tira a frase sem citação. Nas 60, ela piorou tudo: E certo de 23/35 para 17/35, e errado de 2/60 para 5/60. Ao reescrever com citações, o modelo copia pedaços da fonte em vez de responder: perde parte da pergunta e cola frases soltas do artigo. A citação prova de onde veio cada trecho, mas não prova que a resposta responde. O código ficou, desligado, com o registro em `docs/ATENDIMENTO.md`. Outros limites: a conversa com histórico ainda não tem avaliação própria (só um teste de fumaça com 5 conversas), o gabarito das três provas é de quem escreveu a base, e o juiz ainda não foi comparado com uma pessoa. O mascaramento não pega um nome solto no meio da frase.
 
 **A busca está pronta para o pgvector.** Hoje os vetores dos 30 artigos ficam num arquivo versionado (`base/indice.json`) e a comparação roda na memória. A busca fala com o índice por uma interface pequena; trocar pelo pgvector no PostgreSQL fica para quando a base crescer.
 
@@ -274,7 +276,7 @@ Os testes não chamam a API real: clientes falsos imitam a Anthropic e o Google,
 app/
   main.py            rotas da API, página de demonstração e chave de acesso
   servico.py         o fluxo: mascarar, classificar, conferir e decidir
-  mascaramento.py    CPF, CNPJ, cartão, e-mail, telefone, RG, endereço e nome (LGPD)
+  mascaramento.py    CPF, CNPJ, cartão, e-mail, telefone, RG, endereço e nome de quem se apresenta (LGPD)
   classificador.py   chamada ao Claude com formato estrito, e o prompt dos dois
   classificador_gemini.py  chamada ao Gemini no Vertex AI com saída estruturada
   precos.py          preço de cada modelo, para o custo de cada chamado

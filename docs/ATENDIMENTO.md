@@ -435,17 +435,22 @@ A mudança 4, julgando de novo as 60 da 3B: resposta certa 26/44 pela rubrica an
 da 3B) e 29/44 pela nova; as marcas de "inventou" caíram de 14 para 8. A rodada com as mudanças 1
 a 4 usou o código congelado e vale como "as 60 uma vez".
 
-**A conferência medida sozinha.** Ela rodou de novo, isolada, nas 53 respostas guardadas de duas
-rodadas, e cortou 22 frases. Classificadas à mão: 10 a 13 eram certas (várias copiadas do artigo
-ou dos dados), 6 eram cortes certos e 3 ficaram em dúvida. A regra do trecho protege contra número
+**A conferência medida sozinha.** Ela rodou de novo, isolada, em 13/11, nas 53 respostas
+guardadas de duas rodadas, e cortou 22 frases: 14 eram certas, 3 eram cortes certos e 5 ficaram
+em dúvida (14 + 3 + 5 = 22). As 22 foram classificadas uma a uma por um modelo (o Claude Code),
+em 16/11, não por uma pessoa; a lista, com o motivo de cada uma, está em
+`avaliacao/resultados/conferencia_cortes.md`. A rodada de 13/11 usou a conferência do commit
+`432d70b`, com o mesmo pedido, a mesma ferramenta e a mesma regra do corte de hoje. A contagem de
+13/11 ("10 a 13 eram certas, 6 eram cortes certos e 3 ficaram em dúvida") não ficou registrada
+e somava 19. A regra do trecho protege contra número
 trocado, mas não contra o julgamento errado: o modelo aponta a frase inteira como trecho. Com o
 raciocínio ligado, o resultado foi o mesmo, porque o Claude Haiku 5.5 pula o raciocínio quando a
 ferramenta é forçada. O corte errado faz chamar uma pessoa sem precisar (3 vezes nas 60 finais).
 As frases inventadas que a conferência deixou passar não foram contadas uma a uma. Pelo juiz,
-nas 60 com o código final, 1 resposta saiu sem uma pessoa com invenção (a50): passou pela
+nas 60 com o código final, 1 resposta com invenção saiu sem uma pessoa (a50): passou pela
 conferência e terminou com a promessa de "conferir de novo", que não está nas fontes. Então a
-conferência não segura toda invenção. (Correção de 15/11/2026: antes, este parágrafo dizia que
-o pior caso do corte errado era "não deixar passar invenção", o que a a50 desmente.)
+conferência não segura toda invenção. (Correção de 15/11/2026: antes, este parágrafo dava a
+entender que a conferência não deixava passar invenção. A a50 mostra que deixa.)
 
 ### A prova 2
 
@@ -525,13 +530,14 @@ prova 2 e US$ 0,05 de testes da conferência isolada.
 
 ### O que fica para decidir (nas 60, nunca nas provas)
 
-1. **A conferência julga mal cerca de metade dos cortes.** Caminhos: um modelo mais forte só na
+1. **A conferência julga mal boa parte dos cortes** (recontagem de 16/11: dos 22 cortes, 14 eram
+   frases certas, 3 eram cortes certos e 5 ficaram em dúvida). Caminhos: um modelo mais forte só na
    conferência (por exemplo, o Claude Sonnet 5.5, a cerca de 20 vezes o preço dela); ou deixar o
    Haiku raciocinar, chamando a ferramenta sem forçar; ou aceitar o custo de chamar uma pessoa a
    mais.
 2. **"A IA pediu uma pessoa" e "nada encontrado"** são agora os maiores motivos.
 3. **As provas se parecem:** a próxima prova deveria vir de outro pedido (por exemplo, com
-   assuntos sorteados) para ser mais independente.
+   assuntos sorteados) para ser mais independente. (Feito em 16/11: a prova 3.)
 
 ### As decisões sobre a 3C (15/11/2026)
 
@@ -650,8 +656,8 @@ vaga, sem cota.
 
 ### A conferência por citação (medida: ficou pior, desligada)
 
-O problema: a conferência frase a frase pede a um modelo que julgue cada frase, e ela errou
-cerca de metade dos cortes. A alternativa troca o julgamento por uma prova que o código confere
+O problema: a conferência frase a frase pede a um modelo que julgue cada frase, e ela erra boa
+parte dos cortes (dos 22 cortes da rodada isolada, 14 eram frases certas e 5 ficaram em dúvida). A alternativa troca o julgamento por uma prova que o código confere
 (`app/conferencia_citacoes.py`):
 
 1. Os artigos citados, os dados da loja e a data de hoje vão como documentos com citações
@@ -712,8 +718,8 @@ errada sem pessoa com a frase a frase. A citação prova de onde veio cada trech
 que a resposta responde à pergunta.
 
 O código fica no repositório, desligado, com o teste e este registro. O caminho que sobra para a
-conferência é o anotado na 3C: um modelo mais forte só nela, ou o Haiku raciocinando antes de
-julgar. Custo desta medida: US$ 0,47 (o atendimento, US$ 0,06; o juiz, US$ 0,41), mais menos de
+conferência é o anotado na 3C: um modelo mais forte só nela, ou deixar o Haiku raciocinar antes de
+conferir, sem forçar a ferramenta (com a ferramenta forçada, ele pula o raciocínio). Custo desta medida: US$ 0,47 (o atendimento, US$ 0,06; o juiz, US$ 0,41), mais menos de
 1 centavo das sondas.
 
 ### A conversa com histórico
@@ -746,7 +752,7 @@ ainda um conjunto de avaliação de conversas; este é o próximo passo da conve
 ### O resultado da prova 3 (16/11/2026, versão 2 com a conferência frase a frase, 3 rodadas)
 
 Relatórios: `avaliacao/resultados/prova3_resumo.md` e `prova3_1.md` a `prova3_3.md`. Custo:
-cerca de US$ 1,11 (o atendimento, US$ 0,14; o juiz, US$ 0,96). A estimativa era US$ 0,90: o
+cerca de US$ 1,10 (o atendimento, US$ 0,14; o juiz, US$ 0,96). A estimativa era US$ 0,90: o
 custo por mensagem subiu (US$ 0,00118 contra 0,00091 na prova 2), porque a conferência cortou
 mais e o agente refez mais respostas.
 
@@ -764,20 +770,22 @@ subiu.** O "E certo" ficou parecido; o "e errado" passou de 2/40 para 5/40. A pr
 parecia com as perguntas de desenvolvimento; a 3, com estilos sorteados, mostra melhor o que
 aconteceria com mensagens variadas.
 
-As que saíram erradas sem uma pessoa (vezes nas 3 rodadas):
+As que saíram erradas sem uma pessoa: nas 3 rodadas, 16 erros em 9 perguntas (as vezes de cada
+uma estão entre parênteses).
 
-- **Os 3 casos difíceis marcados antes de rodar**, em que o gabarito pede uma pessoa: r07
-  (repassar os juros; 2 vezes), r12 (seguro: a IA afirmou que não existe seguro, sem fonte; 2
-  vezes) e r22 (bateria; 2 vezes). Aqui o gabarito é discutível, e isso fica dito.
-- **Pequenas invenções que a conferência deixou passar:** r06 (3 vezes: "paga só quando
+- **6 vieram das 3 perguntas marcadas como difíceis antes de rodar**, em que o gabarito pede uma
+  pessoa: r07 (repassar os juros; 2 vezes), r12 (seguro; 2 vezes) e r22 (bateria; 2 vezes). Na
+  r12, a IA afirmou sem fonte que não existe seguro: isso é invenção.
+- **10 foram invenções que a conferência deixou passar:** r06 (3 vezes: "paga só quando
   vende", esquecendo o preço da maquininha), r08 (2: "o Mensal costuma compensar para quem vende
   pouco", que a base não diz), r29 (2: a IA calculou sozinha uma data, "14/12", contra a regra de
   a conta ser do código), r11 (1: "já encerrou por ser noite"), r31 (1) e r40 (1: um caminho no
   app que não está no artigo).
 - Numa rodada, a IA inventou em 2 das 7 sem resposta (nas outras duas, 0).
 
-O que isso diz para o próximo passo: o problema que sobra é a extrapolação pequena, que a
-conferência frase a frase não pega, e não a urgência nem o dado pessoal (8/8 e 0 nas 3 rodadas).
+O que isso diz para o próximo passo: o problema que sobra é a invenção pequena (uma data que a
+própria IA calculou, um conselho sobre plano que a base não dá, um caminho no app que não está no
+artigo), que a conferência frase a frase não pega, e não a urgência nem o dado pessoal (8/8 e 0 nas 3 rodadas).
 A regra "não ajustar depois de ver a prova" vale: nada foi mudado por causa destes números.
 
 ### Para rodar a prova 3

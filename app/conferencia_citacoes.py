@@ -5,10 +5,11 @@ RESULTADO: medida nas 60, ficou pior que a frase a frase (E certo 17/35 contra 2
 em vez de responder. O registro completo está em docs/ATENDIMENTO.md; o código fica para quem
 quiser repetir a medida.
 
-O problema que ela ataca: a conferência frase a frase (app/conferencia.py) pede a um modelo
-que JULGUE se cada frase tem apoio. Medida nas 60, ela errou cerca de metade dos cortes: tirou
-frase certa e deixou passar a promessa inventada da a50. Um juiz pequeno julgando outro modelo
-erra como qualquer juiz.
+O problema que ela ataca: a conferência frase a frase (app/conferencia.py) é uma segunda
+chamada ao mesmo modelo (o Claude Haiku 5.5), com outro papel: JULGAR se cada frase tem apoio.
+Medida sozinha, dos 22 cortes, 14 eram frases certas e 5 ficaram em dúvida
+(avaliacao/resultados/conferencia_cortes.md); e ela deixou passar a promessa inventada da a50.
+Um modelo pequeno julgando a própria resposta erra como qualquer juiz.
 
 A ideia aqui é trocar o julgamento por uma prova que o código confere:
 

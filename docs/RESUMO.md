@@ -41,9 +41,8 @@ que a versão 2 é melhor.
 - **A confiança da IA não decide sozinha.** Quem decide são motivos objetivos e a conferência.
 - **Treino e prova separados.** As mudanças foram decididas em 60 perguntas; a prova foi aberta
   uma vez, com o código congelado, e nada foi ajustado depois.
-- **Dados pessoais saem antes da IA.** CPF, CNPJ, cartão, e-mail, telefone, RG, endereço e nome
-  (por regras de contexto).
-
+- **Dados pessoais saem antes da IA.** CPF, CNPJ, cartão, e-mail, telefone, RG, endereço e o nome
+  de quem se apresenta ("meu nome é", "sou a"), por regras de contexto.
 - **O histórico da conversa é dado não confiável.** Passa pelo mascaramento e pela detecção de
   tentativa e vai à IA como dado, nunca como ordem.
 - **A fila de revisão humana** (`/fila`) mostra o que a equipe recebe quando a IA chama uma
@@ -51,7 +50,10 @@ que a versão 2 é melhor.
 
 ## Um experimento que não deu certo (e ficou registrado)
 
-A conferência frase a frase erra cerca de metade dos cortes. A alternativa testada: o modelo
+A conferência frase a frase (uma segunda chamada ao mesmo modelo, o Claude Haiku 5.5, com outro
+papel) erra boa parte dos cortes: medida sozinha, dos 22 cortes, 14 eram frases certas, 3 eram
+cortes certos e 5 ficaram em dúvida, numa classificação feita por um modelo (o Claude Code), não
+por uma pessoa (`avaliacao/resultados/conferencia_cortes.md`). A alternativa testada: o modelo
 reescreve a resposta citando o trecho exato da fonte, e o código tira a frase sem citação. Nas
 60, piorou: certo sem pessoa de 23/35 para 17/35, errado sem pessoa de 2/60 para 5/60. Ao ser
 obrigado a citar, o modelo copiou pedaços da fonte em vez de responder. Ficou desligada.
@@ -59,8 +61,9 @@ obrigado a citar, o modelo copiou pedaços da fonte em vez de responder. Ficou d
 ## A prova 3
 
 Escrita por um agente separado, com assunto e estilo sorteados (chat sem acento, áudio
-transcrito, pessoa idosa...), para não se parecer com as anteriores. Rodou 3 vezes com o código
-congelado (mediana):
+transcrito, pessoa idosa...), para não se parecer com as anteriores. Rodou 3 vezes (mediana). Ao
+montar o gabarito, li as mensagens e acrescentei uma regra ao mascaramento (o tratamento "dona",
+visto na r24), antes de rodar. Fora isso, o código estava congelado.
 
 | | Prova 3 | Faixa de 95% | Prova 2 |
 |---|---|---|---|
@@ -68,17 +71,20 @@ congelado (mediana):
 | Resolvido sem uma pessoa **e errado** | 5/40 | de 5% a 26% | 2/40 |
 | Urgências e tentativas com uma pessoa | 8/8 | de 68% a 100% | 8/8 |
 
-Foi mais difícil, e o número perigoso subiu. Três erros são casos marcados como difíceis antes
-de rodar; os outros são extrapolações pequenas que a conferência não pegou. É o próximo problema
-a atacar.
+Foi mais difícil, e o número perigoso subiu. Nas 3 rodadas, foram 16 erros em 9 perguntas: 6
+vieram das 3 perguntas marcadas como difíceis antes de rodar (r07, r12 e r22), e 10 foram
+invenções que a conferência deixou passar, como uma data que a própria IA calculou, um conselho
+sobre plano que a base não dá e um caminho no app que não está no artigo. Na r12, a IA afirmou
+sem fonte que não existe seguro, e isso também é invenção. É o próximo problema a atacar.
 
 ## O que ainda falta
 
 - **O juiz contra uma pessoa:** a página para marcar 30 respostas está pronta e ainda não foi
   marcada.
 - **Uma avaliação de conversas:** a conversa com histórico só passou por um teste de fumaça.
-- **A conferência** ainda erra cerca de metade dos cortes. O próximo teste é um modelo mais forte
-  só nela.
+- **A conferência** ainda corta frases certas (14 dos 22 cortes medidos) e deixa passar invenção
+  pequena. O próximo teste é um modelo mais forte só nela, ou deixar o Haiku raciocinar antes de
+  conferir, sem forçar a ferramenta.
 
 ## Onde olhar
 
