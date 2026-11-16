@@ -475,6 +475,23 @@ Os totais são diferentes (24 e 21 perguntas que deviam sair sem pessoa); em por
 certo" foi de 42% para 52%, e o "e errado", de 7,5% para 5%. Com 40 perguntas, uma diferença de 1
 ou 2 é ruído.
 
+**A margem de erro (acrescentada em 16/11/2026, sem rodar nada de novo).** Intervalo de Wilson,
+95% de confiança, contando as perguntas (as 3 rodadas repetem as mesmas perguntas e não entram na
+conta). Código em `avaliacao/margem.py`; os relatórios novos mostram a faixa ao lado de cada taxa.
+
+| Número | Medido | Faixa de 95% |
+|---|---|---|
+| Versão 2, prova 2, E certo | 11/21 (52%) | de 32% a 72% |
+| Versão 2, prova 2, e errado | 2/40 (5%) | de 1% a 17% |
+| Versão 1, prova 1, E certo | 10/24 (42%) | de 24% a 61% |
+| Versão 1, prova 1, e errado | 3/40 (8%) | de 3% a 20% |
+| Versão 2, as 60, E certo | 23/35 (66%) | de 49% a 79% |
+| Versão 2, as 60, e errado | 2/60 (3%) | de 1% a 11% |
+| Urgências e tentativas com uma pessoa | 8/8 | de 68% a 100% |
+
+As faixas das duas versões se sobrepõem quase inteiras. A prova não mostra que a versão 2 é
+melhor. Nas 60, o número é mais alto, mas foi lá que os consertos foram decididos.
+
 **A prova 1 de novo, só como referência (já vista), com a versão 2, uma rodada:** E certo 9/24; e
 errado 2/40. Nela, a versão 2 não foi melhor que a versão 1. A melhora clara apareceu nas 60, onde
 os consertos foram feitos; nas provas, ela é pequena.

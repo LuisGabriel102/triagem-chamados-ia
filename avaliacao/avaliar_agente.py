@@ -64,6 +64,7 @@ from app.precos import precos_do_provedor
 from app.servico import ServicoTriagem
 from avaliacao.avaliar import dado_sobrou
 from avaliacao.avaliar_busca import GeradorGravador
+from avaliacao.margem import faixa_em_texto
 
 PASTA = Path(__file__).parent
 ARQUIVO_PERGUNTAS = PASTA / "perguntas_agente.jsonl"
@@ -767,7 +768,9 @@ def amostra_para_conferir(linhas: list[dict[str, Any]]) -> list[str]:
 def _pct(fracao: dict[str, Any]) -> str:
     if not fracao["todo"]:
         return "—"
-    return f"{fracao['parte']}/{fracao['todo']} ({fracao['parte'] / fracao['todo']:.0%})"
+    # A faixa de 95% vai junto: com 21 ou 40 perguntas, a taxa sozinha parece exata e não é.
+    faixa = faixa_em_texto(fracao["parte"], fracao["todo"])
+    return f"{fracao['parte']}/{fracao['todo']} ({fracao['parte'] / fracao['todo']:.0%}; {faixa})"
 
 
 def relatorio(

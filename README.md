@@ -188,6 +188,8 @@ O caminho de uma mensagem (`app/atendimento.py`):
 
 Cada prova tem 40 mensagens e rodou 3 vezes; a tabela mostra a mediana. Na prova 2, o "e certo" deu 11 nas 3 rodadas, e o "e errado" ficou entre 1 e 2.
 
+**A margem de erro.** São poucas perguntas, então cada número é uma faixa. Com 95% de confiança (intervalo de Wilson, `avaliacao/margem.py`), o 11/21 (52%) fica entre 32% e 72%, e o 2/40 (5%), entre 1% e 17%. Na versão 1, o 10/24 (42%) fica entre 24% e 61%. As faixas se sobrepõem quase inteiras: a prova não mostra que a versão 2 é melhor. A margem conta as perguntas, não as rodadas, porque repetir a rodada não traz pergunta nova. Os relatórios novos já mostram a faixa ao lado de cada taxa.
+
 **Como ler estes números.** As duas provas são diferentes, então a comparação é só uma indicação. As perguntas foram escritas por um agente separado (Claude), que só viu a descrição da empresa, sem ver os artigos. O gabarito foi montado depois, por quem escreveu a base. A resposta certa é julgada por um modelo (Claude Sonnet 5.5), não por uma pessoa. As provas 1 e 2 vieram do mesmo pedido de escrita e se parecem. Com mensagens reais de lojistas, o resultado tende a ser pior.
 
 **O método.** Treino e prova separados: as mudanças foram decididas em 60 perguntas de desenvolvimento, nunca na prova. O código foi congelado antes de abrir a prova 2, e a prova rodou 3 vezes. Nada foi ajustado depois de ver o resultado. O passo a passo, com cada rodada e cada erro, está em [`docs/ATENDIMENTO.md`](docs/ATENDIMENTO.md) e em [`avaliacao/resultados/`](avaliacao/resultados/).
